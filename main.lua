@@ -27,30 +27,23 @@ function love.load()
     BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] = 100
     BUDGET_RATIO[INVESTMENT_TYPE.HUNT] = 0
 
-    -- chars
-    last_char = 1
-    chars_hp = {}
-    chars_weapon = {}
-    chars_weapon_d = {}
-    chars_armour = {}
-    chars_armour_d = {}
-    chars_x = {}
-    chars_y = {}
-    chars_state = {}
-    chars_target = {}
-    chars_wealth = {}
-    chars_potions = {}
-    chars_home = {}
+    
+    -- character states
+    CHAR_OCCUPATION = {}
+    CHAR_OCCUPATION.TAX_COLLECTOR = 1 -- character that collects taxes in buildings and returns them to castle
+    CHAR_OCCUPATION.HUNTER = 2 -- character that, if there is a hunting reward, hunts on corresponding targets
+    CHAR_OCCUPATION.GUARD = 3 -- character that guards his home
     
     CHAR_STATE = {}
-    CHAR_STATE.WANDERING = 0
-    CHAR_STATE.FIGHT = 1
-    CHAR_STATE.TAXCOLLECTION = 2
-    CHAR_STATE.RETURNTAXES = 3
-    CHAR_STATE.BUY_POTIONS = 4
-    CHAR_STATE.HUNT = 5
-    CHAR_STATE.PROTECT_THE_LAIR = 6
+    CHAR_STATE.WANDERING = new_state_id()
+    CHAR_STATE.FIGHT = new_state_id()
+    CHAR_STATE.TAXCOLLECTION = new_state_id()
+    CHAR_STATE.RETURNTAXES = new_state_id()
+    CHAR_STATE.BUY_POTIONS = new_state_id()
+    CHAR_STATE.HUNT = new_state_id()
+    CHAR_STATE.PROTECT_THE_LAIR = new_state_id()
     
+    init_occupation_vars()
     
     -- responses
     CHANGE_HP_RESPONSE = {}
@@ -62,6 +55,11 @@ function love.load()
     CHAR_ATTACK_RESPONSE.KILL = 0
     CHAR_ATTACK_RESPONSE.DAMAGE = 1
     CHAR_ATTACK_RESPONSE.NO_DAMAGE = 2
+    
+    
+    ---- init arrays
+    -- characters
+    init_chars_arrays()
     
     -- buildings
     last_building = 1
@@ -122,6 +120,16 @@ function love.load()
     :button(milky, function (self, button) add_hunt_budget() end)
 end
 
+
+
+
+
+
+
+
+
+-- ui manipulations
+
 function create_invest_row(parent, label, it)
     local body = milky.panel:new(milky, parent, nil, nil)
     
@@ -133,49 +141,291 @@ function create_invest_row(parent, label, it)
     return body, value
 end
 
-function dec_inv(it)
-    if BUDGET_RATIO[it] > 0 then
-        BUDGET_RATIO[it] = BUDGET_RATIO[it] - 10
-        BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] = BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] + 10
+
+
+
+
+
+
+
+
+
+
+
+-- draw loop
+function love.draw()
+    love.graphics.setColor(1, 1, 0)
+    main_ui:draw()
+    
+    for i = 1, last_char - 1 do
+        if (ALIVE_CHARS[i]) then
+            love.graphics.circle('line', chars_x[i], chars_y[i], 2)
+        end
     end
-end
-function inc_inv(it)
-    if BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] > 0 then
-        BUDGET_RATIO[it] = BUDGET_RATIO[it] + 10
-        BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] = BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] - 10
-    end
-end
-
-
-function new_building(buiding_type, i, j)
-    buildings_i[last_building] = i
-    buildings_j[last_building] = j
-    buildings_type[last_building] = buiding_type
-    buildings_wealth_before_taxes[last_building] = 0
-    buildings_wealth_after_taxes[last_building] = 0
-    buildings_char_amount[last_building] = 0
-    last_building = last_building + 1
-end
-
-function kingdom_income(t)
-    local tmp = math.floor(BUDGET_RATIO[INVESTMENT_TYPE.HUNT] * t / 100)
-    kingdom_wealth = kingdom_wealth + t - tmp
-    hunt_budget = hunt_budget + tmp
-end
-
-function hire_hero()
-    if kingdom_wealth >= 100 then
-        kingdom_wealth = kingdom_wealth - 100
-        new_hero(100)
-    end
-end
-function add_hunt_budget()
-    if kingdom_wealth >= 100 then
-        kingdom_wealth = kingdom_wealth - 100
-        hunt_budget = hunt_budget + 100
+    
+    for i = 1, last_building - 1 do
+        love.graphics.rectangle('line', buildings_i[i] * grid_size, buildings_j[i] * grid_size, grid_size, grid_size)
     end
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- game logic loop
+time_passed = 0
+tps = 20
+tick = 1 / tps / 5
+
+function love.update(dt)
+    time_passed = time_passed + dt
+    while time_passed > tick do
+    time_passed = time_passed - tick
+    
+    -- chars update
+    for i = 1, last_char - 1 do
+        if ALIVE_CHARS[i] then
+            if ((chars_state[i] == CHAR_STATE.WANDERING) or (chars_state[i] == CHAR_STATE.HUNT)) and chars_wealth[i] > 50 and chars_potions[i] < 4 then
+                char_change_state(i, CHAR_STATE.BUY_POTIONS)
+            end
+            if chars_hp[i] < 60 and chars_state[i] ~= CHAR_STATE.PROTECT_THE_LAIR then
+                char_drink_pot(i)
+            end
+            if chars_state[i] == CHAR_STATE.BUY_POTIONS then
+                if chars_wealth[i] < 10 or chars_potions[i] >= 4 then
+                    chars_state[i] = CHAR_STATE.WANDERING
+                    chars_target[i] = nil
+                elseif chars_target[i] == nil then
+                    local closest_shop = 2 -- should rewrite to finding the closest shop
+                    chars_target[i] = {}                
+                    chars_target[i].x = buildings_x(closest_shop)
+                    chars_target[i].y = buildings_y(closest_shop)
+                elseif dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
+                    local closest_shop = 2 -- should rewrite to finding the closest shop
+                    char_buy_potions(i, closest_shop)
+                else 
+                    char_move_to_target(i)
+                end
+            end
+        
+            if chars_state[i] == CHAR_STATE.WANDERING then
+                if (hunt_budget > 0) then
+                    char_change_state(i, CHAR_STATE.HUNT)
+                elseif chars_target[i] == nil then
+                    chars_target[i] = {}
+                    local dice = math.random() - 0.5
+                    chars_target[i].x = dice * dice * dice * 400 + buildings_x(chars_home[i])
+                    local dice = math.random() - 0.5
+                    chars_target[i].y = dice * dice * dice * 400 + buildings_y(chars_home[i])
+                elseif chars_target[i] ~= nil then
+                    char_move_to_target(i)
+                end
+            end
+            
+            if chars_occupation[i] == CHAR_OCCUPATION.TAX_COLLECTOR then
+                AGENT_LOGIC[CHAR_OCCUPATION.TAX_COLLECTOR](i)
+            end
+            
+            if chars_state[i] == CHAR_STATE.PROTECT_THE_LAIR then
+                local closest_hero = nil
+                local curr_dist = 20
+                for j, f in pairs(ALIVE_HEROES) do
+                    if f then
+                        local tmp = char_dist(j, i)
+                        if ((closest_hero == nil) and (tmp < curr_dist)) or (tmp < curr_dist) then
+                            closest_hero = j
+                            curr_dist = tmp
+                        end
+                    end
+                end
+                local from_home_dist = char_build_dist(i, chars_home[i])
+                if (closest_hero ~= nil) and (from_home_dist < 410) then
+                    chars_target[i] = {}
+                    chars_target[i].x = chars_x[closest_hero]
+                    chars_target[i].y = chars_y[closest_hero]
+                    if curr_dist > 1 then 
+                        char_move_to_target(i)
+                    else
+                        char_attack_char(i, closest_hero)
+                    end
+                elseif chars_target[i] == nil then
+                    chars_target[i] = {}
+                    local dice = math.random() - 0.5
+                    chars_target[i].x = dice * dice * dice * 800 + buildings_x(chars_home[i])
+                    local dice = math.random() - 0.5
+                    chars_target[i].y = dice * dice * dice * 800 + buildings_y(chars_home[i])
+                elseif chars_target[i] ~= nil then
+                    char_move_to_target(i)
+                end
+            end
+
+           
+            
+            if chars_state[i] == CHAR_STATE.HUNT then
+                if (hunt_budget < REWARD) then
+                    char_change_state(i, CHAR_STATE.WANDERING)
+                else 
+                
+                local closest_rat = nil
+                local curr_dist = 99999
+                for j, f in pairs(ALIVE_RATS) do
+                    if f then
+                        local tmp = char_dist(j, i)
+                        if (closest_rat == nil) or (tmp < curr_dist) then
+                            closest_rat = j
+                            curr_dist = tmp
+                        end
+                    end
+                end
+                if closest_rat ~= nil then
+                    chars_target[i] = {}
+                    chars_target[i].x = chars_x[closest_rat]
+                    chars_target[i].y = chars_y[closest_rat]
+                    if curr_dist > 1 then 
+                        char_move_to_target(i)
+                    else
+                        local tmp = char_attack_char(i, closest_rat)
+                        if (tmp == CHAR_ATTACK_RESPONSE.KILL) then
+                            char_recieve_reward(i)
+                        end
+                    end
+                    chars_target[i] = nil
+                end
+                if (chars_target[i] == nil) and (closest_rat == nil) then
+                    chars_target[i] = {}
+                    local dice = math.random() - 0.5
+                    chars_target[i].x = dice * dice * dice * 400 + buildings_x(chars_home[i])
+                    local dice = math.random() - 0.5
+                    chars_target[i].y = dice * dice * dice * 400 + buildings_y(chars_home[i])
+                elseif closest_rat == nil then
+                    char_move_to_target(i)
+                end
+                
+                end
+            end
+        end
+    end
+    
+    for i = 1, last_building - 1 do
+        if buildings_type[i] == BUILDING_TYPES.RAT_LAIR then
+            if buildings_char_amount[i] < 100 then
+                local dice = math.random()
+                if dice > 0.995 then
+                    new_rat(i)
+                    buildings_char_amount[i] = buildings_char_amount[i] + 1
+                end
+            end
+        end
+    end
+    
+    -- interface update
+    
+    end
+    wealth_widget:update_label(tostring(kingdom_wealth))
+    hunt_widget:update_label(tostring(hunt_budget))
+    
+    hunt_invest_value:update_label(tostring(BUDGET_RATIO[INVESTMENT_TYPE.HUNT]) .. '%')
+    treasury_invest_value:update_label(tostring(BUDGET_RATIO[INVESTMENT_TYPE.TREASURY]) .. '%')
+end
+
+function love.mousepressed(x, y, button, istouch)
+    milky:onClick(x, y, button)
+end
+
+
+
+
+
+
+
+
+
+-- data initialization
+function init_chars_arrays()
+    last_char = 1
+    chars_hp = {}
+    chars_weapon = {}
+    chars_weapon_d = {}
+    chars_armour = {}
+    chars_armour_d = {}
+    chars_x = {}
+    chars_y = {}
+    chars_state = {}
+    chars_target = {}
+    chars_state_target = {}
+    chars_wealth = {}
+    chars_potions = {}
+    chars_home = {}
+    chars_occupation = {}
+end
+
+last_state_id = 0
+function new_state_id()
+    last_state_id = last_state_id + 1
+    return last_state_id
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- getters
+function char_dist(i, j)
+    return dist(chars_x[i], chars_y[i], chars_x[j], chars_y[j])
+end
+function char_build_dist(i, j)
+    return dist(chars_x[i], chars_y[i], buildings_x(j), buildings_y(j))
+end
+function dist(a, b, c, d)
+    local t1 = math.abs(a - c)
+    local t2 = math.abs(b - d)
+    return math.max(t1, t2) + t1 + t2
+end
+function buildings_x(i) 
+    return buildings_i[i] * grid_size + grid_size/2
+end
+function buildings_y(i)
+    return buildings_j[i] * grid_size + grid_size/2
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- constructors
 function new_char(hp, wealth, state, home) 
     chars_hp[last_char] = hp
     chars_wealth[last_char] = wealth
@@ -183,16 +433,19 @@ function new_char(hp, wealth, state, home)
     chars_armour[last_char] = 1
     chars_state[last_char] = state 
     chars_target[last_char] = nil
+    chars_state_target[last_char] = nil
     chars_home[last_char] = home
     chars_x[last_char] = buildings_i[chars_home[last_char]] * grid_size + grid_size/2
     chars_y[last_char] = buildings_j[chars_home[last_char]] * grid_size + grid_size/2
+    chars_occupation[last_char] = CHAR_OCCUPATION.HUNTER
     chars_potions[last_char] = 0
     ALIVE_CHARS[last_char] = true
     last_char = last_char + 1
 end
 
 function new_tax_collector()
-    new_char(50, 0, CHAR_STATE.TAXCOLLECTION, 1)
+    new_char(50, 0, CHAR_STATE.TAX_COLLECTOR_WAIT_IN_CASTLE, 1)
+    chars_occupation[last_char - 1] = CHAR_OCCUPATION.TAX_COLLECTOR
 end
 
 function new_hero(wealth)
@@ -214,37 +467,41 @@ function new_rat(nest)
     chars_potions[last_char] = 0
     chars_x[last_char] = buildings_i[chars_home[last_char]] * grid_size + grid_size/2
     chars_y[last_char] = buildings_j[chars_home[last_char]] * grid_size + grid_size/2
-    
+    chars_occupation[last_char] = CHAR_OCCUPATION.RAT
     ALIVE_RATS[last_char] = true
     ALIVE_CHARS[last_char] = true
     
     last_char = last_char + 1
 end
 
-function love.draw()
-    love.graphics.setColor(1, 1, 0)
-    main_ui:draw()
-    
-    for i = 1, last_char - 1 do
-        if (ALIVE_CHARS[i]) then
-            love.graphics.circle('line', chars_x[i], chars_y[i], 2)
-        end
-    end
-    
-    for i = 1, last_building - 1 do
-        love.graphics.rectangle('line', buildings_i[i] * grid_size, buildings_j[i] * grid_size, grid_size, grid_size)
-    end
-end
-
-function buildings_x(i) 
-    return buildings_i[i] * grid_size + grid_size/2
-end
-
-function buildings_y(i)
-    return buildings_j[i] * grid_size + grid_size/2
+function new_building(buiding_type, i, j)
+    buildings_i[last_building] = i
+    buildings_j[last_building] = j
+    buildings_type[last_building] = buiding_type
+    buildings_wealth_before_taxes[last_building] = 0
+    buildings_wealth_after_taxes[last_building] = 0
+    buildings_char_amount[last_building] = 0
+    last_building = last_building + 1
 end
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- character manipulation functions
 function char_move_to_target(i)
     if chars_target == nil then
         return
@@ -320,207 +577,222 @@ function char_recieve_reward(i)
     end
 end
 
-time_passed = 0
-tps = 20
-tick = 1 / tps / 5
-
-function love.update(dt)
-    time_passed = time_passed + dt
-    while time_passed > tick do
-    time_passed = time_passed - tick
-    
-    -- chars update
-    for i = 1, last_char - 1 do
-        if ALIVE_CHARS[i] then
-            if ((chars_state[i] == CHAR_STATE.WANDERING) or (chars_state[i] == CHAR_STATE.HUNT)) and chars_wealth[i] > 50 and chars_potions[i] < 4 then
-                char_change_state(i, CHAR_STATE.BUY_POTIONS)
-            end
-            if chars_hp[i] < 60 and chars_state[i] ~= CHAR_STATE.PROTECT_THE_LAIR then
-                char_drink_pot(i)
-            end
-            if chars_state[i] == CHAR_STATE.BUY_POTIONS then
-                if chars_wealth[i] < 10 or chars_potions[i] >= 4 then
-                    chars_state[i] = CHAR_STATE.WANDERING
-                    chars_target[i] = nil
-                elseif chars_target[i] == nil then
-                    local closest_shop = 2 -- should rewrite to finding the closest shop
-                    chars_target[i] = {}                
-                    chars_target[i].x = buildings_x(closest_shop)
-                    chars_target[i].y = buildings_y(closest_shop)
-                elseif dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
-                    local closest_shop = 2 -- should rewrite to finding the closest shop
-                    char_buy_potions(i, closest_shop)
-                else 
-                    char_move_to_target(i)
-                end
-            end
-        
-            if chars_state[i] == CHAR_STATE.WANDERING then
-                if (hunt_budget > 0) then
-                    char_change_state(i, CHAR_STATE.HUNT)
-                elseif chars_target[i] == nil then
-                    chars_target[i] = {}
-                    local dice = math.random() - 0.5
-                    chars_target[i].x = dice * dice * dice * 400 + buildings_x(chars_home[i])
-                    local dice = math.random() - 0.5
-                    chars_target[i].y = dice * dice * dice * 400 + buildings_y(chars_home[i])
-                elseif chars_target[i] ~= nil then
-                    char_move_to_target(i)
-                end
-            end
-            
-            if chars_state[i] == CHAR_STATE.PROTECT_THE_LAIR then
-                local closest_hero = nil
-                local curr_dist = 20
-                for j, f in pairs(ALIVE_HEROES) do
-                    if f then
-                        local tmp = char_dist(j, i)
-                        if ((closest_hero == nil) and (tmp < curr_dist)) or (tmp < curr_dist) then
-                            closest_hero = j
-                            curr_dist = tmp
-                        end
-                    end
-                end
-                local from_home_dist = char_build_dist(i, chars_home[i])
-                if (closest_hero ~= nil) and (from_home_dist < 410) then
-                    chars_target[i] = {}
-                    chars_target[i].x = chars_x[closest_hero]
-                    chars_target[i].y = chars_y[closest_hero]
-                    if curr_dist > 1 then 
-                        char_move_to_target(i)
-                    else
-                        char_attack_char(i, closest_hero)
-                    end
-                elseif chars_target[i] == nil then
-                    chars_target[i] = {}
-                    local dice = math.random() - 0.5
-                    chars_target[i].x = dice * dice * dice * 800 + buildings_x(chars_home[i])
-                    local dice = math.random() - 0.5
-                    chars_target[i].y = dice * dice * dice * 800 + buildings_y(chars_home[i])
-                elseif chars_target[i] ~= nil then
-                    char_move_to_target(i)
-                end
-            end
-            
-            if chars_state[i] == CHAR_STATE.TAXCOLLECTION then
-                if chars_target[i] == nil then
-                    if buildings_wealth_before_taxes[2] > 9 then
-                        local closest_shop = 2
-                        chars_target[i] = {}                
-                        chars_target[i].x = buildings_x(closest_shop)
-                        chars_target[i].y = buildings_y(closest_shop)
-                    end
-                elseif chars_target[i] ~= nil then
-                    if dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
-                        char_tax_building(i, 2)
-                        char_change_state(i, CHAR_STATE.RETURNTAXES)
-                    else 
-                        char_move_to_target(i)
-                    end
-                end
-            end
-            
-            if chars_state[i] == CHAR_STATE.RETURNTAXES then
-                if chars_target[i] == nil then
-                    local closest_tax_storage = 1
-                    chars_target[i] = {}
-                    chars_target[i].x = buildings_x(closest_tax_storage)
-                    chars_target[i].y = buildings_y(closest_tax_storage)
-                elseif chars_target[i] ~= nil then
-                    if dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
-                        char_return_tax(i)
-                        char_change_state(i, CHAR_STATE.TAXCOLLECTION)
-                    else 
-                        char_move_to_target(i)
-                    end
-                end
-            end
-            
-            if chars_state[i] == CHAR_STATE.HUNT then
-                if (hunt_budget < REWARD) then
-                    char_change_state(i, CHAR_STATE.WANDERING)
-                else 
-                
-                local closest_rat = nil
-                local curr_dist = 99999
-                for j, f in pairs(ALIVE_RATS) do
-                    if f then
-                        local tmp = char_dist(j, i)
-                        if (closest_rat == nil) or (tmp < curr_dist) then
-                            closest_rat = j
-                            curr_dist = tmp
-                        end
-                    end
-                end
-                if closest_rat ~= nil then
-                    chars_target[i] = {}
-                    chars_target[i].x = chars_x[closest_rat]
-                    chars_target[i].y = chars_y[closest_rat]
-                    if curr_dist > 1 then 
-                        char_move_to_target(i)
-                    else
-                        local tmp = char_attack_char(i, closest_rat)
-                        if (tmp == CHAR_ATTACK_RESPONSE.KILL) then
-                            char_recieve_reward(i)
-                        end
-                    end
-                    chars_target[i] = nil
-                end
-                if (chars_target[i] == nil) and (closest_rat == nil) then
-                    chars_target[i] = {}
-                    local dice = math.random() - 0.5
-                    chars_target[i].x = dice * dice * dice * 400 + buildings_x(chars_home[i])
-                    local dice = math.random() - 0.5
-                    chars_target[i].y = dice * dice * dice * 400 + buildings_y(chars_home[i])
-                elseif closest_rat == nil then
-                    char_move_to_target(i)
-                end
-                
-                end
-            end
-        end
-    end
-    
-    for i = 1, last_building - 1 do
-        if buildings_type[i] == BUILDING_TYPES.RAT_LAIR then
-            if buildings_char_amount[i] < 100 then
-                local dice = math.random()
-                if dice > 0.995 then
-                    new_rat(i)
-                    buildings_char_amount[i] = buildings_char_amount[i] + 1
-                end
-            end
-        end
-    end
-    
-    -- interface update
-    
-    end
-    wealth_widget:update_label(tostring(kingdom_wealth))
-    hunt_widget:update_label(tostring(hunt_budget))
-    
-    hunt_invest_value:update_label(tostring(BUDGET_RATIO[INVESTMENT_TYPE.HUNT]) .. '%')
-    treasury_invest_value:update_label(tostring(BUDGET_RATIO[INVESTMENT_TYPE.TREASURY]) .. '%')
-end
-
 function char_change_state(i, state)
     chars_state[i] = state
     chars_target[i] = nil
+    chars_state_target[i] = nil
 end
 
-function dist(a, b, c, d)
-    local t1 = math.abs(a - c)
-    local t2 = math.abs(b - d)
-    return math.max(t1, t2) + t1 + t2
+
+
+
+
+
+
+
+
+
+
+
+
+-- actions of a king
+function hire_hero()
+    if kingdom_wealth >= 100 then
+        kingdom_wealth = kingdom_wealth - 100
+        new_hero(100)
+    end
+end
+function add_hunt_budget()
+    if kingdom_wealth >= 100 then
+        kingdom_wealth = kingdom_wealth - 100
+        hunt_budget = hunt_budget + 100
+    end
+end
+function dec_inv(it)
+    if BUDGET_RATIO[it] > 0 then
+        BUDGET_RATIO[it] = BUDGET_RATIO[it] - 10
+        BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] = BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] + 10
+    end
+end
+function inc_inv(it)
+    if BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] > 0 then
+        BUDGET_RATIO[it] = BUDGET_RATIO[it] + 10
+        BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] = BUDGET_RATIO[INVESTMENT_TYPE.TREASURY] - 10
+    end
 end
 
-function char_dist(i, j)
-    return dist(chars_x[i], chars_y[i], chars_x[j], chars_y[j])
-end
-function char_build_dist(i, j)
-    return dist(chars_x[i], chars_y[i], buildings_x(j), buildings_y(j))
+-- kingdom manipulatino
+function kingdom_income(t)
+    local tmp = math.floor(BUDGET_RATIO[INVESTMENT_TYPE.HUNT] * t / 100)
+    kingdom_wealth = kingdom_wealth + t - tmp
+    hunt_budget = hunt_budget + tmp
 end
 
-function love.mousepressed(x, y, button, istouch)
-    milky:onClick(x, y, button)
+
+
+
+
+
+
+function init_occupation_vars()
+
+-- occupation logic
+AGENT_LOGIC = {}
+STATE_LOGIC = {}
+
+
+
+-- TAX COLLECTOR
+
+-- TAX COLLECTOR SETTINGS
+MIN_GOLD_TO_TAX = 9
+MAX_GOLD_TO_CARRY = 100
+
+-- TAX_COLLECTOR STATES
+CHAR_STATE.TAX_COLLECTOR_COLLECT_TAXES = new_state_id()
+CHAR_STATE.TAX_COLLECTOR_RETURN_TAXES = new_state_id()
+CHAR_STATE.TAX_COLLECTOR_WAIT_IN_CASTLE = new_state_id()
+
+-- TAX COLLECTOR RESPONCES
+TAX_COLLECTOR_RESPONCES = {}
+TAX_COLLECTOR_RESPONCES.NO_TAXABLE_BUILDINGS = 1
+TAX_COLLECTOR_RESPONCES.FOUND_TARGET = 2
+TAX_COLLECTOR_RESPONCES.ON_MY_WAY = 3
+TAX_COLLECTOR_RESPONCES.IN_CASTLE = 4
+TAX_COLLECTOR_RESPONCES.GOT_TAX = 5
+TAX_COLLECTOR_RESPONCES.MAX_GOLD_REACHED = 6
+
+
+
+
+
+
+AGENT_LOGIC[CHAR_OCCUPATION.TAX_COLLECTOR] = function (i)
+    
+
+    if chars_state[i] == CHAR_STATE.TAX_COLLECTOR_COLLECT_TAXES then
+        res = TAX_COLLECTOR_COLLECT_TAXES(i)
+        
+        if res == TAX_COLLECTOR_RESPONCES.MAX_GOLD_REACHED then
+            char_change_state(i, CHAR_STATE.TAX_COLLECTOR_RETURN_TAXES)
+        end
+        if res == TAX_COLLECTOR_RESPONCES.NO_TAXABLE_BUILDINGS then
+            char_change_state(i, CHAR_STATE.TAX_COLLECTOR_RETURN_TAXES)
+        end
+        if res == TAX_COLLECTOR_RESPONCES.FOUND_TARGET then
+            -- ok
+        end
+        if res == TAX_COLLECTOR_RESPONCES.GOT_TAX then
+            -- ok
+        end
+        if res == TAX_COLLECTOR_RESPONCES.ON_MY_WAY then
+            -- ok
+        end
+    end
+    
+    if chars_state[i] == CHAR_STATE.TAX_COLLECTOR_RETURN_TAXES then
+        res = TAX_COLLECTOR_RETURN_TAXES(i)
+        if res == TAX_COLLECTOR_RESPONCES.IN_CASTLE then
+            char_change_state(i, CHAR_STATE.TAX_COLLECTOR_WAIT_IN_CASTLE)
+        end
+    end
+    
+    if chars_state[i] == CHAR_STATE.TAX_COLLECTOR_WAIT_IN_CASTLE then
+        res = TAX_COLLECTOR_WAIT_IN_CASTLE(i)
+        if res == TAX_COLLECTOR_RESPONCES.FOUND_TARGET then
+            char_change_state(i, CHAR_STATE.TAX_COLLECTOR_COLLECT_TAXES)
+        end
+    end
+    
+end
+
+function TAX_COLLECTOR_COLLECT_TAXES(i)
+    if chars_wealth[i] > MAX_GOLD_TO_CARRY then
+        return TAX_COLLECTOR_RESPONCES.MAX_GOLD_REACHED
+    end
+    
+    if chars_state_target[i] == nil then
+        -- if no target, then find the most optimal (wealth to tax / distance) building and set it as a target
+        local optimal = 0
+        local final_target = nil
+        
+        for j, w in ipairs(buildings_wealth_before_taxes) do
+            if (w > MIN_GOLD_TO_TAX) and (w / char_build_dist(i, j) > optimal) then
+                optimal = w / char_build_dist(i, j)
+                final_target = j
+            end
+        end
+        
+        if final_target == nil then
+            return TAX_COLLECTOR_RESPONCES.NO_TAXABLE_BUILDINGS
+        end
+        
+        chars_state_target[i] = final_target
+        chars_target[i] = {}
+        chars_target[i].x = buildings_x(final_target)
+        chars_target[i].y = buildings_y(final_target)
+        return TAX_COLLECTOR_RESPONCES.FOUND_TARGET
+    elseif chars_state_target[i] ~= nil then
+        if char_build_dist(i, chars_state_target[i]) < 0.5 then
+            char_tax_building(i, chars_state_target[i])
+            chars_state_target[i] = nil
+            return TAX_COLLECTOR_RESPONCES.GOT_TAX
+        else 
+            char_move_to_target(i)
+            return TAX_COLLECTOR_RESPONCES.ON_MY_WAY
+        end
+    end
+end
+
+function TAX_COLLECTOR_RETURN_TAXES(i)
+    if chars_target[i] == nil then
+        local closest_tax_storage = 1
+        chars_state_target[i] = 1
+        chars_target[i] = {}
+        chars_target[i].x = buildings_x(closest_tax_storage)
+        chars_target[i].y = buildings_y(closest_tax_storage)
+    elseif chars_target[i] ~= nil then
+        if dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
+            char_return_tax(i)
+            chars_state_target[i] = nil
+            return TAX_COLLECTOR_RESPONCES.IN_CASTLE
+        else 
+            char_move_to_target(i)
+            return TAX_COLLECTOR_RESPONCES.ON_MY_WAY
+        end
+    end
+end
+
+function TAX_COLLECTOR_WAIT_IN_CASTLE(i)
+    local optimal, final_target = FIND_OPTIMAL_BUILDING_TO_TAX(i)
+    
+    if final_target == nil then
+        return TAX_COLLECTOR_RESPONCES.NO_TAXABLE_BUILDINGS
+    end
+    
+    chars_state_target[i] = final_target    
+    chars_target[i] = {}
+    chars_target[i].x = buildings_x(final_target)
+    chars_target[i].y = buildings_y(final_target)
+    
+    print(chars_state_target[i])
+    print(chars_target[i])
+    
+    return TAX_COLLECTOR_RESPONCES.FOUND_TARGET
+end
+
+function FIND_OPTIMAL_BUILDING_TO_TAX(i)
+    local optimal = 0
+    local final_target = nil
+    
+    for j, w in ipairs(buildings_wealth_before_taxes) do
+        if (w > MIN_GOLD_TO_TAX) and (w / char_build_dist(i, j) > optimal) then
+            optimal = w / char_build_dist(i, j)
+            final_target = j
+        end
+    end
+    return optimal, final_target
+end
+
+
 end
