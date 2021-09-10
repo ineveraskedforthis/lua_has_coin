@@ -18,6 +18,7 @@ function love.load()
     hunt_budget = 0
     
     REWARD = 10
+    POTION_PRICE = 10
     
     INVESTMENT_TYPE = {}
     INVESTMENT_TYPE.TREASURY = 0
@@ -29,10 +30,7 @@ function love.load()
 
     
     -- character states
-    CHAR_OCCUPATION = {}
-    CHAR_OCCUPATION.TAX_COLLECTOR = 1 -- character that collects taxes in buildings and returns them to castle
-    CHAR_OCCUPATION.HUNTER = 2 -- character that, if there is a hunting reward, hunts on corresponding targets
-    CHAR_OCCUPATION.GUARD = 3 -- character that guards his home
+
     
     CHAR_STATE = {}
     CHAR_STATE.WANDERING = new_state_id()
@@ -151,7 +149,6 @@ end
 
 
 
-
 -- draw loop
 function love.draw()
     love.graphics.setColor(1, 1, 0)
@@ -189,7 +186,7 @@ end
 -- game logic loop
 time_passed = 0
 tps = 20
-tick = 1 / tps / 5
+tick = 1 / tps / 10--/ 50
 
 function love.update(dt)
     time_passed = time_passed + dt
@@ -199,41 +196,9 @@ function love.update(dt)
     -- chars update
     for i = 1, last_char - 1 do
         if ALIVE_CHARS[i] then
-            if ((chars_state[i] == CHAR_STATE.WANDERING) or (chars_state[i] == CHAR_STATE.HUNT)) and chars_wealth[i] > 50 and chars_potions[i] < 4 then
-                char_change_state(i, CHAR_STATE.BUY_POTIONS)
-            end
-            if chars_hp[i] < 60 and chars_state[i] ~= CHAR_STATE.PROTECT_THE_LAIR then
-                char_drink_pot(i)
-            end
-            if chars_state[i] == CHAR_STATE.BUY_POTIONS then
-                if chars_wealth[i] < 10 or chars_potions[i] >= 4 then
-                    chars_state[i] = CHAR_STATE.WANDERING
-                    chars_target[i] = nil
-                elseif chars_target[i] == nil then
-                    local closest_shop = 2 -- should rewrite to finding the closest shop
-                    chars_target[i] = {}                
-                    chars_target[i].x = buildings_x(closest_shop)
-                    chars_target[i].y = buildings_y(closest_shop)
-                elseif dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
-                    local closest_shop = 2 -- should rewrite to finding the closest shop
-                    char_buy_potions(i, closest_shop)
-                else 
-                    char_move_to_target(i)
-                end
-            end
-        
-            if chars_state[i] == CHAR_STATE.WANDERING then
-                if (hunt_budget > 0) then
-                    char_change_state(i, CHAR_STATE.HUNT)
-                elseif chars_target[i] == nil then
-                    chars_target[i] = {}
-                    local dice = math.random() - 0.5
-                    chars_target[i].x = dice * dice * dice * 400 + buildings_x(chars_home[i])
-                    local dice = math.random() - 0.5
-                    chars_target[i].y = dice * dice * dice * 400 + buildings_y(chars_home[i])
-                elseif chars_target[i] ~= nil then
-                    char_move_to_target(i)
-                end
+            
+            if chars_occupation[i] == CHAR_OCCUPATION.HUNTER then
+                AGENT_LOGIC[CHAR_OCCUPATION.HUNTER](i)
             end
             
             if chars_occupation[i] == CHAR_OCCUPATION.TAX_COLLECTOR then
@@ -262,59 +227,17 @@ function love.update(dt)
                     else
                         char_attack_char(i, closest_hero)
                     end
-                elseif chars_target[i] == nil then
-                    chars_target[i] = {}
+                elseif chars_target[i].x == nil then
                     local dice = math.random() - 0.5
                     chars_target[i].x = dice * dice * dice * 800 + buildings_x(chars_home[i])
                     local dice = math.random() - 0.5
                     chars_target[i].y = dice * dice * dice * 800 + buildings_y(chars_home[i])
-                elseif chars_target[i] ~= nil then
-                    char_move_to_target(i)
-                end
-            end
-
-           
-            
-            if chars_state[i] == CHAR_STATE.HUNT then
-                if (hunt_budget < REWARD) then
-                    char_change_state(i, CHAR_STATE.WANDERING)
-                else 
-                
-                local closest_rat = nil
-                local curr_dist = 99999
-                for j, f in pairs(ALIVE_RATS) do
-                    if f then
-                        local tmp = char_dist(j, i)
-                        if (closest_rat == nil) or (tmp < curr_dist) then
-                            closest_rat = j
-                            curr_dist = tmp
-                        end
+                elseif chars_target[i].x ~= nil then
+                    res = char_move_to_target(i)
+                    if res == MOVEMENT_RESPONCES.TARGET_REACHED then
+                        chars_target[i].x = nil
+                        chars_target[i].y = nil
                     end
-                end
-                if closest_rat ~= nil then
-                    chars_target[i] = {}
-                    chars_target[i].x = chars_x[closest_rat]
-                    chars_target[i].y = chars_y[closest_rat]
-                    if curr_dist > 1 then 
-                        char_move_to_target(i)
-                    else
-                        local tmp = char_attack_char(i, closest_rat)
-                        if (tmp == CHAR_ATTACK_RESPONSE.KILL) then
-                            char_recieve_reward(i)
-                        end
-                    end
-                    chars_target[i] = nil
-                end
-                if (chars_target[i] == nil) and (closest_rat == nil) then
-                    chars_target[i] = {}
-                    local dice = math.random() - 0.5
-                    chars_target[i].x = dice * dice * dice * 400 + buildings_x(chars_home[i])
-                    local dice = math.random() - 0.5
-                    chars_target[i].y = dice * dice * dice * 400 + buildings_y(chars_home[i])
-                elseif closest_rat == nil then
-                    char_move_to_target(i)
-                end
-                
                 end
             end
         end
@@ -371,6 +294,7 @@ function init_chars_arrays()
     chars_potions = {}
     chars_home = {}
     chars_occupation = {}
+    chars_cooldown = {}
 end
 
 last_state_id = 0
@@ -432,13 +356,14 @@ function new_char(hp, wealth, state, home)
     chars_weapon[last_char] = 3
     chars_armour[last_char] = 1
     chars_state[last_char] = state 
-    chars_target[last_char] = nil
+    chars_target[last_char] = {}
     chars_state_target[last_char] = nil
     chars_home[last_char] = home
     chars_x[last_char] = buildings_i[chars_home[last_char]] * grid_size + grid_size/2
     chars_y[last_char] = buildings_j[chars_home[last_char]] * grid_size + grid_size/2
     chars_occupation[last_char] = CHAR_OCCUPATION.HUNTER
     chars_potions[last_char] = 0
+    chars_cooldown[last_char] = 0
     ALIVE_CHARS[last_char] = true
     last_char = last_char + 1
 end
@@ -462,7 +387,7 @@ function new_rat(nest)
     chars_armour[last_char] = 1
     chars_armour_d[last_char] = 100
     chars_state[last_char] = CHAR_STATE.PROTECT_THE_LAIR
-    chars_target[last_char] = nil
+    chars_target[last_char] = {}
     chars_home[last_char] = nest
     chars_potions[last_char] = 0
     chars_x[last_char] = buildings_i[chars_home[last_char]] * grid_size + grid_size/2
@@ -502,8 +427,11 @@ end
 
 
 -- character manipulation functions
+MOVEMENT_RESPONCES = {}
+MOVEMENT_RESPONCES.TARGET_REACHED = 1
+MOVEMENT_RESPONCES.STILL_MOVING = 2
 function char_move_to_target(i)
-    if chars_target == nil then
+    if chars_target[i].x == nil then
         return
     end
     local dx = chars_target[i].x - chars_x[i]
@@ -512,17 +440,18 @@ function char_move_to_target(i)
     if (norm > 1) then
         chars_x[i] = chars_x[i] + dx / norm
         chars_y[i] = chars_y[i] + dy / norm
+        return MOVEMENT_RESPONCES.STILL_MOVING
     else
         chars_x[i] = chars_x[i] + dx 
-        chars_y[i] = chars_y[i] + dy 
-        chars_target[i] = nil
+        chars_y[i] = chars_y[i] + dy
+        return MOVEMENT_RESPONCES.TARGET_REACHED
     end
 end
 
 function char_buy_potions(i, shop)
-    if chars_wealth[i] >= 10 then
+    if chars_wealth[i] >= POTION_PRICE then
         buildings_wealth_before_taxes[shop] = buildings_wealth_before_taxes[shop] + 10
-        chars_wealth[i] = chars_wealth[i] - 10
+        chars_wealth[i] = chars_wealth[i] - POTION_PRICE
         chars_potions[i] = chars_potions[i] + 1
     end
 end
@@ -578,8 +507,12 @@ function char_recieve_reward(i)
 end
 
 function char_change_state(i, state)
+    if (chars_state[i] == state) then
+        return
+    end
     chars_state[i] = state
-    chars_target[i] = nil
+    chars_target[i].x = nil
+    chars_target[i].y = nil
     chars_state_target[i] = nil
 end
 
@@ -636,9 +569,18 @@ end
 
 function init_occupation_vars()
 
+
+-- occupation list
+CHAR_OCCUPATION = {}
+CHAR_OCCUPATION.TAX_COLLECTOR = 1 -- character that collects taxes in buildings and returns them to castle
+CHAR_OCCUPATION.HUNTER = 2 -- character that, if there is a hunting reward, hunts on corresponding targets
+CHAR_OCCUPATION.GUARD = 3 -- character that guards his home
+
+
 -- occupation logic
 AGENT_LOGIC = {}
 STATE_LOGIC = {}
+
 
 
 
@@ -661,11 +603,6 @@ TAX_COLLECTOR_RESPONCES.ON_MY_WAY = 3
 TAX_COLLECTOR_RESPONCES.IN_CASTLE = 4
 TAX_COLLECTOR_RESPONCES.GOT_TAX = 5
 TAX_COLLECTOR_RESPONCES.MAX_GOLD_REACHED = 6
-
-
-
-
-
 
 AGENT_LOGIC[CHAR_OCCUPATION.TAX_COLLECTOR] = function (i)
     
@@ -728,7 +665,6 @@ function TAX_COLLECTOR_COLLECT_TAXES(i)
         end
         
         chars_state_target[i] = final_target
-        chars_target[i] = {}
         chars_target[i].x = buildings_x(final_target)
         chars_target[i].y = buildings_y(final_target)
         return TAX_COLLECTOR_RESPONCES.FOUND_TARGET
@@ -745,13 +681,12 @@ function TAX_COLLECTOR_COLLECT_TAXES(i)
 end
 
 function TAX_COLLECTOR_RETURN_TAXES(i)
-    if chars_target[i] == nil then
+    if chars_state_target[i] == nil then
         local closest_tax_storage = 1
         chars_state_target[i] = 1
-        chars_target[i] = {}
         chars_target[i].x = buildings_x(closest_tax_storage)
         chars_target[i].y = buildings_y(closest_tax_storage)
-    elseif chars_target[i] ~= nil then
+    elseif chars_state_target[i] ~= nil then
         if dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
             char_return_tax(i)
             chars_state_target[i] = nil
@@ -770,13 +705,9 @@ function TAX_COLLECTOR_WAIT_IN_CASTLE(i)
         return TAX_COLLECTOR_RESPONCES.NO_TAXABLE_BUILDINGS
     end
     
-    chars_state_target[i] = final_target    
-    chars_target[i] = {}
+    chars_state_target[i] = final_target
     chars_target[i].x = buildings_x(final_target)
     chars_target[i].y = buildings_y(final_target)
-    
-    print(chars_state_target[i])
-    print(chars_target[i])
     
     return TAX_COLLECTOR_RESPONCES.FOUND_TARGET
 end
@@ -794,5 +725,156 @@ function FIND_OPTIMAL_BUILDING_TO_TAX(i)
     return optimal, final_target
 end
 
+
+-- HUNTER
+-- HUNTER SETTINGS
+HUNTER_DESIRED_AMOUNT_OF_POTIONS = 5
+HUNTER_DESIRE_TO_HUNT_PER_MISSING_POTION = -1
+HUNTER_DESITE_TO_HUNT_FOR_REWARD = 3
+HUNTER_DESITE_TO_HUNT_WITHOUT_REWARD = -3
+HUNTER_DESIRE_TO_CONTINUE_HUNT = 1
+HUNTER_NO_RATS_HUNT_COOLDOWN = 100
+
+-- HUNTER STATES
+CHAR_STATE.HUNTER_BUY_POTION = new_state_id()
+CHAR_STATE.HUNTER_HUNT = new_state_id()
+CHAR_STATE.HUNTER_WANDER = new_state_id()
+
+-- HUNTER RESPONCES
+HUNTER_RESPONCES = {}
+HUNTER_RESPONCES.ON_MY_WAY = 1
+HUNTER_RESPONCES.FOUND_TARGET = 2
+HUNTER_RESPONCES.BOUGHT_POTION = 3
+HUNTER_RESPONCES.TARGET_REACHED = 4
+HUNTER_RESPONCES.NO_RATS = 5
+
+AGENT_LOGIC[CHAR_OCCUPATION.HUNTER] = function (i)
+    if chars_hp[i] < 60 then
+        char_drink_pot(i)
+    end  
+    
+    if chars_state[i] == nil then
+        char_change_state(i, CHAR_STATE.HUNTER_WANDER)
+    end
+    
+    local hunting_desire = 0
+    
+    if chars_cooldown[i] > 0 then
+        hunting_desire = hunting_desire - 1000
+        chars_cooldown[i] = chars_cooldown[i] - 1
+    end
+    
+    if hunt_budget >= REWARD then
+        hunting_desire = hunting_desire + HUNTER_DESITE_TO_HUNT_FOR_REWARD
+    else
+        hunting_desire = hunting_desire + HUNTER_DESITE_TO_HUNT_WITHOUT_REWARD
+    end
+    
+    if chars_state[i] == CHAR_STATE.HUNTER_HUNT then
+        hunting_desire = hunting_desire + HUNTER_DESIRE_TO_CONTINUE_HUNT
+    end
+    
+    hunting_desire = hunting_desire + (HUNTER_DESIRED_AMOUNT_OF_POTIONS - chars_potions[i]) * HUNTER_DESIRE_TO_HUNT_PER_MISSING_POTION
+    
+    if hunting_desire > 0 then
+        char_change_state(i, CHAR_STATE.HUNTER_HUNT)
+    else 
+        if (chars_wealth[i] > 2 * POTION_PRICE) and (chars_potions[i] < 3) then
+            char_change_state(i, CHAR_STATE.HUNTER_BUY_POTION)
+        else 
+            char_change_state(i, CHAR_STATE.HUNTER_WANDER)
+        end
+    end
+    
+    
+    if chars_state[i] == CHAR_STATE.HUNTER_HUNT then
+        res = HUNTER_HUNT(i)
+        if res == HUNTER_RESPONCES.NO_RATS then
+            chars_cooldown[i] = HUNTER_NO_RATS_HUNT_COOLDOWN
+            char_change_state(i, CHAR_STATE.HUNTER_WANDER)
+        end
+    end
+    if chars_state[i] == CHAR_STATE.HUNTER_WANDER then
+        res = HUNTER_WANDER(i)
+        if res == HUNTER_RESPONCES.TARGET_REACHED then
+            chars_state_target[i] = nil
+        end
+    end
+    if chars_state[i] == CHAR_STATE.HUNTER_BUY_POTION then
+        res = HUNTER_BUY_POTION(i)
+        if res == HUNTER_RESPONCES.BOUGHT_POTION then
+            char_change_state(i, CHAR_STATE.HUNTER_WANDER)
+        end
+    end
+end
+
+function HUNTER_HUNT(i)
+    local closest_rat = nil
+    local curr_dist = 99999
+    for j, f in pairs(ALIVE_RATS) do
+        if f then
+            local tmp = char_dist(j, i)
+            if (closest_rat == nil) or (tmp < curr_dist) then
+                closest_rat = j
+                curr_dist = tmp
+            end
+        end
+    end
+    if closest_rat ~= nil then
+        chars_target[i].x = chars_x[closest_rat]
+        chars_target[i].y = chars_y[closest_rat]
+        chars_state_target[i] = closest_rat
+        
+        if curr_dist > 1 then 
+            char_move_to_target(i)
+        else
+            local tmp = char_attack_char(i, closest_rat)
+            if (tmp == CHAR_ATTACK_RESPONSE.KILL) then
+                char_recieve_reward(i)
+            end
+        end
+        
+        chars_state_target[i] = nil
+    end
+    
+    if (chars_state_target[i] == nil) and (closest_rat == nil) then
+        return HUNTER_RESPONCES.NO_RATS
+    end
+end
+
+function HUNTER_WANDER(i)
+    if chars_state_target[i] == nil then
+        chars_state_target[i] = -1
+        local dice = math.random() - 0.5
+        chars_target[i].x = dice * dice * dice * 400 + buildings_x(chars_home[i])
+        local dice = math.random() - 0.5
+        chars_target[i].y = dice * dice * dice * 400 + buildings_y(chars_home[i])
+    elseif chars_target[i] ~= nil then
+        local res = char_move_to_target(i)
+        if res == MOVEMENT_RESPONCES.STILL_MOVING then
+            return HUNTER_RESPONCES.ON_MY_WAY
+        end
+        if res == MOVEMENT_RESPONCES.TARGET_REACHED then
+            return HUNTER_RESPONCES.TARGET_REACHED
+        end
+    end
+end
+
+function HUNTER_BUY_POTION(i)
+    if chars_state_target[i] == nil then
+        local closest_shop = 2 -- should rewrite to finding the closest shop
+        chars_state_target[i] = closest_shop
+        chars_target[i].x = buildings_x(closest_shop)
+        chars_target[i].y = buildings_y(closest_shop)
+        
+    elseif dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
+        local closest_shop = 2 -- should rewrite to finding the closest shop
+        char_buy_potions(i, closest_shop)
+        return HUNTER_RESPONCES.BOUGHT_POTION
+    else 
+        char_move_to_target(i)
+        return HUNTER_RESPONCES.ON_MY_WAY
+    end
+end
 
 end
