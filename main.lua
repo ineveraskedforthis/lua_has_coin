@@ -106,40 +106,65 @@ function love.load()
     end
     
     
+    -- camera setup
+    cam = {0, 0}
     
-    
-    
-    
+    map_control_ui = milky.panel:new(milky, nil, nil, nil)
+        :position(0, 0)
+        :size(602, 600)
+        :toogle_background()
     
     -- interface init
-    main_ui = milky.panel:new(milky, nil, nil, nil):position(600,0):size(198, 600):toogle_background()
+    main_ui = milky.panel:new(milky, nil, nil, nil)
+        :position(602,0)
+        :size(198, 600)
+        :toogle_background()
     
     
-    gold_widget = milky.panel:new(milky, main_ui):position(3, 3):size(192, 54):toogle_border()
+    gold_widget = milky.panel:new(milky, main_ui)
+        :position(3, 3)
+        :size(192, 54)
+        :toogle_border()
+        
         wealth_label = milky.panel:new(milky, gold_widget, 'TREASURY'):position(5, 6)
         wealth_widget = milky.panel:new(milky, gold_widget, "???", nil):position(150, 6)
         hunt_label = milky.panel:new(milky, gold_widget, 'HUNT INVESTED'):position(5, 26)
         hunt_widget = milky.panel:new(milky, gold_widget, "???", nil):position(150, 26)
     
     
-    invest_widget = milky.panel:new(milky, main_ui):position(3, 60):size(192, 100):toogle_border()
-        income_invest_label = milky.panel:new(milky, invest_widget, 'ROYAL INVESTMENTS'):position(5, 5)
+    invest_widget = milky.panel:new(milky, main_ui)
+        :position(3, 60)
+        :size(192, 100)
+        :toogle_border()
+        
+        income_invest_label = milky.panel:new(milky, invest_widget, 'ROYAL INVESTMENTS'):position(4, 5)
+        
         treasury_invest_body, treasury_invest_value = create_invest_row(invest_widget, "TREASURY", INVESTMENT_TYPE.TREASURY)
         hunt_invest_body, hunt_invest_value = create_invest_row(invest_widget, "HUNT", INVESTMENT_TYPE.HUNT)
-        treasury_invest_body:position(3, 25)
-        hunt_invest_body:position(3, 55)
+        treasury_invest_body:position(10, 35)
+        hunt_invest_body:position(10, 55)
     
     
-    rewards_widget = milky.panel:new(milky, main_ui):position(3, 163):size(192, 50):toogle_border()
-        rewards_label = milky.panel:new(milky, rewards_widget, 'REWARDS'):position(5, 5)
-        rewards_label_rat = milky.panel:new(milky, rewards_widget, 'RAT'):position(5, 25)
-        rewards_label_rat_value = milky.panel:new(milky, rewards_widget, '10'):position(120, 25)
+    rewards_widget = milky.panel:new(milky, main_ui)
+        :position(3, 163)
+        :size(192, 70)
+        :toogle_border()
+        
+        rewards_label = milky.panel:new(milky, rewards_widget, 'REWARDS'):position(4, 5)
+        
+        rewards_label_rat = milky.panel:new(milky, rewards_widget, 'RAT'):position(10, 35)
+        rewards_label_rat_value = milky.panel:new(milky, rewards_widget, '10'):position(120, 35)
     
     
-    tax_widget = milky.panel:new(milky, main_ui):position(3, 216):size(192, 50):toogle_border()
-        tax_label = milky.panel:new(milky, tax_widget, 'TAXES'):position(5, 5)
-        inc_tax_label = milky.panel:new(milky, tax_widget, 'INCOME TAX'):position(5, 25)
-        inc_tax_value = milky.panel:new(milky, tax_widget, '0%'):position(120, 25)
+    tax_widget = milky.panel:new(milky, main_ui)
+        :position(3, 236)
+        :size(192, 70)
+        :toogle_border()
+        
+        tax_label = milky.panel:new(milky, tax_widget, 'TAXES'):position(4, 5)
+        
+        inc_tax_label = milky.panel:new(milky, tax_widget, 'INCOME TAX'):position(10, 35)
+        inc_tax_value = milky.panel:new(milky, tax_widget, '0%'):position(120, 35)
     
     
     hire_button = milky.panel:new(milky, main_ui)
@@ -152,7 +177,7 @@ function love.load()
     
     
     add_hunt_budget_button = milky.panel:new(milky, main_ui)
-        :position(3, 530)
+        :position(3, 527)
         :size(192, 24)
         :button(milky, function (self, button) add_hunt_budget() end)
         :toogle_border()
@@ -173,7 +198,7 @@ end
 function create_invest_row(parent, label, it)
     local body = milky.panel:new(milky, parent):size(187, 25):position(0, 0)
     
-    local label = milky.panel:new(milky, body, label):position(5, 5):size(80, 17)
+    local label = milky.panel:new(milky, body, label):position(0, 5):size(80, 17)
     local value = milky.panel:new(milky, body, '???'):position(120, 5):size(35, 17)
     local bd = milky.panel:new(milky, body, " -"):position(90, 5):size(15, 15):button(milky, function (self, button) dec_inv(it) end):toogle_border()
     local bi = milky.panel:new(milky, body, " +"):position(160, 5):size(15, 15):button(milky, function (self, button) inc_inv(it) end):toogle_border()
@@ -217,6 +242,7 @@ function love.draw()
     
     love.graphics.setColor(1, 1, 0)
     main_ui:draw()
+    
 end
 
 
@@ -245,58 +271,62 @@ tick = 1 / tps / 10--/ 50
 function love.update(dt)
     time_passed = time_passed + dt
     while time_passed > tick do
-    time_passed = time_passed - tick
-    
-    -- chars update
-    for i, h in ipairs(chars_hunger) do
-        chars_hunger[i] = h + 1
-    end
-    
-    for i = 1, last_char - 1 do
-        if ALIVE_CHARS[i] then
-            local dice = math.random()
-            if dice < CHANCE_FOR_A_POTION_TO_SPOIL then
-                if chars_potions[i] > 0 then
-                    chars_potions[i] = chars_potions[i] - 1
-                end
-            end
-            AGENT_LOGIC[chars_occupation[i]](i)
+        time_passed = time_passed - tick
+        
+        -- chars update
+        for i, h in ipairs(chars_hunger) do
+            chars_hunger[i] = h + 1
         end
-    end
-    
-    for i = 1, last_building - 1 do
-        if buildings_type[i] == BUILDING_TYPES.RAT_LAIR then
-            if buildings_char_amount[i] < 100 then
+        
+        for i = 1, last_char - 1 do
+            if ALIVE_CHARS[i] then
                 local dice = math.random()
-                if dice > 0.995 then
-                    new_rat(i)
-                    buildings_char_amount[i] = buildings_char_amount[i] + 1
+                if dice < CHANCE_FOR_A_POTION_TO_SPOIL then
+                    if chars_potions[i] > 0 then
+                        chars_potions[i] = chars_potions[i] - 1
+                    end
+                end
+                AGENT_LOGIC[chars_occupation[i]](i)
+            end
+        end
+        
+        for i = 1, last_building - 1 do
+            if buildings_type[i] == BUILDING_TYPES.RAT_LAIR then
+                if buildings_char_amount[i] < 100 then
+                    local dice = math.random()
+                    if dice > 0.995 then
+                        new_rat(i)
+                        buildings_char_amount[i] = buildings_char_amount[i] + 1
+                    end
                 end
             end
         end
-    end
-    
-    for i = 1, last_food - 1 do
-        if food_cooldown[i] > 0 then
-            food_cooldown[i] = food_cooldown[i] - 1
+        
+        for i = 1, last_food - 1 do
+            if food_cooldown[i] > 0 then
+                food_cooldown[i] = food_cooldown[i] - 1
+            end
         end
     end
     
     -- interface update
-    
-    end
     wealth_widget:update_label(tostring(kingdom_wealth))
     hunt_widget:update_label(tostring(hunt_budget))
     
     hunt_invest_value:update_label(tostring(BUDGET_RATIO[INVESTMENT_TYPE.HUNT]) .. '%')
     treasury_invest_value:update_label(tostring(BUDGET_RATIO[INVESTMENT_TYPE.TREASURY]) .. '%')
+    inc_tax_value:update_label(tostring(INCOME_TAX) .. '%')
 end
 
 function love.mousepressed(x, y, button, istouch)
     milky:onClick(x, y, button)
 end
-
-
+function love.mousereleased(x, y, button, istouch)
+    milky:onRelease(x, y, button)
+end
+function love.mousemoved(x, y, dx, dy, istouch)
+    milky:onHover(x, y)
+end
 
 
 
@@ -1010,7 +1040,6 @@ function HUNTER_HUNT(i)
 end
 
 function HUNTER_WANDER(i)
-    print(chars_state_target[i])
     if chars_state_target[i] == nil then
         chars_state_target[i] = -1
         local dice = math.random() - 0.5

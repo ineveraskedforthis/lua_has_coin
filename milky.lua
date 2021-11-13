@@ -25,11 +25,17 @@ function milky.panel:new(milky, parent, label, image)
 	o.active = true
 	o.label = label
 	o.image = image
-    o.background_toogle = false
-    o.background_color = {0.5, 0.5, 0.5, 0.5}
-    o.border_toogle = false
-    o.border_color = {0.9, 0.9, 0.9, 0.9}
-    o.text_color = {0.9, 0.9, 0.9, 0.9}
+	o.active = false
+	o.background_toogle = false
+	o.border_toogle = false
+	
+	o.background_color = {0.4, 0.4, 0.4, 0.7}
+	o.border_color = {0.9, 0.9, 0.9, 0.9}
+	o.text_color = {0.90, 0.90, 0.90, 0.9}
+	o.active_background_color = {0.9, 0.4, 0.4, 0.9}
+	o.active_border_color = {0.9, 0.1, 0.1, 1.0}
+	o.active_text_color = {0.95, 0.95, 0.95, 1.0}
+	
 	o.quads = {}
 	o.bor = {0, 0, 0, 0}
 	o.bor[0] = 0
@@ -91,15 +97,27 @@ function milky.panel:draw()
 	if milky.render_rectangles then
 		love.graphics.rectangle('line', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
 	end
-    if self.background_toogle then
-        love.graphics.setColor(self.background_color)
-        love.graphics.rectangle('fill', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
-    end
-    if self.border_toogle then
-        love.graphics.setColor(self.border_color)
-        love.graphics.rectangle('line', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
-    end
-    love.graphics.setColor(self.text_color)
+	if self.active then
+		if self.background_toogle then
+			love.graphics.setColor(self.active_background_color)
+			love.graphics.rectangle('fill', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
+		end
+		if self.border_toogle then
+			love.graphics.setColor(self.active_border_color)
+			love.graphics.rectangle('line', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
+		end
+		love.graphics.setColor(self.active_text_color)
+	else
+		if self.background_toogle then
+			love.graphics.setColor(self.background_color)
+			love.graphics.rectangle('fill', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
+		end
+		if self.border_toogle then
+			love.graphics.setColor(self.border_color)
+			love.graphics.rectangle('line', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
+		end
+		love.graphics.setColor(self.text_color)
+	end
 	if self.label then love.graphics.print(self.label, self.rect.screen_space_x, self.rect.screen_space_y) end
 	for j,k in pairs(self.active_children) do
 		k:draw()
@@ -121,12 +139,12 @@ function milky.panel:setActive(is_active)
 end
 -- toogle border/bg
 function milky.panel:toogle_border()
-    self.border_toogle = not self.border_toogle;
-    return self
+	self.border_toogle = not self.border_toogle;
+	return self
 end
 function milky.panel:toogle_background()
-    self.background_toogle = not self.background_toogle;
-    return self
+	self.background_toogle = not self.background_toogle;
+	return self
 end
 -- Updates screen_space_x,screen_space_y based on x,y,parent,pivot,width,height
 -- Shouldn't be used by the end user
@@ -397,25 +415,49 @@ function milky.panel:button(milky, callback)
 	return self
 end
 
+function milky.panel:xy_in_rect_test(x, y)
+	local x_min = self.rect.screen_space_x
+	local y_min = self.rect.screen_space_y
+	local x_max = x_min + self.rect.width
+	local y_max = y_min + self.rect.height
+	if x > x_min and x < x_max then
+		if y > y_min and y < y_max then
+			return true
+		end
+	end
+	return false
+end
+
 -- Processes button callbacks
 -- mouse_x and mouse_y are in scaled screen pixels
 function milky:onClick(mouse_x, mouse_y, button)
-
 	for i,j in pairs(self.buttons) do
 		-- Check if we're in bounds, if we are, execute callback
-		local x_min = j.rect.screen_space_x
-		local y_min = j.rect.screen_space_y
-		local x_max = x_min + j.rect.width
-		local y_max = y_min + j.rect.height
-
-		if mouse_x > x_min and mouse_x < x_max then
-			if mouse_y > y_min and mouse_y < y_max then
-				j:button_callback(button)
-			end
+		if j:xy_in_rect_test(mouse_x, mouse_y) then
+			j.active = true
 		end
 	end
-
 end
 
+function milky:onHover(mouse_x, mouse_y, button)
+	for i,j in pairs(self.buttons) do
+		if j:xy_in_rect_test(mouse_x, mouse_y) then
+			j.background_toogle = true
+		else 
+			j.background_toogle = false
+			j.active = false
+		end
+	end
+end
+
+function milky:onRelease(mouse_x, mouse_y, button)
+	for i,j in pairs(self.buttons) do
+		-- Check if we're in bounds, if we are, execute callback
+		if j:xy_in_rect_test(mouse_x, mouse_y) and j.active then
+			j:button_callback(button)
+			j.active = false
+		end
+	end
+end
 
 return milky
