@@ -25,6 +25,11 @@ function milky.panel:new(milky, parent, label, image)
 	o.active = true
 	o.label = label
 	o.image = image
+    o.background_toogle = false
+    o.background_color = {0.5, 0.5, 0.5, 0.5}
+    o.border_toogle = false
+    o.border_color = {0.9, 0.9, 0.9, 0.9}
+    o.text_color = {0.9, 0.9, 0.9, 0.9}
 	o.quads = {}
 	o.bor = {0, 0, 0, 0}
 	o.bor[0] = 0
@@ -83,9 +88,18 @@ function milky.panel:draw()
 		--love.graphics.draw(self.image, r.screen_space_x, r.screen_space_y, 0, r.draw_scale_x, r.draw_scale_y)
 		love.graphics.draw(self.sprite_batch, r.screen_space_x, r.screen_space_y, 0, r.draw_scale_x, r.draw_scale_y)
 	end
-    if milky.render_rectangles then
+	if milky.render_rectangles then
+		love.graphics.rectangle('line', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
+	end
+    if self.background_toogle then
+        love.graphics.setColor(self.background_color)
+        love.graphics.rectangle('fill', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
+    end
+    if self.border_toogle then
+        love.graphics.setColor(self.border_color)
         love.graphics.rectangle('line', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
     end
+    love.graphics.setColor(self.text_color)
 	if self.label then love.graphics.print(self.label, self.rect.screen_space_x, self.rect.screen_space_y) end
 	for j,k in pairs(self.active_children) do
 		k:draw()
@@ -104,6 +118,15 @@ function milky.panel:setActive(is_active)
 	end
 
 	return self
+end
+-- toogle border/bg
+function milky.panel:toogle_border()
+    self.border_toogle = not self.border_toogle;
+    return self
+end
+function milky.panel:toogle_background()
+    self.background_toogle = not self.background_toogle;
+    return self
 end
 -- Updates screen_space_x,screen_space_y based on x,y,parent,pivot,width,height
 -- Shouldn't be used by the end user
