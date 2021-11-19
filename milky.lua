@@ -389,7 +389,6 @@ end
 function milky.panel:reskin(skin)
 	if self.skin_texture_name then
 		if skin[self.skin_texture_name] then
-			sote.native.Log("BB")
 			self.image = skin[self.skin_texture_name]
 			self.sprite_batch = love.graphics.newSpriteBatch(self.image, 9, "dynamic")
 		else
