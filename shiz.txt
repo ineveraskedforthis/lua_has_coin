@@ -1,0 +1,12 @@
+big picture goal:
+majesty-like game with larger focus on agents, economy and kingdom management.
+
+agents:
+they have needs and utility function that calculates which need they want to satisfy right now
+economy:
+some agents can set up shops and price, others can buy it.
+___________________________________
+
+current goal:
+restructure code to allow for easier and faster development:
+1) rewrite current abomination to class/structure-like modular something.

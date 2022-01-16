@@ -1,6 +1,14 @@
 ---@diagnostic disable: trailing-space
 local milky = require "milky"
+local hunter = require "agent_types/hunter"
+local tax_collector = require "agent_types/tax_collector"
+local food_collector = require "agent_types/food_collector"
+local rat = require "agent_types/rat"
+
 milky.render_rectangles = false
+camera = {}
+camera.x = 0
+camera.y = 0
 
 function love.load()
     love.window.setMode(800, 600)
@@ -27,6 +35,8 @@ function love.load()
     REWARD = 10
     POTION_PRICE = 10
     FOOD_PRICE = 2
+
+ 
     
     INVESTMENT_TYPE = {}
     INVESTMENT_TYPE.TREASURY = 0
@@ -157,8 +167,45 @@ function love.load()
         rewards_label = milky.panel:new(milky, rewards_widget, 'REWARDS'):position(4, 5)
         
         rewards_label_rat = milky.panel:new(milky, rewards_widget, 'RAT'):position(10, 35)
-        rewards_label_rat_value = milky.panel:new(milky, rewards_widget, '10'):position(120, 35)
-    
+        rewards_label_rat_value = milky.panel:new(milky, rewards_widget, '10'):position(50, 35)
+
+        function new_zone_callback (self, button)
+            ZONE_SELECTION = not ZONE_SELECTION;
+            ZONE_DELETION = false
+            if ZONE_SELECTION then
+                new_zone_button:setBackgroundColor({0, 1, 0, 0.6}, {0, 1, 0, 0.3}, {0, 0.5, 0, 0.2})
+            else
+                new_zone_button:setBackgroundColor({0, 0.5, 0, 0.2}, {0, 1, 0, 0.3}, {0, 1, 0, 0.6})
+            end
+        end
+
+        function delete_zone_callback (self, button)
+            ZONE_DELETION = not ZONE_DELETION;
+            ZONE_SELECTION = false
+            if ZONE_DELETION then
+                delete_zone_button:setBackgroundColor({1, 0, 0, 0.6}, {1, 0, 0, 0.3}, {0.5, 0, 0, 0.2})
+            else
+                delete_zone_button:setBackgroundColor({0.5, 0, 0, 0.2}, {1, 0, 0, 0.3}, {1, 0, 0, 0.6})
+            end
+        end
+
+        new_zone_button = milky.panel:new(milky, rewards_widget)
+            :position(100, 5)
+            :size(50, 20)
+            :button(milky, new_zone_callback)
+            :toogle_border()
+            :setBorderColor({0, 1, 0, 0.7}, {0, 1, 0, 1.0}, {0, 1, 0, 1.0})
+            :setBackgroundColor({0, 1, 0, 0.2}, {0, 1, 0, 0.3}, {0, 1, 0, 0.6})
+            :toogle_background()
+
+        delete_zone_button = milky.panel:new(milky, rewards_widget)
+            :position(100, 35)
+            :size(50, 20)
+            :button(milky, delete_zone_callback)
+            :toogle_border()
+            :setBorderColor({1, 0, 0, 0.7}, {1, 0, 0, 1.0}, {1, 0, 0, 1.0})
+            :setBackgroundColor({1, 0, 0, 0.2}, {1, 0, 0, 0.3}, {1, 0, 0, 0.6})
+            :toogle_background()
     
     tax_widget = milky.panel:new(milky, main_ui)
         :position(3, 236)
@@ -176,6 +223,7 @@ function love.load()
         :size(192, 24)
         :button(milky, function (self, button) hire_hero() end)
         :toogle_border()
+        :toogle_background()
         
         hire_button_label = milky.panel:new(milky, hire_button, "HIRE A HERO (100)"):position(5, 2)
     
@@ -185,6 +233,7 @@ function love.load()
         :size(192, 24)
         :button(milky, function (self, button) add_hunt_budget() end)
         :toogle_border()
+        :toogle_background()
         
         add_hunt_budget_label = milky.panel:new(milky, add_hunt_budget_button, "ADD HUNT MONEY (100)"):position(5, 2)
 end
@@ -204,8 +253,18 @@ function create_invest_row(parent, label, it)
     
     local label = milky.panel:new(milky, body, label):position(0, 5):size(80, 17)
     local value = milky.panel:new(milky, body, '???'):position(120, 5):size(35, 17)
-    local bd = milky.panel:new(milky, body, " -"):position(90, 5):size(15, 15):button(milky, function (self, button) dec_inv(it) end):toogle_border()
-    local bi = milky.panel:new(milky, body, " +"):position(160, 5):size(15, 15):button(milky, function (self, button) inc_inv(it) end):toogle_border()
+    local bd = milky.panel:new(milky, body, " -")
+        :position(90, 5)
+        :size(15, 15)
+        :button(milky, function (self, button) dec_inv(it) end)
+        :toogle_border()
+        :toogle_background()
+    local bi = milky.panel:new(milky, body, " +")
+        :position(160, 5)
+        :size(15, 15)
+        :button(milky, function (self, button) inc_inv(it) end)
+        :toogle_border()
+        :toogle_background()
     
     return body, value
 end
@@ -221,18 +280,16 @@ end
 
 
 -- draw loop
+
+PRESSED_ON_MAP = false
+ORIGIN_OF_PRESSING = {0, 0}
+HOVER_ON_MAP = false
+ZONE_SELECTION = false
+
 function love.draw()    
     love.graphics.setColor(1, 1, 0)
-    for i = 1, last_char - 1 do
-        if (ALIVE_CHARS[i]) then
-            love.graphics.circle('line', chars_x[i], chars_y[i], 2)
-        end
-    end
-    
-    for i = 1, last_building - 1 do
-        love.graphics.rectangle('line', buildings_i[i] * grid_size, buildings_j[i] * grid_size, grid_size, grid_size)
-    end
-    
+
+
     for i = 1, last_food - 1 do
         if food_cooldown[i] == 0 then
             love.graphics.setColor(1, 0, 0)
@@ -243,23 +300,115 @@ function love.draw()
         c_y = food_pos[i].y * grid_size + grid_size / 2
         love.graphics.circle('line', c_x, c_y, 3)
     end
+
+    love.graphics.setColor(1, 1, 0)
+    for i = 1, last_char - 1 do
+        if (ALIVE_CHARS[i]) then
+            love.graphics.circle('line', chars_x[i], chars_y[i], 2)
+        end
+    end
     
+    love.graphics.setColor(1, 1, 0)
+    for i = 1, last_building - 1 do
+        love.graphics.rectangle('line', buildings_i[i] * grid_size, buildings_j[i] * grid_size, grid_size, grid_size)
+    end
+    
+    
+    for q, zone in pairs(ZONES) do
+        local i, j, k, h = zone.x1, zone.y1, zone.x2, zone.y2
+        love.graphics.setColor(0, 1, 0, 0.1)
+        love.graphics.rectangle('fill', i * grid_size - camera.x, j * grid_size - camera.y, -(i - k) * grid_size - camera.x, -(j - h) * grid_size - camera.y)
+        love.graphics.setColor(0, 1, 0, 0.6)
+        love.graphics.rectangle('line', i * grid_size - camera.x, j * grid_size - camera.y, -(i - k) * grid_size - camera.x, -(j - h) * grid_size - camera.y)
+
+        local c1, c2 = (i + k) / 2, (j + h) / 2
+        love.graphics.setColor(0, 1, 0, 0.95)
+        love.graphics.print('hunt', c1 * grid_size - 20, c2 * grid_size - 7)
+    end
+    
+    
+    local x, y = love.mouse.getPosition()
+
+    draw_on_map_ui(x, y)
+
     love.graphics.setColor(1, 1, 0)
     main_ui:draw()
     
 end
+function love.mousepressed(x, y, button, istouch)
+    if not PRESSED_ON_MAP then
+        milky:onClick(x, y, button)
+    end
+    press_on_map_ui(x, y)
+end
+function love.mousereleased(x, y, button, istouch)
+    if not PRESSED_ON_MAP then
+        milky:onRelease(x, y, button)
+    end
+    release_on_map_ui(x, y)
+    PRESSED_ON_MAP = false
+end
+function love.mousemoved(x, y, dx, dy, istouch)
+    if not PRESSED_ON_MAP then
+        milky:onHover(x, y)
+    end
+    hover_on_map_ui(x, y)
+end
 
+function draw_on_map_ui(x, y)
+    if not main_ui:xy_in_rect_test(x, y) or PRESSED_ON_MAP then
+        x = x + camera.x;
+        y = y + camera.y
+        local i, j = coordinates_to_build_grid(x, y);
 
+        if PRESSED_ON_MAP then
+            love.graphics.setColor(0, 1, 1, 1)
+        else 
+            love.graphics.setColor(1, 1, 1, 0.2)
+        end
 
+        if ZONE_SELECTION then
 
+            love.graphics.rectangle('line', i * grid_size, j * grid_size, grid_size, grid_size)
 
+            if PRESSED_ON_MAP then
+                love.graphics.setColor(0, 1, 0, 0.2)
+                local k, h = coordinates_to_build_grid(ORIGIN_OF_PRESSING[1], ORIGIN_OF_PRESSING[2])
+                love.graphics.rectangle('fill', k * grid_size, h * grid_size, (i - k) * grid_size, (j - h) * grid_size)
+            end
 
+        end
+    end
+end
 
+function hover_on_map_ui(x, y)
+    if not main_ui:xy_in_rect_test(x, y) then
+        HOVER_ON_MAP = true
+    else
+        HOVER_ON_MAP = true
+        -- HOVER_ON_MAP = false
+        -- PRESSED_ON_MAP = false
+    end
+end
 
+function press_on_map_ui(x, y)
+    if not main_ui:xy_in_rect_test(x, y) then
+        PRESSED_ON_MAP = true
+        ORIGIN_OF_PRESSING = {x, y}
+    else
+        -- HOVER_ON_MAP = false
+        -- PRESSED_ON_MAP = false
+    end
+end
 
-
-
-
+function release_on_map_ui(x, y)  
+    if ZONE_SELECTION and PRESSED_ON_MAP then
+        local i, j = coordinates_to_build_grid(x, y);
+        local k, h = coordinates_to_build_grid(ORIGIN_OF_PRESSING[1], ORIGIN_OF_PRESSING[2])
+        new_zone(nil, k, h, i, j)
+    end
+    PRESSED_ON_MAP = false
+end
 
 
 
@@ -300,6 +449,14 @@ function love.update(dt)
                 AGENT_LOGIC[chars_occupation[i]](i)
             end
         end
+		
+		for i = 1, last_char - 1 do
+			if ALIVE_CHARS[i] and (chars_state[i] == CHAR_STATE.HUNTER_GET_SLEEP) then
+				if dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
+					char_sleep(i)
+				end
+			end
+		end
         
         for i = 1, last_building - 1 do
             if buildings_type[i] == BUILDING_TYPES.RAT_LAIR then
@@ -329,15 +486,7 @@ function love.update(dt)
     inc_tax_value:update_label(tostring(INCOME_TAX) .. '%')
 end
 
-function love.mousepressed(x, y, button, istouch)
-    milky:onClick(x, y, button)
-end
-function love.mousereleased(x, y, button, istouch)
-    milky:onRelease(x, y, button)
-end
-function love.mousemoved(x, y, dx, dy, istouch)
-    milky:onHover(x, y)
-end
+
 
 
 
@@ -364,6 +513,7 @@ function init_chars_arrays()
     chars_occupation = {}
     chars_cooldown = {}
     chars_hunger = {}
+	chars_tiredness = {}
 end
 
 function init_food_array()
@@ -403,6 +553,15 @@ function dist(a, b, c, d)
     local t2 = math.abs(b - d)
     return math.max(t1, t2) + t1 + t2
 end
+
+function coordinates_to_build_grid(x, y)
+    return math.floor(x / grid_size), math.floor(y / grid_size)
+end
+
+function build_grid_to_coordinates(i, j)
+    return i * grid_size, j * grid_size
+end
+
 function buildings_x(i) 
     return buildings_i[i] * grid_size + grid_size/2
 end
@@ -490,6 +649,7 @@ function new_char(hp, wealth, state, home)
     chars_cooldown[last_char] = 0
     ALIVE_CHARS[last_char] = true
     chars_hunger[last_char] = 0
+	chars_tiredness[last_char] = 0
     last_char = last_char + 1
 end
 
@@ -530,6 +690,7 @@ function new_rat(nest)
     ALIVE_RATS[last_char] = true
     ALIVE_CHARS[last_char] = true
     chars_hunger[last_char] = 0
+	chars_tiredness[last_char] = 0
     last_char = last_char + 1
 end
 
@@ -610,6 +771,11 @@ function char_buy_food(i, shop)
     end
 end
 
+function char_sleep(i)
+	print(chars_tiredness[i])
+	chars_tiredness[i] = math.max(chars_tiredness[i] - 1, 0)
+end
+
 function char_tax_building(i, shop)
     local tax = 0
     if building_is_state_owned[i] then
@@ -628,6 +794,8 @@ function char_return_tax(i)
 end
 
 function char_attack_char(i, j)
+	print(chars_tiredness[i])
+	chars_tiredness[i] = chars_tiredness[i] + 1
     if chars_weapon[i] > chars_armour[j] then
         local tmp = char_change_hp(j, -10 + chars_armour[j] - chars_weapon[i])
         if tmp == CHANGE_HP_RESPONSE.DEAD then
@@ -747,6 +915,37 @@ function inc_tax(it)
     end
 end
 
+
+-- zones
+ZONE_TYPE = {}
+ZONE_TYPE.ATTACK = 1
+ZONES = {}
+
+
+function new_zone(z_type, x1, y1, x2, y2)
+    zone = {}
+    zone.type = z_type
+    zone.x1 = x1
+    zone.x2 = x2
+    zone.y1 = y1
+    zone.y2 = y2
+    table.insert(ZONES, zone)
+end
+
+function delete_zone(i)
+    table.remove(ZONES, i)
+end
+
+function is_in_zone(type, x, y)
+    for i, zone in pairs(ZONES) do
+        if (x < zone.x1) and (zone.x1 < x) and (y < zone.y2) and (zone.y1 < y) then
+            return true
+        end
+    end
+    return false
+end
+
+
 -- kingdom manipulatino
 function kingdom_income(t)
     local tmp = math.floor(BUDGET_RATIO[INVESTMENT_TYPE.HUNT] * t / 100)
@@ -761,683 +960,32 @@ end
 
 
 function init_occupation_vars()
-
-
--- occupation list
-CHAR_OCCUPATION = {}
-CHAR_OCCUPATION.TAX_COLLECTOR = 1 -- character that collects taxes in buildings and returns them to castle
-CHAR_OCCUPATION.HUNTER = 2 -- character that, if there is a hunting reward, hunts on corresponding targets
-CHAR_OCCUPATION.GUARD = 3 -- character that guards his home
-CHAR_OCCUPATION.RAT = 4
-CHAR_OCCUPATION.FOOD_COLLECTOR = 5
-
--- occupation logic
-AGENT_LOGIC = {}
-STATE_LOGIC = {}
-
-
-
-
--- TAX COLLECTOR
-
--- TAX COLLECTOR SETTINGS
-MIN_GOLD_TO_TAX = 9
-MAX_GOLD_TO_CARRY = 100
-
--- TAX_COLLECTOR STATES
-CHAR_STATE.TAX_COLLECTOR_COLLECT_TAXES = new_state_id()
-CHAR_STATE.TAX_COLLECTOR_RETURN_TAXES = new_state_id()
-CHAR_STATE.TAX_COLLECTOR_WAIT_IN_CASTLE = new_state_id()
-
--- TAX COLLECTOR RESPONCES
-TAX_COLLECTOR_RESPONCES = {}
-TAX_COLLECTOR_RESPONCES.NO_TAXABLE_BUILDINGS = 1
-TAX_COLLECTOR_RESPONCES.FOUND_TARGET = 2
-TAX_COLLECTOR_RESPONCES.ON_MY_WAY = 3
-TAX_COLLECTOR_RESPONCES.IN_CASTLE = 4
-TAX_COLLECTOR_RESPONCES.GOT_TAX = 5
-TAX_COLLECTOR_RESPONCES.MAX_GOLD_REACHED = 6
-
-AGENT_LOGIC[CHAR_OCCUPATION.TAX_COLLECTOR] = function (i)
-    
-
-    if chars_state[i] == CHAR_STATE.TAX_COLLECTOR_COLLECT_TAXES then
-        res = TAX_COLLECTOR_COLLECT_TAXES(i)
-        
-        if res == TAX_COLLECTOR_RESPONCES.MAX_GOLD_REACHED then
-            char_change_state(i, CHAR_STATE.TAX_COLLECTOR_RETURN_TAXES)
-        end
-        if res == TAX_COLLECTOR_RESPONCES.NO_TAXABLE_BUILDINGS then
-            char_change_state(i, CHAR_STATE.TAX_COLLECTOR_RETURN_TAXES)
-        end
-        if res == TAX_COLLECTOR_RESPONCES.FOUND_TARGET then
-            -- ok
-        end
-        if res == TAX_COLLECTOR_RESPONCES.GOT_TAX then
-            -- ok
-        end
-        if res == TAX_COLLECTOR_RESPONCES.ON_MY_WAY then
-            -- ok
-        end
-    end
-    
-    if chars_state[i] == CHAR_STATE.TAX_COLLECTOR_RETURN_TAXES then
-        res = TAX_COLLECTOR_RETURN_TAXES(i)
-        if res == TAX_COLLECTOR_RESPONCES.IN_CASTLE then
-            char_change_state(i, CHAR_STATE.TAX_COLLECTOR_WAIT_IN_CASTLE)
-        end
-    end
-    
-    if chars_state[i] == CHAR_STATE.TAX_COLLECTOR_WAIT_IN_CASTLE then
-        res = TAX_COLLECTOR_WAIT_IN_CASTLE(i)
-        if res == TAX_COLLECTOR_RESPONCES.FOUND_TARGET then
-            char_change_state(i, CHAR_STATE.TAX_COLLECTOR_COLLECT_TAXES)
-        end
-    end
-    
-end
-
-function TAX_COLLECTOR_COLLECT_TAXES(i)
-    if chars_wealth[i] > MAX_GOLD_TO_CARRY then
-        return TAX_COLLECTOR_RESPONCES.MAX_GOLD_REACHED
-    end
-    
-    if chars_state_target[i] == nil then
-        -- if no target, then find the most optimal (wealth to tax / distance) building and set it as a target
-        local optimal = 0
-        local final_target = nil
-        
-        for j, w in ipairs(buildings_wealth_before_taxes) do
-            if (w > MIN_GOLD_TO_TAX) and (w / char_build_dist(i, j) > optimal) then
-                optimal = w / char_build_dist(i, j)
-                final_target = j
-            end
-        end
-        
-        if final_target == nil then
-            return TAX_COLLECTOR_RESPONCES.NO_TAXABLE_BUILDINGS
-        end
-        
-        chars_state_target[i] = final_target
-        chars_target[i].x = buildings_x(final_target)
-        chars_target[i].y = buildings_y(final_target)
-        return TAX_COLLECTOR_RESPONCES.FOUND_TARGET
-    elseif chars_state_target[i] ~= nil then
-        if char_build_dist(i, chars_state_target[i]) < 0.5 then
-            char_tax_building(i, chars_state_target[i])
-            chars_state_target[i] = nil
-            return TAX_COLLECTOR_RESPONCES.GOT_TAX
-        else 
-            char_move_to_target(i)
-            return TAX_COLLECTOR_RESPONCES.ON_MY_WAY
-        end
-    end
-end
-
-function TAX_COLLECTOR_RETURN_TAXES(i)
-    if chars_state_target[i] == nil then
-        local closest_tax_storage = 1
-        chars_state_target[i] = 1
-        chars_target[i].x = buildings_x(closest_tax_storage)
-        chars_target[i].y = buildings_y(closest_tax_storage)
-    elseif chars_state_target[i] ~= nil then
-        if dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
-            char_return_tax(i)
-            chars_state_target[i] = nil
-            return TAX_COLLECTOR_RESPONCES.IN_CASTLE
-        else 
-            char_move_to_target(i)
-            return TAX_COLLECTOR_RESPONCES.ON_MY_WAY
-        end
-    end
-end
-
-function TAX_COLLECTOR_WAIT_IN_CASTLE(i)
-    local optimal, final_target = FIND_OPTIMAL_BUILDING_TO_TAX(i)
-    
-    if final_target == nil then
-        return TAX_COLLECTOR_RESPONCES.NO_TAXABLE_BUILDINGS
-    end
-    
-    chars_state_target[i] = final_target
-    chars_target[i].x = buildings_x(final_target)
-    chars_target[i].y = buildings_y(final_target)
-    
-    return TAX_COLLECTOR_RESPONCES.FOUND_TARGET
-end
-
-function FIND_OPTIMAL_BUILDING_TO_TAX(i)
-    local optimal = 0
-    local final_target = nil
-    
-    for j, w in ipairs(buildings_wealth_before_taxes) do
-        if (w > MIN_GOLD_TO_TAX) and (w / char_build_dist(i, j) > optimal) then
-            optimal = w / char_build_dist(i, j)
-            final_target = j
-        end
-    end
-    return optimal, final_target
-end
-
-
--- HUNTER
--- HUNTER SETTINGS
-HUNTER_DESIRED_AMOUNT_OF_POTIONS = 5
-HUNTER_DESIRE_TO_HUNT_PER_MISSING_POTION = -2
-HUNTER_DESITE_TO_HUNT_FOR_REWARD = 3
-HUNTER_DESITE_TO_HUNT_WITHOUT_REWARD = -3
-HUNTER_DESIRE_TO_CONTINUE_HUNT = 1
-HUNTER_NO_RATS_HUNT_COOLDOWN = 100
-
--- HUNTER STATES
-CHAR_STATE.HUNTER_BUY_POTION = new_state_id()
-CHAR_STATE.HUNTER_BUY_FOOD = new_state_id()
-CHAR_STATE.HUNTER_HUNT = new_state_id()
-CHAR_STATE.HUNTER_WANDER = new_state_id()
-
--- HUNTER RESPONCES
-HUNTER_RESPONCES = {}
-HUNTER_RESPONCES.ON_MY_WAY = 1
-HUNTER_RESPONCES.FOUND_TARGET = 2
-HUNTER_RESPONCES.BOUGHT_POTION = 3
-HUNTER_RESPONCES.TARGET_REACHED = 4
-HUNTER_RESPONCES.NO_RATS = 5
-HUNTER_RESPONCES.BOUGHT_FOOD = 6
-
---HUNTER DESIRES
-HUNTER_DESIRE = {}
-HUNTER_DESIRE.POTION = 1
-HUNTER_DESIRE.FOOD = 2
-HUNTER_DESIRE.HUNT = 3
-
-HUNTER_DESIRE_CALC = {}
-HUNTER_DESIRE_CALC[HUNTER_DESIRE.POTION] = function(i)
-    if (chars_wealth[i] < POTION_PRICE) then
-        return 0
-    end
-    return -(HUNTER_DESIRED_AMOUNT_OF_POTIONS - chars_potions[i]) * HUNTER_DESIRE_TO_HUNT_PER_MISSING_POTION
-end
-
-HUNTER_DESIRE_CALC[HUNTER_DESIRE.FOOD] = function(i)
-    if (chars_wealth[i] < FOOD_PRICE) then
-        return 0
-    end
-    return chars_hunger[i] / 1000 - 2
-end
-
-HUNTER_DESIRE_CALC[HUNTER_DESIRE.HUNT] = function(i)
-    local hunting_desire = HUNTER_DESITE_TO_HUNT_WITHOUT_REWARD
-    if (REWARD > hunt_budget) then
-        return hunting_desire
-    end
-
-    hunting_desire = hunting_desire + HUNTER_DESITE_TO_HUNT_FOR_REWARD - HUNTER_DESITE_TO_HUNT_WITHOUT_REWARD
-        
-    if chars_cooldown[i] > 0 then
-        hunting_desire = hunting_desire - 1000
-    end
-    
-    if chars_wealth[i] < 2 * POTION_PRICE then
-        hunting_desire = hunting_desire + HUNTER_DESITE_TO_HUNT_FOR_REWARD * 2
-    end
-    
-    if chars_state[i] == CHAR_STATE.HUNTER_HUNT then
-        hunting_desire = hunting_desire + HUNTER_DESIRE_TO_CONTINUE_HUNT
-    end
-    
-    return hunting_desire
-end
-
-AGENT_LOGIC[CHAR_OCCUPATION.HUNTER] = function (i)
-    if chars_hp[i] < 60 then
-        char_drink_pot(i)
-    end
-    
-    if chars_state[i] == nil then
-        char_change_state(i, CHAR_STATE.HUNTER_WANDER)
-    end
-    
-    
-    
-    local desire = {}    
-    desire[HUNTER_DESIRE.POTION] = HUNTER_DESIRE_CALC[HUNTER_DESIRE.POTION](i)
-    desire[HUNTER_DESIRE.FOOD] = HUNTER_DESIRE_CALC[HUNTER_DESIRE.FOOD](i)
-    desire[HUNTER_DESIRE.HUNT] = HUNTER_DESIRE_CALC[HUNTER_DESIRE.HUNT](i)
-    
-    local max_desire = 0
-    for j = 1, 3 do
-        if (max_desire == 0) or (desire[max_desire] < desire[j]) then
-            max_desire = j
-        end
-    end
-
-    -- print(desire[1], desire[2], desire[3])
-
-    if desire[max_desire] < 1 then 
-        char_change_state(i, CHAR_STATE.HUNTER_WANDER)
-    elseif max_desire == HUNTER_DESIRE.POTION then
-        char_change_state(i, CHAR_STATE.HUNTER_BUY_POTION)
-    elseif max_desire == HUNTER_DESIRE.FOOD then
-        char_change_state(i, CHAR_STATE.HUNTER_BUY_FOOD)
-    elseif max_desire == HUNTER_DESIRE.HUNT then
-        char_change_state(i, CHAR_STATE.HUNTER_HUNT)
-    else
-        char_change_state(i, CHAR_STATE.HUNTER_WANDER)
-    end
-    
-    
-    
-    if chars_state[i] == CHAR_STATE.HUNTER_HUNT then
-        res = HUNTER_HUNT(i)
-        if res == HUNTER_RESPONCES.NO_RATS then
-            chars_cooldown[i] = HUNTER_NO_RATS_HUNT_COOLDOWN
-            char_change_state(i, CHAR_STATE.HUNTER_WANDER)
-        end
-    end
-    if chars_state[i] == CHAR_STATE.HUNTER_WANDER then
-        res = HUNTER_WANDER(i)
-        if res == HUNTER_RESPONCES.TARGET_REACHED then
-            chars_state_target[i] = nil
-        end
-    end
-    if chars_state[i] == CHAR_STATE.HUNTER_BUY_POTION then
-        res = HUNTER_BUY_POTION(i)
-        if res == HUNTER_RESPONCES.BOUGHT_POTION then
-            char_change_state(i, CHAR_STATE.HUNTER_WANDER)
-        end
-    end
-    
-    if chars_state[i] == CHAR_STATE.HUNTER_BUY_FOOD then
-        res = HUNTER_BUY_FOOD(i)
-        if res == HUNTER_RESPONCES.BOUGHT_FOOD then
-            char_change_state(i, CHAR_STATE.HUNTER_WANDER)
-        end
-    end
-end
-
-function HUNTER_HUNT(i)
-    local closest_rat = nil
-    local curr_dist = 99999
-    for j, f in pairs(ALIVE_RATS) do
-        if f then
-            local tmp = char_dist(j, i)
-            if (closest_rat == nil) or (tmp < curr_dist) then
-                closest_rat = j
-                curr_dist = tmp
-            end
-        end
-    end
-    if closest_rat ~= nil then
-        chars_target[i].x = chars_x[closest_rat]
-        chars_target[i].y = chars_y[closest_rat]
-        chars_state_target[i] = closest_rat
-        
-        if curr_dist > 1 then 
-            char_move_to_target(i)
-        else
-            local tmp = char_attack_char(i, closest_rat)
-            if (tmp == CHAR_ATTACK_RESPONSE.KILL) then
-                char_recieve_reward(i)
-            end
-        end
-        
-        chars_state_target[i] = nil
-    end
-    
-    if (chars_state_target[i] == nil) and (closest_rat == nil) then
-        return HUNTER_RESPONCES.NO_RATS
-    end
-end
-
-function HUNTER_WANDER(i)
-    if chars_state_target[i] == nil then
-        chars_state_target[i] = -1
-        local dice = math.random() - 0.5
-        chars_target[i].x = dice * dice * dice * 400 + buildings_x(chars_home[i])
-        local dice = math.random() - 0.5
-        chars_target[i].y = dice * dice * dice * 400 + buildings_y(chars_home[i])
-    else
-        local res = char_move_to_target(i)
-        if res == MOVEMENT_RESPONCES.STILL_MOVING then
-            return HUNTER_RESPONCES.ON_MY_WAY
-        end
-        if res == MOVEMENT_RESPONCES.TARGET_REACHED then
-            return HUNTER_RESPONCES.TARGET_REACHED
-        end
-    end
-end
-
-function HUNTER_BUY_POTION(i)
-    if chars_state_target[i] == nil then
-        local closest = find_closest_potion_shop(i)
-        if closest ~= nil then
-            chars_state_target[i] = closest
-            chars_target[i].x = buildings_x(closest)
-            chars_target[i].y = buildings_y(closest)
-        end
-    elseif dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
-        char_buy_potions(i, chars_state_target[i])
-        return HUNTER_RESPONCES.BOUGHT_POTION
-    else 
-        char_move_to_target(i)
-        return HUNTER_RESPONCES.ON_MY_WAY
-    end
-end
-
-function HUNTER_BUY_FOOD(i)
-    if chars_state_target[i] == nil then
-        local closest = find_closest_food_shop(i)
-        if closest ~= nil then
-            chars_state_target[i] = closest
-            chars_target[i].x = buildings_x(closest)
-            chars_target[i].y = buildings_y(closest)
-        end
-    elseif dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
-        char_buy_food(i, chars_state_target[i])
-        return HUNTER_RESPONCES.BOUGHT_FOOD
-    else 
-        char_move_to_target(i)
-        return HUNTER_RESPONCES.ON_MY_WAY
-    end
-end
-
-
--- RAT
----- rats are common vermin that hurts your early stage of the kingdom 
-
-
--- RAT SETTINGS
-RAT_DISTANCE_FROM_LAIR = 410
-
--- RAT STATES
-CHAR_STATE.RAT_PROTECT_LAIR = new_state_id()
-
--- HUNTER RESPONCES
-RAT_RESPONCES = {}
-RAT_RESPONCES.ON_MY_WAY = 1
-RAT_RESPONCES.FOUND_TARGET = 2
-RAT_RESPONCES.TARGET_REACHED = 3
-RAT_RESPONCES.NO_ENEMIES = 4
-
-AGENT_LOGIC[CHAR_OCCUPATION.RAT] = function (i)
-    RAT_PROTECT_LAIR(i)
-end
-
-function RAT_PROTECT_LAIR(i)
-    local closest_hero = nil
-    local curr_dist = 20
-    for j, f in pairs(ALIVE_HEROES) do
-        if f then
-            local tmp = char_dist(j, i)
-            if ((closest_hero == nil) and (tmp < curr_dist)) or (tmp < curr_dist) then
-                closest_hero = j
-                curr_dist = tmp
-            end
-        end
-    end
-    local from_home_dist = char_build_dist(i, chars_home[i])
-    if (closest_hero ~= nil) and (from_home_dist < RAT_DISTANCE_FROM_LAIR) then
-        chars_target[i] = {}
-        chars_target[i].x = chars_x[closest_hero]
-        chars_target[i].y = chars_y[closest_hero]
-        if curr_dist > 1 then 
-            char_move_to_target(i)
-        else
-            char_attack_char(i, closest_hero)
-        end
-    elseif chars_target[i].x == nil then
-        local dice = math.random() - 0.5
-        chars_target[i].x = dice * dice * dice * 800 + buildings_x(chars_home[i])
-        local dice = math.random() - 0.5
-        chars_target[i].y = dice * dice * dice * 800 + buildings_y(chars_home[i])
-    elseif chars_target[i].x ~= nil then
-        res = char_move_to_target(i)
-        if res == MOVEMENT_RESPONCES.TARGET_REACHED then
-            chars_target[i].x = nil
-            chars_target[i].y = nil
-        end
-    end
-end
-
-
-
-
-
-
-
-
-
--- FOOD_COLLECTOR
----- food collector is an agent that goes to food that randomly grows around the map,  +
----- collects it and sells it in his shop, which he sets up not far from the castle +
----- during collection, he could hurt himself, so he is carrying a bit of potions with him -
----- he can carry only one food item in hands +
----- one food item restores full hp and removes hunger but can't be carried like a potion
----- so other agents should prioritise eating to using potions, if they are not engaged in other activities 
----- income: selling food 
----- expenses: potions, taxes
-
-
-
-CHAR_STATE.FOOD_COLLECTOR_SET_UP_SHOP = new_state_id()
-CHAR_STATE.FOOD_COLLECTOR_COLLECT_FOOD = new_state_id()
-CHAR_STATE.FOOD_COLLECTOR_RETURN_FOOD = new_state_id()
-CHAR_STATE.FOOD_COLLECTOR_FIND_FOOD = new_state_id()
-CHAR_STATE.FOOD_COLLECTOR_BUY_POTION = new_state_id()
-CHAR_STATE.FOOD_COLLECTOR_STAY_IN_SHOP = new_state_id()
-
-
-FOOD_COLLECTOR_RESPONCES = {}
-FOOD_COLLECTOR_RESPONCES.GOT_FOOD = 1
-FOOD_COLLECTOR_RESPONCES.AT_HOME = 2
-FOOD_COLLECTOR_RESPONCES.NO_FOOD_AROUND = 3
-FOOD_COLLECTOR_RESPONCES.NO_FOOD_LEFT = 4
-
---FOOD_COLLECTOR DESIRES
-FOOD_COLLECTOR_POTIONS_TARGET = 2
-FOOD_COLLECTOR_DESIRE_TO_BUY_POTION_PER_MISSING_UNIT = 1
-FOOD_COLLECTOR_FOOD_TARGET = 10
-FOOD_COLLECTOR_DESIRE_TO_COLLECT_FOOD_PER_MISSING_UNIT = 1
-FOOD_COLLECTOR_DESIRE_TO_CONTINUE_COLLECT_FOOD = 5
-
-FOOD_COLLECTOR_DESIRE = {}
-FOOD_COLLECTOR_DESIRE.POTION = 11
-FOOD_COLLECTOR_DESIRE.FOOD = 12
-FOOD_COLLECTOR_DESIRE.COLLECT_FOOD = 13
-
-
-DESIRE_CALC = {}
-DESIRE_CALC[FOOD_COLLECTOR_DESIRE.POTION] = function(i)
-    if (chars_wealth[i] < POTION_PRICE) then
-        return 0
-    end
-    return (FOOD_COLLECTOR_POTIONS_TARGET - chars_potions[i]) * FOOD_COLLECTOR_DESIRE_TO_BUY_POTION_PER_MISSING_UNIT
-end
-
-DESIRE_CALC[FOOD_COLLECTOR_DESIRE.FOOD] = function(i)
-    return chars_hunger[i] / 1000 - 2
-end
-
-DESIRE_CALC[FOOD_COLLECTOR_DESIRE.COLLECT_FOOD] = function(i)
-    local home = chars_home[i]
-    local tmp = 0
-    if chars_state[i] == CHAR_STATE.FOOD_COLLECTOR_COLLECT_FOOD then
-        tmp = FOOD_COLLECTOR_DESIRE_TO_CONTINUE_COLLECT_FOOD
-    end
-    
-    return tmp + (FOOD_COLLECTOR_FOOD_TARGET - buildings_stash[home]) * FOOD_COLLECTOR_DESIRE_TO_BUY_POTION_PER_MISSING_UNIT
-end
-
-
-
-AGENT_LOGIC[CHAR_OCCUPATION.FOOD_COLLECTOR] = function (i)
-    if chars_hp[i] < 60 then
-        char_drink_pot(i)
-    end
-    if chars_state[i] == nil then
-        chars_state[i] = CHAR_STATE.FOOD_COLLECTOR_SET_UP_SHOP
-    end  
-    
-    if chars_state[i] == CHAR_STATE.FOOD_COLLECTOR_SET_UP_SHOP then
-        local x, y = get_new_building_location()
-        local bid = new_building(BUILDING_TYPES.FOOD_SHOP, x, y)
-        char_set_home(i, bid)
-        char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_COLLECT_FOOD)
-    end
-
-
-    if chars_state[i] == CHAR_STATE.FOOD_COLLECTOR_STAY_IN_SHOP then
-        local desire = {}
-        desire[FOOD_COLLECTOR_DESIRE.POTION] = DESIRE_CALC[FOOD_COLLECTOR_DESIRE.POTION](i)
-        desire[FOOD_COLLECTOR_DESIRE.FOOD] = DESIRE_CALC[FOOD_COLLECTOR_DESIRE.FOOD](i)
-        desire[FOOD_COLLECTOR_DESIRE.COLLECT_FOOD] = DESIRE_CALC[FOOD_COLLECTOR_DESIRE.COLLECT_FOOD](i)
-        
-        local max_desire = 0
-        for j = 11, 13 do
-            if (max_desire == 0) or (desire[max_desire] < desire[j]) then
-                max_desire = j
-            end
-        end
-
-        if desire[max_desire] < 1 then
-            char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_STAY_IN_SHOP)
-        elseif max_desire == FOOD_COLLECTOR_DESIRE.POTION then
-            char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_BUY_POTION)
-        elseif max_desire == FOOD_COLLECTOR_DESIRE.FOOD then
-            char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_FIND_FOOD)
-        elseif max_desire == FOOD_COLLECTOR_DESIRE.COLLECT_FOOD then
-            char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_COLLECT_FOOD)
-        else
-            char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_STAY_IN_SHOP)
-        end
-        
-        if chars_state[i] == CHAR_STATE.FOOD_COLLECTOR_STAY_IN_SHOP then
-            local res = FOOD_COLLECTOR_STAY_IN_SHOP(i)
-            if res == FOOD_COLLECTOR_RESPONCES.NO_FOOD_LEFT then
-                char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_COLLECT_FOOD)
-            end
-        end
-    end
-    
-    if chars_state[i] == CHAR_STATE.FOOD_COLLECTOR_COLLECT_FOOD then
-        local res = FOOD_COLLECTOR_COLLECT_FOOD(i)
-        if res == FOOD_COLLECTOR_RESPONCES.GOT_FOOD then
-            char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_RETURN_FOOD)
-        end
-    elseif chars_state[i] == CHAR_STATE.FOOD_COLLECTOR_RETURN_FOOD then
-        local res = FOOD_COLLECTOR_RETURN_FOOD(i)
-        if res == FOOD_COLLECTOR_RESPONCES.AT_HOME then
-            char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_STAY_IN_SHOP)
-        end
-    elseif chars_state[i] == CHAR_STATE.FOOD_COLLECTOR_BUY_POTION then
-        local res = FOOD_COLLECTOR_BUY_POTION(i)
-        if res == HUNTER_RESPONCES.BOUGHT_POTION then
-            char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_STAY_IN_SHOP)
-        end
-    elseif chars_state[i] == CHAR_STATE.FOOD_COLLECTOR_FIND_FOOD then
-        local res = FOOD_COLLECTOR_COLLECT_FOOD(i)
-        if res == FOOD_COLLECTOR_RESPONCES.GOT_FOOD then
-            chars_hunger[i] = 0
-            char_change_state(i, CHAR_STATE.FOOD_COLLECTOR_STAY_IN_SHOP)
-        end
-
-    end
-end
-
-function FOOD_COLLECTOR_COLLECT_FOOD(i)
-    if chars_state_target[i] == nil then
-        local optimal_dist = 0
-        local optimal_food = nil
-        local x = chars_x[i]
-        local y = chars_y[i]
-        for f, pos in ipairs(food_pos) do
-            local p_x = pos.x * grid_size + grid_size/2
-            local p_y = pos.y * grid_size + grid_size/2
-            local dist = dist(x, y, p_x, p_y)
-            if ((optimal_food == nil) or (optimal_dist > dist)) and (food_cooldown[f] == 0) then
-                optimal_food = f
-                optimal_dist = dist                
-            end
-        end
-        
-        if optimal_food == nil then
-            return FOOD_COLLECTOR_RESPONCES.NO_FOOD_AROUND
-        end
-        
-        chars_state_target[i] = optimal_food
-        chars_target[i].x = food_pos[optimal_food].x * grid_size + grid_size/2
-        chars_target[i].y = food_pos[optimal_food].y * grid_size + grid_size/2
-    else 
-        local res = char_move_to_target(i)
-        if res == MOVEMENT_RESPONCES.TARGET_REACHED then
-            char_collect_food(i, chars_state_target[i])
-            return FOOD_COLLECTOR_RESPONCES.GOT_FOOD
-        end
-    end
-end
-
-function FOOD_COLLECTOR_RETURN_FOOD(i)
-    local home = chars_home[i]
-    if chars_state_target[i] == nil then
-        chars_state_target[i] = home
-        chars_target[i].x = buildings_x(home)
-        chars_target[i].y = buildings_y(home)
-    else 
-        local res = char_move_to_target(i)
-        if res == MOVEMENT_RESPONCES.TARGET_REACHED then
-            char_transfer_item_building(i, home)
-            char_collect_money_from_building(i, home)
-            return FOOD_COLLECTOR_RESPONCES.AT_HOME
-        end
-    end
-end
-
-function FOOD_COLLECTOR_STAY_IN_SHOP(i)
-    local home = chars_home[i]
-    if chars_state_target[i] == nil then
-        chars_state_target[i] = home
-        chars_target[i].x = buildings_x(home)
-        chars_target[i].y = buildings_y(home)
-    else 
-        local res = char_move_to_target(i)
-        if res == MOVEMENT_RESPONCES.TARGET_REACHED then
-            char_collect_money_from_building(i, home)
-            if buildings_stash[home] == 0 then
-                return FOOD_COLLECTOR_RESPONCES.NO_FOOD_LEFT
-            end
-        end
-    end
-end
-
-function FOOD_COLLECTOR_BUY_POTION(i)
-    if chars_state_target[i] == nil then
-        local closest = find_closest_potion_shop(i)
-        if closest ~= nil then
-            chars_state_target[i] = closest
-            chars_target[i].x = buildings_x(closest)
-            chars_target[i].y = buildings_y(closest)
-        end
-    elseif dist(chars_target[i].x, chars_target[i].y, chars_x[i], chars_y[i]) < 0.5 then
-        char_buy_potions(i, chars_state_target[i])
-        return HUNTER_RESPONCES.BOUGHT_POTION
-    else 
-        char_move_to_target(i)
-        return HUNTER_RESPONCES.ON_MY_WAY
-    end
-end
-
-
-
-
-
-
--- HERBALIST
----- herbalist 
----- collects plants around, 
----- brews potions out of them for sell (ensuring that he always have enough for himself)
----- potions can expire, so his goods are always needed
----- buys herbs from other heroes
----- income: selling potions
----- expenses: buying plants, buying food, taxes 
+	-- occupation list
+	CHAR_OCCUPATION = {}
+	CHAR_OCCUPATION.TAX_COLLECTOR = 1 -- character that collects taxes in buildings and returns them to castle
+	CHAR_OCCUPATION.HUNTER = 2 -- character that, if there is a hunting reward, hunts on corresponding targets
+	CHAR_OCCUPATION.GUARD = 3 -- character that guards his home
+	CHAR_OCCUPATION.RAT = 4
+	CHAR_OCCUPATION.FOOD_COLLECTOR = 5
+
+	-- occupation logic
+	AGENT_LOGIC = {}
+	STATE_LOGIC = {}
+
+
+	init_tax_collector()
+	init_hunter()
+	init_rat()
+	init_food_collector()
+
+
+	-- HERBALIST
+	---- herbalist 
+	---- collects plants around, 
+	---- brews potions out of them for sell (ensuring that he always have enough for himself)
+	---- potions can expire, so his goods are always needed
+	---- buys herbs from other heroes
+	---- income: selling potions
+	---- expenses: buying plants, buying food, taxes 
 
 end
