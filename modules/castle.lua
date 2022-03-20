@@ -2,6 +2,7 @@
 ---@field hunt number
 ---@field treasury number
 Budget = {}
+Budget.__index = Budget
 
 ---comment
 ---@return Budget
@@ -11,19 +12,25 @@ function Budget:new()
     return _
 end
 
----comment
+---takes tags: "hunt", increase corresponding budget
 ---@param tag "hunt"
 function Budget:inc(tag)
     if tag == 'hunt' then
+        if (self.hunt == 100) then
+            return
+        end
         self.hunt = self.hunt + 10
         self.treasury = self.treasury - 10
     end
 end
 
----comment
+---takes tags: "hunt", increase corresponding budget
 ---@param tag "hunt"
 function Budget:dec(tag)
     if tag == 'hunt' then
+        if (self.hunt == 0) then
+            return
+        end
         self.hunt = self.hunt - 10
         self.treasury = self.treasury + 10
     end
@@ -41,6 +48,7 @@ end
 ---@field budget Budget
 ---@field INCOME_TAX number
 Castle = {}
+Castle.__index = Castle
 -- local globals = require('constants')
 
 
@@ -109,6 +117,7 @@ end
 
 
 -- actions of a king
+---hires a new hero (NOT TESTED)
 function Castle:hire_hero()
     if self.wealth >= 100 then
         self.wealth = self.wealth - 100
@@ -116,7 +125,7 @@ function Castle:hire_hero()
     end
 end
 
-
+---increases hunt budget by 10%
 function Castle:add_hunt_budget()
     if self.wealth >= 100 then
         self.wealth = self.wealth - 100
@@ -129,10 +138,10 @@ end
 
 
 function Castle:dec_inv(tag)
-    self.budget:inc(tag)
+    self.budget:dec(tag)
 end
 function Castle:inc_inv(tag)
-    self.budget:dec(tag)
+    self.budget:inc(tag)
 end
 
 

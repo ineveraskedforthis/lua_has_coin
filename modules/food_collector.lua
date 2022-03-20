@@ -136,53 +136,7 @@ function init_food_collector()
 		end
 	end
 
-	function FOOD_COLLECTOR_COLLECT_FOOD(i)
-		if chars_state_target[i] == nil then
-			local optimal_dist = 0
-			local optimal_food = nil
-			local x = chars_x[i]
-			local y = chars_y[i]
-			for f, pos in ipairs(food_pos) do
-				local p_x = pos.x * grid_size + grid_size/2
-				local p_y = pos.y * grid_size + grid_size/2
-				local dist = dist(x, y, p_x, p_y)
-				if ((optimal_food == nil) or (optimal_dist > dist)) and (food_cooldown[f] == 0) then
-					optimal_food = f
-					optimal_dist = dist                
-				end
-			end
-			
-			if optimal_food == nil then
-				return FOOD_COLLECTOR_RESPONCES.NO_FOOD_AROUND
-			end
-			
-			chars_state_target[i] = optimal_food
-			chars_target[i].x = food_pos[optimal_food].x * grid_size + grid_size/2
-			chars_target[i].y = food_pos[optimal_food].y * grid_size + grid_size/2
-		else 
-			local res = char_move_to_target(i)
-			if res == MOVEMENT_RESPONCES.TARGET_REACHED then
-				char_collect_food(i, chars_state_target[i])
-				return FOOD_COLLECTOR_RESPONCES.GOT_FOOD
-			end
-		end
-	end
 
-	function FOOD_COLLECTOR_RETURN_FOOD(i)
-		local home = chars_home[i]
-		if chars_state_target[i] == nil then
-			chars_state_target[i] = home
-			chars_target[i].x = buildings_x(home)
-			chars_target[i].y = buildings_y(home)
-		else 
-			local res = char_move_to_target(i)
-			if res == MOVEMENT_RESPONCES.TARGET_REACHED then
-				char_transfer_item_building(i, home)
-				char_collect_money_from_building(i, home)
-				return FOOD_COLLECTOR_RESPONCES.AT_HOME
-			end
-		end
-	end
 
 	function FOOD_COLLECTOR_STAY_IN_SHOP(i)
 		local home = chars_home[i]

@@ -17,6 +17,7 @@ function enum(table)
     return table
 end
 
+
 globals = readonlytable {
     CONSTANTS = readonlytable {
         GRID_SIZE = 10,

@@ -9,6 +9,7 @@
 ---@field owner any
 ---@field stash number
 Building = {}
+Building.__index = Building
 -- local globals = require('constants')
 
 

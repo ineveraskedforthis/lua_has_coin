@@ -68,7 +68,9 @@ end
 
 ---@class Target
 ---@field position Position
-Target = {position={x=nil, y=nil}}
+---@field cooldown number
+Target = {position={x=nil, y=nil, cooldown = 0}}
+Target.__index = Target
 function Target:pos()
     return self.position
 end
@@ -108,6 +110,7 @@ end
 ---@field order Order
 ---@field quest Quest|nil
 Character = {}
+Character.__index = Character
 
 ---@param max_hp number
 ---@param wealth number
@@ -240,9 +243,16 @@ function Character:__dist_to_target()
     return norm
 end
 
+---returns euclidian distance to target-like object
+---@param x Target
+---@return number
 function Character:__dist_to(x)
     local dx, dy, norm = true_dist(self, x)
     return norm
+end
+
+function Character:__fast_dist_to(x)
+
 end
 
 ---comment
@@ -427,6 +437,23 @@ function Character:__check_rat()
     return nil
 end
 
+---comment
+---@return EventTargeted|nil
+function Character:__check_food()
+    for _, pos in pairs(food_pos) do
+        if (self.__dist_to(pos) < 5) and (food_cooldown[_] == 0) then
+            return Event_TargetFound(pos)
+        end
+    end
+    return nil
+end
+
+function Character:__set_random_target_circle()
+    local alpha = math.random() * 2 * math.pi
+    local target = {x= math.cos(alpha) * 10, y= math.sin(alpha) * 10}
+    self.set_target(target)
+end
+
 
 ---comment
 ---@param target Target|Character|Building
@@ -436,11 +463,16 @@ end
 
 ---@alias Order "patrol"|"attack"|"move"|"idle"|"buy_food"|
 
----comment
+---Gives an order to a character, replacing old one
 ---@param order Order
 function Character:set_order(order)
     self.order = order
     self.had_finished_order = false
+end
+
+function Character:set_order_WanderForFood()
+    self:set_order("wander_food")
+    self:__set_random_target_circle()
 end
 
 ---comment
@@ -451,7 +483,7 @@ function Character:execute_order()
         local tmp = self.__move_to_target()
         if tmp == MOVE_RESPONSE.TARGET_REACHED then
             self.had_finished_order = true
-            return Event_TargetReached:new()
+            return Event_TargetReached()
         end
         return nil
     end
@@ -474,8 +506,7 @@ function Character:execute_order()
 
     if self.order == "find_food_shop" then
         local closest = self:__closest_shop('food')
-        ---@type Event_ShopFound
-        local event = Event_ShopFound:new(closest)
+        local event = Event_ShopFound(closest)
         self.had_finished_order = true
         return event
     end
@@ -484,8 +515,8 @@ function Character:execute_order()
         local tmp = self.__move_to_target()
         if tmp == MOVE_RESPONSE.TARGET_REACHED then
             self:__buy_food(self.target)
-            ---@type Event_Bought
-            local event = Event_Bought:new()
+
+            local event = Event_Bought()
             self.had_finished_order = true
             return event
         end
@@ -519,8 +550,7 @@ function Character:execute_order()
         local tmp = self.__move_to_target()
         if tmp == MOVE_RESPONSE.TARGET_REACHED then
             self:__buy_potions(self.target)
-            ---@type Event_Bought
-            local event = Event_Bought:new()
+            local event = Event_Bought()
             self.had_finished_order = true
             return event
         end
@@ -538,6 +568,30 @@ function Character:execute_order()
 			self:__move_to_target()
 		end
         return nil
+    end
+
+    --- food related actions
+
+    if self.order == "wander_food" then  -- characters wanders around and sending events about food related things he found
+        local tmp = self.__move_to_target()
+        local food = self.__check_food()
+        if tmp == MOVE_RESPONSE.TARGET_REACHED then
+            return Event_TargetReached()
+        end
+        if food == nil then
+            return nil
+        end
+        self.set_target(food.target)
+        return food
+    end
+    if self.order == "gather_eat" then
+        if self.target.cooldown > 0 then
+            return Event_ActionFailed()
+        else 
+            self.__change_hp(10)
+            self.__set_hunger(0)
+            return 
+        end
     end
 end
 

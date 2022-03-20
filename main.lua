@@ -3,16 +3,24 @@ local milky = require "milky"
 local hunter = require "modules.hunter"
 local globals = require "modules.constants"
 local Building = require "modules.building"
-local ui_init = require "ui"
-local Castle = require "agent_types.castle"
+local UI = require "ui"
+local Castle = require "modules.castle"
+local GatherEat = require "modules.instructions.GatherEat"
+
+
+AgentInstruction = require "modules.instructions._AgentInstructionClass"
+InstructionNode = require "modules.instructions._InstructionNodeClass"
+
+require "Events"
+
 
 
 function love.load()
-    love.window.setMode(800, 600)
-    
+    love.window.setMode(800, 600)   
 
     -- data structs init
-    
+    init_food_array()
+
     -- flags
     map_build_flag = {}
     
@@ -29,8 +37,10 @@ function love.load()
     buildings = {}    
     
     -- game data
-    zero_cell = {x=0, y=0}
+    zero_cell = {x=30, y=30}
     castle = Castle:new(zero_cell, 100, 500)
+
+    game_ui = UI:new(true)
     
     for i = 1, 100 do
         for j = 1, 100 do
@@ -42,8 +52,11 @@ function love.load()
             end
         end
     end
-    
-    ui_init()
+end
+
+
+function love.draw()    
+    game_ui:draw()
 end
 
 
@@ -56,7 +69,7 @@ end
 ---@param cell Cell
 ---@return Position
 function convert_cell_to_coord(cell)
-    local grid_size = globals.grid_size
+    local grid_size = globals.CONSTANTS.GRID_SIZE
     return {x = cell.x * grid_size + grid_size/2, y = cell.y * grid_size + grid_size/2}
 end
 
@@ -64,7 +77,7 @@ end
 ---@param position Position
 ---@return Cell
 function convert_coord_to_cell(position)
-    local grid_size = globals.grid_size
+    local grid_size = globals.CONSTANTS.GRID_SIZE
     return {x= math.floor(position.x / grid_size), y= math.floor(position.y / grid_size)}
 end
 
@@ -89,17 +102,15 @@ function love.update(dt)
         for _, building in pairs(buildings) do
             building:update()
         end
-        
-        for i = 1, last_food - 1 do
-            if food_cooldown[i] > 0 then
-                food_cooldown[i] = food_cooldown[i] - 1
-            end
+
+        for _, food_obj in pairs(food) do
+            food_obj.cooldown = food_obj.cooldown - 1
         end
     end
     
     -- interface update
-    wealth_widget:update_label(tostring(castle.wealth))
-    hunt_widget:update_label(tostring(castle.hunt_budget))
+    game_ui.wealth_widget:update_label(tostring(castle.wealth))
+    game_ui.hunt_widget:update_label(tostring(castle.hunt_budget))
     
     hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
     treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')
@@ -131,8 +142,8 @@ end
 
 function init_food_array()
     last_food = 1
-    food_pos = {}
-    food_cooldown = {}
+    ---@type Target[]
+    food = {}
 end
 
 last_state_id = 0
@@ -193,10 +204,10 @@ function new_char(hp, wealth, home)
 end
 
 function new_food(x, y)
-    food_pos[last_food] = {}
-    food_pos[last_food].x = x
-    food_pos[last_food].y = y
-    food_cooldown[last_food] = 0
+    food[last_food] = {}
+    food[last_food].x = x
+    food[last_food].y = y
+    food[last_food].cooldown = 0
     last_food = last_food + 1
 end
 
