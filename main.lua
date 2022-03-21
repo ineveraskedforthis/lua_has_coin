@@ -43,8 +43,7 @@ function love.load()
     -- game data
     zero_cell = {x=30, y=30}
     castle = Castle:new(zero_cell, 100, 500)
-    agents.insert(new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
 
     game_ui = UI:new(true)
     

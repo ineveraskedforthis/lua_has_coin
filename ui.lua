@@ -151,13 +151,11 @@ function UI:draw()
     end
 
     love.graphics.setColor(1, 1, 0)
-    for _, char in pairs(chars) do
-        local pos = char.position
+    for _, agent in pairs(agents) do
+        local pos = agent.agent:pos()
         love.graphics.circle('line', pos.x, pos.y, 2)
     end
 
-    love.graphics.circle('line', character.position.x, character.position.y, 2)
-    
     love.graphics.setColor(1, 1, 0)
     for _, building in pairs(buildings) do
         local tmp = building:get_cell()
