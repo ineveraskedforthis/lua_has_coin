@@ -21,7 +21,7 @@ InstructionNode.__index = InstructionNode
 ---@param end_node boolean
 ---@return InstructionNode
 function InstructionNode:new(action, end_node)
-    local _ = { action = action, end_node = false }
+    local _ = { action = action, end_node = false , children= {}}
     if end_node ~= nil then
         _.end_node = end_node
     end
@@ -52,13 +52,13 @@ end
 ---returns next node to use.  
 ---returns "falied" if no legit child found
 ---@param character Character
----@param node InstructionNode
+---@param event Event
 ---@return InstructionNode|nil
-function InstructionNode:select_child(character, node)
+function InstructionNode:select_child(character, event)
     for _, child in pairs(self.children) do
-       if child.condition(character) then
-           return child.node
-       end
+        if child.condition(character, event) then
+            return child.node
+        end
     end
     return nil
 end

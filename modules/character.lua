@@ -53,23 +53,24 @@ CHARACTER_STATE = enum {
 
 
 
----comment
----@param a any
----@param b any
+---returns vector FROM a TO b as first two numbers and vector's length
+---@param a Target
+---@param b Target
 ---@return number
 ---@return number
 ---@return number
 function true_dist(a, b)
-    dx = a:pos().x - b:pos().x;
-    dy = a:pos().y - b:pos().y;
+    dx = -a:pos().x + b:pos().x;
+    dy = -a:pos().y + b:pos().y;
     return dx, dy, math.sqrt(dx * dx + dy * dy)
 end
 
 
 ---@class Target
 ---@field position Position
+---@field cell Cell
 ---@field cooldown number
-Target = {position={x=nil, y=nil, cooldown = 0}}
+Target = {position={x=nil, y=nil}, cooldown = 0, cell={x=nil, y=nil}}
 Target.__index = Target
 function Target:pos()
     return self.position
@@ -196,7 +197,7 @@ function Character:update()
             self:__drink_potion()
         end
     end
-    return self.execute_order()
+    return self:execute_order()
 end
 
 ---comment
@@ -263,10 +264,10 @@ function Character:__move_to_target()
     end
     local dx, dy, norm = true_dist(self, self.target)
     if (norm > 1) then
-        self.__shift(dx / norm, dy / norm)
+        self:__shift(dx / norm, dy / norm)
         return MOVE_RESPONSE.STILL_MOVING
     else
-        self.__shift(dx, dy)
+        self:__shift(dx, dy)
         return MOVE_RESPONSE.TARGET_REACHED
     end
 end
@@ -386,7 +387,7 @@ end
 ---comment
 ---@param j number
 function Character:__collect_food(j)
-    food_cooldown[j] = 10000
+    j.cooldown = 10000
     self.stash = STASH.FOOD
 end
 
@@ -440,9 +441,9 @@ end
 ---comment
 ---@return EventTargeted|nil
 function Character:__check_food()
-    for _, pos in pairs(food_pos) do
-        if (self.__dist_to(pos) < 5) and (food_cooldown[_] == 0) then
-            return Event_TargetFound(pos)
+    for _, f in pairs(food) do
+        if (self:__dist_to(f) < 20) and (f.cooldown == 0) then
+            return Event_TargetFound(f)
         end
     end
     return nil
@@ -450,8 +451,13 @@ end
 
 function Character:__set_random_target_circle()
     local alpha = math.random() * 2 * math.pi
-    local target = {x= math.cos(alpha) * 10, y= math.sin(alpha) * 10}
-    self.set_target(target)
+    local x = self:pos().x + math.cos(alpha) * 20
+    local y = self:pos().y + math.sin(alpha) * 20
+    local dx, dy, norm = true_dist(self, castle)
+    x = x + dx / 10
+    y = y + dy / 10
+    local target = Target:new({x=x , y=y})
+    self:set_target(target)
 end
 
 
@@ -479,11 +485,12 @@ end
 ---@return Event
 function Character:execute_order()
 
+
     if self.order == "move" then -- character moves to current target
-        local tmp = self.__move_to_target()
+        local tmp = self:__move_to_target()
         if tmp == MOVE_RESPONSE.TARGET_REACHED then
             self.had_finished_order = true
-            return Event_TargetReached()
+            return Event_ActionFinished()
         end
         return nil
     end
@@ -559,7 +566,7 @@ function Character:execute_order()
 
     if self.order == "rest" then
 		self.target = self.home
-		if self.__dist_to_target() < 0.1 then
+		if self:__dist_to_target() < 0.1 then
             local tmp = self:__sleep();
 			if tmp == "rested" then
 				return Event_Rested:new()
@@ -573,23 +580,24 @@ function Character:execute_order()
     --- food related actions
 
     if self.order == "wander_food" then  -- characters wanders around and sending events about food related things he found
-        local tmp = self.__move_to_target()
-        local food = self.__check_food()
+        local tmp = self:__move_to_target()
+        local food = self:__check_food()
         if tmp == MOVE_RESPONSE.TARGET_REACHED then
-            return Event_TargetReached()
+            return Event_ActionFinished()
         end
         if food == nil then
             return nil
         end
-        self.set_target(food.target)
+        self:set_target(food.target)
         return food
     end
     if self.order == "gather_eat" then
         if self.target.cooldown > 0 then
             return Event_ActionFailed()
         else 
-            self.__change_hp(10)
-            self.__set_hunger(0)
+            self:__change_hp(10)
+            self:__set_hunger(0)
+            self.target.cooldown = 10000
             return 
         end
     end
@@ -600,3 +608,5 @@ end
 function Character:finished()
     return self.had_finished_order
 end
+
+return Character

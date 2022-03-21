@@ -5,14 +5,14 @@ local globals = require "modules.constants"
 local Building = require "modules.building"
 local UI = require "ui"
 local Castle = require "modules.castle"
-local GatherEat = require "modules.instructions.GatherEat"
+local InstructionManager = require "modules.instructions._InstructionManager"
 
 
 AgentInstruction = require "modules.instructions._AgentInstructionClass"
 InstructionNode = require "modules.instructions._InstructionNodeClass"
-
-require "Events"
-
+Character = require "modules.character"
+require "modules.instructions.Events"
+GatherEat = require "modules.instructions.GatherEat"
 
 
 function love.load()
@@ -30,8 +30,12 @@ function love.load()
     ALIVE_HEROES = {}
     ALIVE_CHARS = {}
 
-    ---@type Character[]
-    chars = {}
+    ---@class Agent
+    ---@field agent Character
+    ---@field ai InstructionManager
+
+    ---@type Agent[]
+    agents = {}
 
     ---@type Building[]
     buildings = {}    
@@ -39,6 +43,8 @@ function love.load()
     -- game data
     zero_cell = {x=30, y=30}
     castle = Castle:new(zero_cell, 100, 500)
+    agents.insert(new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    
 
     game_ui = UI:new(true)
     
@@ -46,12 +52,20 @@ function love.load()
         for j = 1, 100 do
             if (map_build_flag[i] == nil) or (map_build_flag[i][j] == nil) then
                 local dice = math.random()
-                if dice > 0.9 then
+                if dice > 0.90 then
                     new_food(i, j)
                 end
             end
         end
     end
+end
+
+---comment
+---@param character Character
+---@return Agent
+function new_agent(character)
+    local manager = InstructionManager:new(character)
+    return {agent= character, ai= manager}
 end
 
 
@@ -95,8 +109,10 @@ function love.update(dt)
         
         -- chars update
 
-        for _, agent in pairs(chars) do
-            agent:update()
+
+        for _, agent in pairs(agents) do
+            local event = agent.agent:update()
+            agent.ai:update(agent.agent)
         end        
 		
         for _, building in pairs(buildings) do
@@ -104,7 +120,7 @@ function love.update(dt)
         end
 
         for _, food_obj in pairs(food) do
-            food_obj.cooldown = food_obj.cooldown - 1
+            food_obj.cooldown = math.max(0, food_obj.cooldown - 1)
         end
     end
     
@@ -117,28 +133,6 @@ function love.update(dt)
     inc_tax_value:update_label(tostring(castle.INCOME_TAX) .. '%')
 end
 
-
--- data initialization
-function init_chars_arrays()
-    last_char = 1
-    chars_hp = {}
-    chars_weapon = {}
-    chars_weapon_d = {}
-    chars_armour = {}
-    chars_armour_d = {}
-    chars_x = {}
-    chars_y = {}
-    chars_state = {}
-    chars_target = {}
-    chars_state_target = {}
-    chars_wealth = {}
-    chars_potions = {}
-    chars_home = {}
-    chars_occupation = {}
-    chars_cooldown = {}
-    chars_hunger = {}
-	chars_tiredness = {}
-end
 
 function init_food_array()
     last_food = 1
@@ -204,9 +198,8 @@ function new_char(hp, wealth, home)
 end
 
 function new_food(x, y)
-    food[last_food] = {}
-    food[last_food].x = x
-    food[last_food].y = y
+    food[last_food] = Target:new(convert_cell_to_coord({x = x, y= y}))
+    food[last_food].cell = {x = x, y= y}
     food[last_food].cooldown = 0
     last_food = last_food + 1
 end

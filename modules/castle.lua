@@ -97,6 +97,11 @@ function Castle:get_pos()
     return {x = self._cell.x * grid_size + grid_size/2, y = self._cell.y * grid_size + grid_size/2}
 end
 
+function Castle:pos()
+    local grid_size = globals.CONSTANTS.GRID_SIZE
+    return self:get_pos()
+end
+
 ---comment
 ---@return Position
 function Castle:get_cell()

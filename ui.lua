@@ -95,7 +95,7 @@ function UI:set_up_reward_block()
         :size(192, 70)
         :toogle_border()
     rewards_label = milky.panel
-        :new(milky, rewards_widget, 'REWARDS')
+        :new(milky, rewards_widget, 'HUNTING LOG')
         :position(4, 5)
     rewards_label_rat = milky.panel
         :new(milky, rewards_widget, 'RAT')
@@ -139,15 +139,15 @@ function UI:draw()
     love.graphics.setColor(1, 1, 0)
     local grid_size = globals.CONSTANTS.GRID_SIZE
 
-    for i = 1, last_food - 1 do
-        if food_cooldown[i] == 0 then
-            love.graphics.setColor(1, 0, 0)
+    for _, food_obj in pairs(food) do
+        if food_obj.cooldown == 0 then
+            love.graphics.setColor(0.8, 0, 0)
         else 
             love.graphics.setColor(0.3, 0, 0)
         end
-        local c_x = food_pos[i].x * grid_size + grid_size / 2
-        local c_y = food_pos[i].y * grid_size + grid_size / 2
-        love.graphics.circle('line', c_x, c_y, 3)
+        local c_x = food_obj.cell.x * grid_size + grid_size / 2
+        local c_y = food_obj.cell.y * grid_size + grid_size / 2
+        love.graphics.circle('line', c_x, c_y, 2)
     end
 
     love.graphics.setColor(1, 1, 0)
@@ -155,6 +155,8 @@ function UI:draw()
         local pos = char.position
         love.graphics.circle('line', pos.x, pos.y, 2)
     end
+
+    love.graphics.circle('line', character.position.x, character.position.y, 2)
     
     love.graphics.setColor(1, 1, 0)
     for _, building in pairs(buildings) do

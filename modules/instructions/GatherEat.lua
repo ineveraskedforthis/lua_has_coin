@@ -24,6 +24,9 @@ function TrivialCondition(character, event)
 end
 ---@type Condition
 function TargetReachedCondition(character, event)
+    if event == nil then
+        return false
+    end
     if event.type == "target_reached" then
         return true
     end
@@ -31,6 +34,9 @@ function TargetReachedCondition(character, event)
 end
 ---@type Condition
 function TargetFoundCondition(character, event)
+    if event == nil then
+        return false
+    end
     if event.type == "target_found" then
         return true
     end
@@ -38,10 +44,16 @@ function TargetFoundCondition(character, event)
 end
 ---@type Condition
 function ActionFinishedCondition(character, event)
+    if event == nil then
+        return false
+    end
 	return event.type == "action_finished"
 end
 ---@type Condition
 function ActionFailedCondition(character, event)
+    if event == nil then
+        return false
+    end
 	return event.type == "action_failed"
 end
 
@@ -53,14 +65,14 @@ local FindFood = InstructionNode:new(FindFood)
 local GoToFood = InstructionNode:new(MoveToTarget)
 local CollectFood = InstructionNode:new(CollectFood)
 
-FindFood.add_child(GoToFood, TargetFoundCondition)
-FindFood.add_child(FindFood, ActionFinishedCondition)
+FindFood:add_child(GoToFood, TargetFoundCondition)
+FindFood:add_child(FindFood, ActionFinishedCondition)
 
-GoToFood.add_child(FindFood, ActionFailedCondition)
-GoToFood.add_child(CollectFood, ActionFinishedCondition)
+GoToFood:add_child(FindFood, ActionFailedCondition)
+GoToFood:add_child(CollectFood, ActionFinishedCondition)
 
-CollectFood.add_child(FindFood, ActionFailedCondition)
-CollectFood.add_child(EndNode, ActionFinishedCondition)
+CollectFood:add_child(FindFood, ActionFailedCondition)
+CollectFood:add_child(EndNode, ActionFinishedCondition)
 
 local GatherFoodInstruction = AgentInstruction:new(FindFood)
 
