@@ -451,8 +451,8 @@ end
 
 function Character:__set_random_target_circle()
     local alpha = math.random() * 2 * math.pi
-    local x = self:pos().x + math.cos(alpha) * 20
-    local y = self:pos().y + math.sin(alpha) * 20
+    local x = self:pos().x + math.cos(alpha) * 80
+    local y = self:pos().y + math.sin(alpha) * 80
     local dx, dy, norm = true_dist(self, castle)
     x = x + dx / 10
     y = y + dy / 10
