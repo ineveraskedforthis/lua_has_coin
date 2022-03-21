@@ -12,8 +12,8 @@ AgentInstruction = require "modules.instructions._AgentInstructionClass"
 InstructionNode = require "modules.instructions._InstructionNodeClass"
 Character = require "modules.character"
 require "modules.instructions.Events"
-GatherEat = require "modules.instructions.GatherEat"
-
+GatherFoodInstruction = require "modules.instructions.GatherEat"
+SleepInstruction = require "modules.instructions.Sleep"
 
 function love.load()
     love.window.setMode(800, 600)   
@@ -43,6 +43,9 @@ function love.load()
     -- game data
     zero_cell = {x=30, y=30}
     castle = Castle:new(zero_cell, 100, 500)
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
     table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
 
     game_ui = UI:new(true)
@@ -99,7 +102,7 @@ end
 -- game logic loop
 time_passed = 0
 tps = 20
-tick = 1 / tps / 10--/ 50
+tick = 1 / tps / 20 --/ 50
 
 function love.update(dt)
     time_passed = time_passed + dt

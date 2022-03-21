@@ -57,6 +57,14 @@ function ActionFailedCondition(character, event)
 	return event.type == "action_failed"
 end
 
+---comment
+---@type Condition
+function TiredCondition(character, event)
+    if character:get_tiredness() > 90 then
+        return true
+    end
+end
+
 
 
 local EndNode = InstructionNode:new(Empty, true)
@@ -67,6 +75,7 @@ local CollectFood = InstructionNode:new(CollectFood)
 
 FindFood:add_child(GoToFood, TargetFoundCondition)
 FindFood:add_child(FindFood, ActionFinishedCondition)
+FindFood:add_child(EndNode, TiredCondition)
 
 GoToFood:add_child(FindFood, ActionFailedCondition)
 GoToFood:add_child(CollectFood, ActionFinishedCondition)

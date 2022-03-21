@@ -25,14 +25,14 @@ end
 ---@param node InstructionNode
 ---@param character Character
 ---@param event Event
----@return "ok"|"final"|nil
+---@return "continue"|"final"|InstructionNode
 function AgentInstruction:handle_event(node, character, event)
     local tmp_node = node:select_child(character, event)
     if tmp_node == nil then
         return "continue"
     end
     if tmp_node.end_node then
-        return nil
+        return "final"
     end
     return tmp_node
 end

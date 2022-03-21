@@ -32,5 +32,19 @@ end
 function Event_ActionFinished()
 	return {type= "action_finished"}
 end
+function Event_ActionInProgress()
+	return {type= "action_in_progress"}
+end
+
+function Event_print(event)
+	if event == "continue" then
+		print("Event continue")
+	end
+	if event == nil then
+		print("Event nil")
+		return
+	end
+	print("Event " .. event.type)
+end
 
 ---@alias Event EventTargeted|EventSimple

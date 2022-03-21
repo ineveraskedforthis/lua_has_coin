@@ -188,7 +188,7 @@ function Character:get_wealth()
 end
 
 
-
+---Updates inner state of character: hunger, hp, potions
 function Character:update()
     self:__set_hunger(self.hunger + 1)
     if self.potion.level > 0 then
@@ -197,7 +197,6 @@ function Character:update()
             self:__drink_potion()
         end
     end
-    return self:execute_order()
 end
 
 ---comment
@@ -228,6 +227,13 @@ function Character:__change_hp(x)
         return HP_RESPONSE.ALIVE
     else
         return HP_RESPONSE.DEAD
+    end
+end
+
+function Character:__change_tiredness(x)
+    self.tiredness = self.tiredness + x
+    if (self.tiredness > 100) then
+        self.tiredness = 100
     end
 end
 
@@ -263,7 +269,11 @@ function Character:__move_to_target()
         return
     end
     local dx, dy, norm = true_dist(self, self.target)
-    if (norm > 1) then
+    norm = norm * (1 + self.tiredness / 50)
+    if math.random() > 0.95 then
+        self:__change_tiredness(1)
+    end    
+    if (norm > 1) then        
         self:__shift(dx / norm, dy / norm)
         return MOVE_RESPONSE.STILL_MOVING
     else
@@ -323,9 +333,9 @@ end
 function Character:__sleep()
 	self.tiredness = math.max(self.tiredness - 1, 0)
     if self.tiredness == 0 then
-        return 'rested'
+        return Event_ActionFinished()
     end
-    return 'not_rested'
+    return Event_ActionInProgress()
 end
 
 
@@ -382,14 +392,6 @@ function Character:__recieve_reward(castle)
     end
 end
 
-
-
----comment
----@param j number
-function Character:__collect_food(j)
-    j.cooldown = 10000
-    self.stash = STASH.FOOD
-end
 
 ---comment
 ---@param building Building
@@ -484,8 +486,6 @@ end
 ---comment
 ---@return Event
 function Character:execute_order()
-
-
     if self.order == "move" then -- character moves to current target
         local tmp = self:__move_to_target()
         if tmp == MOVE_RESPONSE.TARGET_REACHED then
@@ -577,6 +577,12 @@ function Character:execute_order()
         return nil
     end
 
+    if self.order == "rest_on_ground" then
+		self.target = self.home
+        local tmp = self:__sleep();
+        return tmp
+    end
+
     --- food related actions
 
     if self.order == "wander_food" then  -- characters wanders around and sending events about food related things he found
@@ -592,15 +598,26 @@ function Character:execute_order()
         return food
     end
     if self.order == "gather_eat" then
-        if self.target.cooldown > 0 then
-            return Event_ActionFailed()
-        else 
-            self:__change_hp(10)
-            self:__set_hunger(0)
-            self.target.cooldown = 10000
-            return 
-        end
+        return self:__collect_food(self.target)
     end
+end
+
+---Collects food and eat it  
+---Effect:  
+---        restores 10 hp  
+---        sets hunger to 0  
+---        increases tiredness 
+---@param food Target
+---@return table
+function Character:__collect_food(food)
+    if food.cooldown > 0 then
+        return Event_ActionFailed()
+    end
+    self:__change_hp(10)
+    self:__set_hunger(0)
+    self:__change_tiredness(1)
+    self.target.cooldown = 10000
+    return Event_ActionFinished()
 end
 
 ---comment
