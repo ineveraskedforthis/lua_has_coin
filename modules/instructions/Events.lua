@@ -1,9 +1,13 @@
 ---@class EventTargeted
----@field type "spotted_enemy"
+---@field type string
 ---@field target Target 
 
+---@class EventCell
+---@field type string
+---@field target Cell 
+
 ---@class EventSimple
----@field type "hunt_started"|"target_killed"
+---@field type string
 
 ---Returns new event with passed target
 ---@param target Target
@@ -20,6 +24,11 @@ end
 
 ---@return EventTargeted
 function Event_TargetFound(target)
+	return {type="target_found", target=target}
+end
+
+---@return EventCell
+function Event_CellFound(target)
 	return {type="target_found", target=target}
 end
 function Event_TargetReached()

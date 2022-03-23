@@ -12,6 +12,7 @@ AgentInstruction = require "modules.instructions._AgentInstructionClass"
 InstructionNode = require "modules.instructions._InstructionNodeClass"
 Character = require "modules.character"
 require "modules.instructions.Events"
+require "modules.instructions.Conditions"
 GatherFoodInstruction = require "modules.instructions.GatherEat"
 SleepInstruction = require "modules.instructions.Sleep"
 

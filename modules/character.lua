@@ -161,10 +161,16 @@ function Character:set_home(b)
     self.home = b
 end
 
----comment
+---returns coordinate at which character is
 ---@return Position
 function Character:pos()
     return self.position
+end
+
+---returns cell at which character is
+---@return Cell
+function Character:cell()
+    return convert_coord_to_cell(self:pos())
 end
 
 ---comment
@@ -328,11 +334,18 @@ function Character:__return_tax(castle)
     self.wealth = 0
 end
 
----comment
----@return "rested"|"not_rested"
-function Character:__sleep()
-	self.tiredness = math.max(self.tiredness - 1, 0)
-    if self.tiredness == 0 then
+---character rests  
+--- until gets to `50 - quality` tiredness
+---@return EventSimple
+function Character:__sleep(quality)
+    local lower_bound = 50 
+    if quality ~= nil then
+        lower_bound = math.max(0, 50 - quality)
+    end
+	if math.random() > 0.95 then 
+        self.tiredness = math.max(self.tiredness - 1, lower_bound)
+    end
+    if self.tiredness == lower_bound then
         return Event_ActionFinished()
     end
     return Event_ActionInProgress()
@@ -451,6 +464,23 @@ function Character:__check_food()
     return nil
 end
 
+---Returns current cell as target in TargetFound event if it's far away enough from other buildings  
+---Returns nil otherwise
+---@return EventTargeted|nil
+function Character:__check_space()
+    local dist = self:__dist_to(castle)
+    for _, f in pairs(buildings) do
+        local tmp = self:__dist_to(f)
+        if dist > tmp then
+            dist = tmp
+        end
+    end
+    if dist > 100 then
+        return Event_TargetFound(self:cell())
+    end
+    return nil
+end
+
 function Character:__set_random_target_circle()
     local alpha = math.random() * 2 * math.pi
     local x = self:pos().x + math.cos(alpha) * 80
@@ -480,6 +510,11 @@ end
 
 function Character:set_order_WanderForFood()
     self:set_order("wander_food")
+    self:__set_random_target_circle()
+end
+
+function Character:set_order_WanderForVacantSpace()
+    self:set_order("wander_vacant_space")
     self:__set_random_target_circle()
 end
 
@@ -599,6 +634,30 @@ function Character:execute_order()
     end
     if self.order == "gather_eat" then
         return self:__collect_food(self.target)
+    end
+
+    if self.order == "return_to_castle" then
+        local target = castle
+        self.target = target
+        local tmp = self:__move_to_target()
+        if tmp == MOVE_RESPONSE.TARGET_REACHED then
+            return Event_ActionFinished()
+        end
+        return Event_ActionInProgress()
+    end
+
+    if self.order == "wander_vacant_space" then
+        local tmp = self:__move_to_target()
+        local space = self:__check_space()
+        if space == nil then
+            if tmp == MOVE_RESPONSE.TARGET_REACHED then
+                return Event_ActionFinished()
+            else
+                return Event_ActionInProgress()
+            end
+        else
+            return Event_TargetFound(space)
+        end
     end
 end
 

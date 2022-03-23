@@ -2,7 +2,7 @@
 ---@class ConditionResponce
 
 
----@alias Condition fun(character:Character, event:Event):ConditionResponce
+
 ---@alias Action fun(character:Character):NodeResponce
 
 ---@class Edge
