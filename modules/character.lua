@@ -155,7 +155,7 @@ end
 
 --- methods with __ are supposed to be fired only inside this class
 
----comment
+---Sets a new home to a character
 ---@param b Building
 function Character:set_home(b)
     self.home = b
@@ -196,7 +196,10 @@ end
 
 ---Updates inner state of character: hunger, hp, potions
 function Character:update()
-    self:__set_hunger(self.hunger + 1)
+    if math.random() > 0.99 then
+        self:__set_hunger(self.hunger + 1)    
+    end
+
     if self.potion.level > 0 then
         self.potion.dur = self.potion.dur - 1
         if (self.potion.dur < 0) or (self.hp < (self.max_hp / 2)) then
@@ -466,7 +469,7 @@ end
 
 ---Returns current cell as target in TargetFound event if it's far away enough from other buildings  
 ---Returns nil otherwise
----@return EventTargeted|nil
+---@return EventCell|nil
 function Character:__check_space()
     local dist = self:__dist_to(castle)
     for _, f in pairs(buildings) do
@@ -476,7 +479,7 @@ function Character:__check_space()
         end
     end
     if dist > 100 then
-        return Event_TargetFound(self:cell())
+        return Event_CellFound(self:cell())
     end
     return nil
 end
@@ -656,7 +659,8 @@ function Character:execute_order()
                 return Event_ActionInProgress()
             end
         else
-            return Event_TargetFound(space)
+            self.target = space.target
+            return space
         end
     end
 end

@@ -1,11 +1,13 @@
+---
 
-local InstructionManager = {}
-InstructionManager.__index = InstructionManager
 
 ---@class InstructionManager
 ---@field current_instruction AgentInstruction
 ---@field current_node InstructionNode
 ---@field character Character
+local InstructionManager = {}
+InstructionManager.__index = InstructionManager
+
 
 ---comment
 ---@param character Character
@@ -37,12 +39,8 @@ end
 ---Selects new instruction for a character
 ---@param character Character
 function InstructionManager:select_new_instruction(character)
-    if character.tiredness > 70 then
-        self:set_instruction(character, SleepInstruction)
-        return
-    end
-    
-    self:set_instruction(character, GatherFoodInstruction)
+    local instruction = MostUsefulAction(character)
+    self:set_instruction(character, instruction)
 end
 
 ---Sets new current instruction

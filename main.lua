@@ -13,6 +13,7 @@ InstructionNode = require "modules.instructions._InstructionNodeClass"
 Character = require "modules.character"
 require "modules.instructions.Events"
 require "modules.instructions.Conditions"
+require "modules.instructions.Utility"
 GatherFoodInstruction = require "modules.instructions.GatherEat"
 SleepInstruction = require "modules.instructions.Sleep"
 
@@ -67,6 +68,7 @@ end
 ---@param character Character
 ---@return Agent
 function new_agent(character)
+    ---@type InstructionManager
     local manager = InstructionManager:new(character)
     return {agent= character, ai= manager}
 end
@@ -187,19 +189,6 @@ function get_new_building_location(castle)
 end
 
 
----comment
----@param hp number
----@param wealth number
----@param home Building|Castle
----@return Character
-function new_char(hp, wealth, home) 
-    local char = Character:new(hp, wealth, home, 5, 5, false)
-    local ai = Hunter_AI:new()
-    char.ai = ai
-    char.ai:choose_algo(char)
-    return char
-end
-
 function new_food(x, y)
     food[last_food] = Target:new(convert_cell_to_coord({x = x, y= y}))
     food[last_food].cell = {x = x, y= y}
@@ -207,21 +196,8 @@ function new_food(x, y)
     last_food = last_food + 1
 end
 
-function new_hero(wealth)
-    ALIVE_HEROES[last_char] = true
-    local char = new_char(100, wealth, castle)
-    char.weapon.level = 5
-    char.armour.level = 5
-    return last_char - 1
-end
 
-
-function new_building(i, j, progress, owner)
-    if map_build_flag[i] == nil then
-        map_build_flag[i] = {}
-    end
-    map_build_flag[i][j] = true
-    buildings[last_building] = Building:new({x=i, y=j}, 0, progress, owner)
-    last_building = last_building + 1
-    return last_building - 1
+---Adds a new building into update loop
+function add_building(building)
+    table.insert(buildings, #buildings + 1, building)
 end

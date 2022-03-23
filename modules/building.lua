@@ -14,7 +14,7 @@ Building.__index = Building
 
 
 
----@alias BuildingClass "food"|"home"|"potion"|"rat_lair"
+---@alias BuildingClass "shop"|"home"
 ---@alias ShopType "food"|"potion"
 
 ---comment
@@ -38,14 +38,14 @@ function Building:new(cell, class, progress, owner)
     return building
 end
 
----comment
+---Returns coordinate of building
 ---@return Position
 function Building:get_pos()
     local grid_size = globals.CONSTANTS.GRID_SIZE
     return {x = self._cell.x * grid_size + grid_size/2, y = self._cell.y * grid_size + grid_size/2}
 end
 
----comment
+---Return cell of building
 ---@return Position
 function Building:get_cell()
     return self._cell
