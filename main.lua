@@ -16,6 +16,7 @@ require "modules.instructions.Conditions"
 require "modules.instructions.Utility"
 GatherFoodInstruction = require "modules.instructions.GatherEat"
 SleepInstruction = require "modules.instructions.Sleep"
+OpenShopInstruction = require "modules.instructions.OpenShop"
 
 function love.load()
     love.window.setMode(800, 600)   
@@ -45,10 +46,14 @@ function love.load()
     -- game data
     zero_cell = {x=30, y=30}
     castle = Castle:new(zero_cell, 100, 500)
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    local zero_position = convert_cell_to_coord(zero_cell)
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, zero_position, 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, zero_position, 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, zero_position, 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, zero_position, 10, 10, false)))
+
+    local rich_character = Character:new(100, 1000, zero_position, 10, 10, false)
+    table.insert(agents, #agents + 1, new_agent(rich_character))
 
     game_ui = UI:new(true)
     

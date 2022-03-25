@@ -10,6 +10,13 @@
 ---          0, 1, 2...                       ->    50, 25, 13...
 --- A4: 
 ---     money don't have inherent utility
+--- A5: 
+---		opening a business has utility 200 in case of not having a shop yet and having "enough" gold
+---     otherwise, utility is -100
+--- A6:
+---		there is always a harmless action with at least 0 utility (to avoid choosing actions with negative utility)
+
+
 
 
 --- Description of actions
@@ -27,7 +34,7 @@
 --- OpenShop:
 ---   find an empty spot and build a shop:                    not done
 ---     cost:      200
----     utility:   100 if wealth > 200
+---     utility:   200 if wealth > 200 and no shop yet
 
 
 
@@ -42,8 +49,12 @@ function MostUsefulAction(character)
 
 	local eat_utility = character:get_hunger()
 	local sleep_utility = character:get_tiredness() - 50
+	local open_shop_utility = -100
+	if character.wealth > 200 then
+		open_shop_utility = 200
+	end
 
-	local max_utility = math.max(eat_utility, sleep_utility)
+	local max_utility = math.max(eat_utility, sleep_utility, open_shop_utility)
 
 	if eat_utility == max_utility then
 		return GatherFoodInstruction
@@ -51,4 +62,7 @@ function MostUsefulAction(character)
     if sleep_utility == max_utility then
         return SleepInstruction
     end
+	if open_shop_utility == max_utility then
+		return OpenShopInstruction
+	end
 end

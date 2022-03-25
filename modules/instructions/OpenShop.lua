@@ -32,4 +32,7 @@ local SetUpShopSpotNode = InstructionNode:new(SetUpShopSpot)
 
 ReturnToCastleNode:add_child(FindShopPlaceNode, ActionFinishedCondition)
 FindShopPlaceNode:add_child(SetUpShopSpotNode, TargetFoundCondition)
-SetUpShopSpot:add_child(EndNode, TrivialCondition)
+SetUpShopSpotNode:add_child(EndNode, TrivialCondition)
+
+local SetUpShopSpotInstruction = AgentInstruction:new(ReturnToCastleNode)
+return SetUpShopSpotInstruction
