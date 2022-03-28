@@ -16,6 +16,7 @@ function SetUpShopSpot(character)
     -- print("!!!!")
     local shop = Building:new(character.target, "shop", 0, character)
     character:set_home(shop)
+    character:pay(shop, 200)
     character.has_shop = true
     add_building(shop)
     character:set_order("set_up_shop")

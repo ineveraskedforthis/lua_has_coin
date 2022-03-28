@@ -19,7 +19,6 @@
 ---     between action with no cost and some cost but with same utility character chooses action with no cost
 
 
-
 --- Description of actions
 --- Sleep:
 ---   sleep at the floor:                                     done
@@ -28,7 +27,7 @@
 ---   sleep at home:									      done
 ---     cost:      None
 ---     utility:   tiredness
----   sleep at the castle:                                    not done 
+---   sleep at the castle:                                    done 
 ---     cost:      castle.SLEEP_PRICE
 ---     utility:   tiredness
 --- Eat:
@@ -36,10 +35,13 @@
 ---     cost:      None
 ---     utility:   hunger * 0.5
 --- OpenShop:
----   find an empty spot and build a shop:                    not done
----     cost:      200
+---   find an empty spot and build a shop:                    done
+---     cost:      200 money into building's bank
 ---     utility:   200 if wealth > 200 and no shop yet
-
+--- Wander:
+---	  walk around doing nothing:
+---		cost:      None
+---		utility:   30
 
 
 
@@ -73,13 +75,13 @@ function MostUsefulAction(character)
 		money_utility_total = money_utility_total + sleep_paid_utility
 	end
 
+	local wander_utility = 30
+	
+
 	if money_required_total ~= 0 then
 		money_utility_per_unit = money_utility_total / money_required_total
 	end
-
-
-
-	local max_utility = math.max(eat_utility, sleep_utility, open_shop_utility, sleep_paid_utility)
+	local max_utility = math.max(eat_utility, sleep_utility, open_shop_utility, sleep_paid_utility, wander_utility)
 	if eat_utility == max_utility then
 		return GatherFoodInstruction
 	end
@@ -91,5 +93,8 @@ function MostUsefulAction(character)
 	end
 	if sleep_paid_utility == max_utility then
 		return SleepPaidInstruction
+	end
+	if wander_utility == max_utility then
+		return WanderInstruction
 	end
 end

@@ -1,3 +1,10 @@
+--- Prices logic:
+--- sell price - how much character can get for selling thing in this shop
+--- buy price - how much character should pay to buy thing in this shop 
+--- When someone buys, it increases buy price by 1 with some probability
+--- When someone sells, it decreases sell price by 1 with some probability
+--- During update, with some probability sell price rises and buy price falls
+
 ---@class Building
 ---@field _cell Position
 ---@field class number
@@ -33,7 +40,7 @@ function Building:new(cell, class, progress, owner)
     building.wealth = 0
     building.wealth_before_tax = 0
     building.num_of_visitors = 0
-    building.price = 999
+    building.price = 10
     building.stash = 0
     return building
 end
@@ -49,6 +56,12 @@ end
 ---@return Position
 function Building:cell()
     return self._cell
+end
+
+---Adds x wealth (subjected to taxes) to building
+---@param x number
+function Building:add_wealth(x)
+    self.wealth_before_tax = self.wealth_before_tax + x
 end
 
 ---comment

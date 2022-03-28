@@ -219,6 +219,18 @@ function Character:update()
     end
 end
 
+function Character:add_wealth(x)
+    self.wealth = self.wealth + x
+end
+
+---Pays x wealth to target  
+---@param target Character|Building
+---@param x number
+function Character:pay(target, x)
+    self:add_wealth(-x)
+    target:add_wealth(x)
+end
+
 ---shifts coordinate by (a, b) 
 ---@param a number
 ---@param b number
@@ -290,7 +302,7 @@ function Character:__move_to_target()
     end
     local dx, dy, norm = true_dist(self, self.target)
     norm = norm * (1 + self.tiredness / 50)
-    if math.random() > 0.95 then
+    if math.random() > 0.98 then
         self:__change_tiredness(1)
     end    
     if (norm > 1) then
@@ -527,6 +539,12 @@ function Character:set_order(order)
     self.had_finished_order = false
 end
 
+
+function Character:set_order_Wander()
+    self:set_order("wander")
+    self:__set_random_target_circle()
+end
+
 function Character:set_order_WanderForFood()
     self:set_order("wander_food")
     self:__set_random_target_circle()
@@ -645,8 +663,16 @@ function Character:execute_order()
 		end
     end
 
-    --- food related actions
+    
+    if self.order == "wander" then  -- characters wanders around and sending events about food related things he found
+        local tmp = self:__move_to_target()
+        if tmp == MOVE_RESPONSE.TARGET_REACHED then
+            return Event_ActionFinished()
+        end
+        return Event_ActionInProgress()
+    end
 
+    --- food related actions
     if self.order == "wander_food" then  -- characters wanders around and sending events about food related things he found
         local tmp = self:__move_to_target()
         local food = self:__check_food()
