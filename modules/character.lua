@@ -35,6 +35,8 @@ CHARACTER_STATE = enum {
     "BUY_POTION"
 }
 
+local moraes = {'xi', 'lo', 'mi', 'ki', 'a', 'i', 'ku'}
+
 
 ---@class Castle
 
@@ -95,6 +97,7 @@ end
 ---@field dur number
 
 ---@class Character
+---@field name string
 ---@field hp number
 ---@field max_hp number
 ---@field hunger number
@@ -124,6 +127,12 @@ Character.__index = Character
 function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
     local character = {entity_type = "CHARACTER"}
     setmetatable(character, self)
+
+    local name = ''
+    for i = 0, 4 do
+        name = name .. moraes[math.random(#moraes)]
+    end
+    character.name = name
 
     character.position = pos
 

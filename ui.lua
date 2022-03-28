@@ -154,6 +154,7 @@ function UI:draw()
     for _, agent in pairs(agents) do
         local pos = agent.agent:pos()
         love.graphics.circle('line', pos.x, pos.y, 2)
+        love.graphics.print(agent.agent.name, pos.x + 2, pos.y - 15)
         love.graphics.print(tostring(agent.agent:get_hunger()), pos.x + 2, pos.y + 2)
         love.graphics.print(tostring(agent.agent:get_tiredness()), pos.x + 2, pos.y + 15)
     end
