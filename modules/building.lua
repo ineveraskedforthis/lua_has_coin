@@ -10,6 +10,8 @@
 ---@field class number
 ---@field progress number
 ---@field wealth number
+---@field food_price_buy number
+---@field food_price_sell number
 ---@field wealth_before_tax number
 ---@field num_of_visitors number
 ---@field price number
