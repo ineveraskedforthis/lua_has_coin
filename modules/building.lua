@@ -40,14 +40,14 @@ end
 
 ---Returns coordinate of building
 ---@return Position
-function Building:get_pos()
+function Building:pos()
     local grid_size = globals.CONSTANTS.GRID_SIZE
     return {x = self._cell.x * grid_size + grid_size/2, y = self._cell.y * grid_size + grid_size/2}
 end
 
 ---Return cell of building
 ---@return Position
-function Building:get_cell()
+function Building:cell()
     return self._cell
 end
 

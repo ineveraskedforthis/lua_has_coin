@@ -108,6 +108,7 @@ end
 ---@field occupation_data number
 ---@field is_rat boolean
 ---@field had_finished_order boolean
+---@field has_shop boolean
 ---@field order Order
 ---@field quest Quest|nil
 Character = {}
@@ -147,6 +148,7 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
 
     character.rat = is_rat
     character.had_finished_order = true
+    character.has_shop = false
 
     character.quest = nil
 
@@ -338,14 +340,19 @@ function Character:__return_tax(castle)
 end
 
 ---character rests  
---- until gets to `50 - quality` tiredness
+--- until gets to `50 - quality` tiredness 
+--- quality of 50 gives 3 times larger speed of rest
+--- returns ActionFinished event if got to minimal tiredness
+--- returns ActionInProgress if still resting
 ---@return EventSimple
 function Character:__sleep(quality)
-    local lower_bound = 50 
+    local lower_bound = 50
     if quality ~= nil then
         lower_bound = math.max(0, 50 - quality)
+    else
+        quality = 0
     end
-	if math.random() > 0.95 then 
+	if math.random() > 0.95 - quality / 5 / 100 then 
         self.tiredness = math.max(self.tiredness - 1, lower_bound)
     end
     if self.tiredness == lower_bound then
@@ -606,14 +613,11 @@ function Character:execute_order()
     if self.order == "rest" then
 		self.target = self.home
 		if self:__dist_to_target() < 0.1 then
-            local tmp = self:__sleep();
-			if tmp == "rested" then
-				return Event_Rested:new()
-			end
+            local tmp = self:__sleep(50);
+			return tmp
 		else
-			self:__move_to_target()
+			return Event_ActionFailed()
 		end
-        return nil
     end
 
     if self.order == "rest_on_ground" then
@@ -642,6 +646,19 @@ function Character:execute_order()
 
     if self.order == "return_to_castle" then
         local target = castle
+        self.target = target
+        local tmp = self:__move_to_target()
+        if tmp == MOVE_RESPONSE.TARGET_REACHED then
+            return Event_ActionFinished()
+        end
+        return Event_ActionInProgress()
+    end
+
+    if self.order == "return_home" then
+        if self.home == nil then
+            return Event_ActionFailed()
+        end
+        local target = self.home
         self.target = target
         local tmp = self:__move_to_target()
         if tmp == MOVE_RESPONSE.TARGET_REACHED then

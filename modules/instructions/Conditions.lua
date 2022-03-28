@@ -26,9 +26,9 @@ function TargetFoundCondition(character, event)
 end
 ---@type Condition
 function CellFoundCondition(character, event)
-    print("??")
-    print(event)
-    print(event.type)
+    -- print("??")
+    -- print(event)
+    -- print(event.type)
     if event == nil then
         return false
     end
@@ -58,4 +58,12 @@ function TiredCondition(character, event)
     if character:get_tiredness() > 90 then
         return true
     end
+end
+
+---comment
+---@param character Character
+---@param event Event
+---@return boolean
+function HasHomeCondition(character, event)
+    return not (character.home == nil)
 end

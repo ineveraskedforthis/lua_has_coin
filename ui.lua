@@ -160,7 +160,7 @@ function UI:draw()
 
     love.graphics.setColor(1, 1, 0)
     for _, building in pairs(buildings) do
-        local tmp = building:get_cell()
+        local tmp = building:cell()
         love.graphics.rectangle('line', tmp.x * grid_size, tmp.y * grid_size, grid_size, grid_size)
     end
 

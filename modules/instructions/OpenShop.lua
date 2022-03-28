@@ -28,7 +28,7 @@ function ReturnToCastle(character)
 end
 
 
-local EndNode = InstructionNode:new(Empty)
+local EndNode = InstructionNode:new(Empty, true)
 local ReturnToCastleNode = InstructionNode:new(ReturnToCastle)
 local FindShopPlaceNode = InstructionNode:new(FindPlaceForShop)
 local SetUpShopSpotNode = InstructionNode:new(SetUpShopSpot)
