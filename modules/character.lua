@@ -635,6 +635,16 @@ function Character:execute_order()
         return tmp
     end
 
+    if self.order == "rest_at_castle" then
+		self.target = castle
+        if self:__dist_to_target() < 0.1 then
+            local tmp = self:__sleep(50);
+			return tmp
+		else
+			return Event_ActionFailed()
+		end
+    end
+
     --- food related actions
 
     if self.order == "wander_food" then  -- characters wanders around and sending events about food related things he found

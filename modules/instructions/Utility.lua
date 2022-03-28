@@ -15,15 +15,19 @@
 ---     otherwise, utility is -100
 --- A6:
 ---		there is always a harmless action with at least 0 utility (to avoid choosing actions with negative utility)
-
+--- A7:
+---     between action with no cost and some cost but with same utility character chooses action with no cost
 
 
 
 --- Description of actions
---- Sleep: 
+--- Sleep:
 ---   sleep at the floor:                                     done
 ---     cost:      None
 ---     utility:   tiredness - 50
+---   sleep at home:									      done
+---     cost:      None
+---     utility:   tiredness
 ---   sleep at the castle:                                    not done 
 ---     cost:      castle.SLEEP_PRICE
 ---     utility:   tiredness
@@ -47,15 +51,35 @@ function MostUsefulAction(character)
 	local sleep_price = castle.SLEEP_PRICE
 	---local potion_price = castle.POTION_PRICE
 
+	local money_utility_total = 0
+	local money_required_total = 0
+	local money_utility_per_unit = 0
+
 	local eat_utility = character:get_hunger()
-	local sleep_utility = character:get_tiredness() - 50
+	local sleep_utility = character:get_tiredness()
+	if character.home == nil then
+		sleep_utility = character:get_tiredness() - 50
+	end
+
 	local open_shop_utility = -100
 	if (character.wealth > 200) and (character.has_shop == false) then
 		open_shop_utility = 200
 	end
 
-	local max_utility = math.max(eat_utility, sleep_utility, open_shop_utility)
+	local sleep_paid_utility = character:get_tiredness()
+	if character.wealth < castle.SLEEP_PRICE then
+		sleep_paid_utility = 0
+		money_required_total = money_required_total + castle.SLEEP_PRICE
+		money_utility_total = money_utility_total + sleep_paid_utility
+	end
 
+	if money_required_total ~= 0 then
+		money_utility_per_unit = money_utility_total / money_required_total
+	end
+
+
+
+	local max_utility = math.max(eat_utility, sleep_utility, open_shop_utility, sleep_paid_utility)
 	if eat_utility == max_utility then
 		return GatherFoodInstruction
 	end
@@ -64,5 +88,8 @@ function MostUsefulAction(character)
     end
 	if open_shop_utility == max_utility then
 		return OpenShopInstruction
+	end
+	if sleep_paid_utility == max_utility then
+		return SleepPaidInstruction
 	end
 end
