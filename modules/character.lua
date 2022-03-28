@@ -208,7 +208,7 @@ function Character:update()
     end
 end
 
----comment
+---shifts coordinate by (a, b) 
 ---@param a number
 ---@param b number
 function Character:__shift(a, b)
@@ -282,7 +282,7 @@ function Character:__move_to_target()
     if math.random() > 0.95 then
         self:__change_tiredness(1)
     end    
-    if (norm > 1) then        
+    if (norm > 1) then
         self:__shift(dx / norm, dy / norm)
         return MOVE_RESPONSE.STILL_MOVING
     else
@@ -524,6 +524,7 @@ end
 ---comment
 ---@return Event
 function Character:execute_order()
+
     if self.order == "move" then -- character moves to current target
         local tmp = self:__move_to_target()
         if tmp == MOVE_RESPONSE.TARGET_REACHED then

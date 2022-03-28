@@ -29,7 +29,7 @@ end
 
 ---@return EventCell
 function Event_CellFound(target)
-	return {type="target_found", target=target}
+	return {type="cell_found", target=target}
 end
 function Event_TargetReached()
 	return {type = "target_reached"}

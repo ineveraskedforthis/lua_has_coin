@@ -7,13 +7,16 @@ function BringWoodBack(character)
 end
 
 function FindPlaceForShop(character)
+    -- print("????")
     character:set_order_WanderForVacantSpace()
 end
 
 ---@param character Character
 function SetUpShopSpot(character)
+    -- print("!!!!")
     local shop = Building:new(character.target, "shop", 0, character)
     character:set_home(shop)
+    character.has_shop = true
     add_building(shop)
     character:set_order("set_up_shop")
 end
@@ -31,7 +34,8 @@ local FindShopPlaceNode = InstructionNode:new(FindPlaceForShop)
 local SetUpShopSpotNode = InstructionNode:new(SetUpShopSpot)
 
 ReturnToCastleNode:add_child(FindShopPlaceNode, ActionFinishedCondition)
-FindShopPlaceNode:add_child(SetUpShopSpotNode, TargetFoundCondition)
+FindShopPlaceNode:add_child(SetUpShopSpotNode, CellFoundCondition)
+FindShopPlaceNode:add_child(FindShopPlaceNode, ActionFinishedCondition)
 SetUpShopSpotNode:add_child(EndNode, TrivialCondition)
 
 local SetUpShopSpotInstruction = AgentInstruction:new(ReturnToCastleNode)

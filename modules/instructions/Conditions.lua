@@ -25,6 +25,19 @@ function TargetFoundCondition(character, event)
     return false
 end
 ---@type Condition
+function CellFoundCondition(character, event)
+    print("??")
+    print(event)
+    print(event.type)
+    if event == nil then
+        return false
+    end
+    if event.type == "cell_found" then
+        return true
+    end
+    return false
+end
+---@type Condition
 function ActionFinishedCondition(character, event)
     if event == nil then
         return false

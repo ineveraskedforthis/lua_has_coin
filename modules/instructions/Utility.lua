@@ -50,7 +50,7 @@ function MostUsefulAction(character)
 	local eat_utility = character:get_hunger()
 	local sleep_utility = character:get_tiredness() - 50
 	local open_shop_utility = -100
-	if character.wealth > 200 then
+	if (character.wealth > 200) and (character.has_shop == false) then
 		open_shop_utility = 200
 	end
 

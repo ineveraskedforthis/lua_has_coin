@@ -46,13 +46,12 @@ function love.load()
     -- game data
     zero_cell = {x=30, y=30}
     castle = Castle:new(zero_cell, 100, 500)
-    local zero_position = convert_cell_to_coord(zero_cell)
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, zero_position, 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, zero_position, 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, zero_position, 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, zero_position, 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 10, convert_cell_to_coord(zero_cell), 10, 10, false)))
 
-    local rich_character = Character:new(100, 1000, zero_position, 10, 10, false)
+    local rich_character = Character:new(100, 1000, convert_cell_to_coord(zero_cell), 10, 10, false)
     table.insert(agents, #agents + 1, new_agent(rich_character))
 
     game_ui = UI:new(true)
@@ -68,6 +67,14 @@ function love.load()
         end
     end
 end
+
+---comment
+---@param x number
+---@param y number
+function new_position(x, y)
+    return {x= x, y= y}
+end
+
 
 ---comment
 ---@param character Character
@@ -121,7 +128,7 @@ function love.update(dt)
 
 
         for _, agent in pairs(agents) do
-            local event = agent.agent:update()
+            agent.agent:update()
             agent.ai:update(agent.agent)
         end        
 		

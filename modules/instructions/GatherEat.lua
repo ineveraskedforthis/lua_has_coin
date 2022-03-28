@@ -5,7 +5,9 @@ InstructionNode = require "modules.instructions._InstructionNodeClass"
 function MoveToTarget(character)
     character:set_order("move")
 end
----@type Action
+
+---comment
+---@param character Character
 function FindFood(character)
     character:set_order_WanderForFood()
 end
@@ -29,7 +31,7 @@ local CollectFood = InstructionNode:new(CollectFood)
 
 FindFood:add_child(GoToFood, TargetFoundCondition)
 FindFood:add_child(FindFood, ActionFinishedCondition)
-FindFood:add_child(EndNode, TiredCondition)
+-- FindFood:add_child(EndNode, TiredCondition)
 
 GoToFood:add_child(FindFood, ActionFailedCondition)
 GoToFood:add_child(CollectFood, ActionFinishedCondition)
