@@ -14,7 +14,8 @@
 ---@field food_price_sell number
 ---@field wealth_before_tax number
 ---@field num_of_visitors number
----@field price number
+---@field buy_price number
+---@field sell_price number
 ---@field owner any
 ---@field stash number
 Building = {}
@@ -64,6 +65,30 @@ end
 ---@param x number
 function Building:add_wealth(x)
     self.wealth_before_tax = self.wealth_before_tax + x
+end
+
+---Gets total wealth of building, both taxed and untaxed
+---@return number
+function Building:get_wealth()
+    return self.wealth + self.wealth_before_tax
+end
+
+---Pays money to target character
+---@param target Character
+---@param x number
+function Building:pay(target, x)
+    if self:get_wealth() > x then
+        if self.wealth_before_tax > x then
+            self.wealth_before_tax = self.wealth_before_tax - x
+            target.wealth = target.wealth + x
+            return Event_ActionFinished()
+        end
+        self.wealth = self.wealth + self.wealth_before_tax - x
+        self.wealth_before_tax = 0
+        target.wealth = target.wealth + x
+        return Event_ActionFinished()
+    end
+    return Event_ActionFailed()
 end
 
 ---comment

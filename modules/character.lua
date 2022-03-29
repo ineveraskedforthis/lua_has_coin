@@ -109,6 +109,7 @@ end
 ---@field potion Item
 ---@field position Position
 ---@field occupation_data number
+---@field stash "food"|nil
 ---@field is_rat boolean
 ---@field had_finished_order boolean
 ---@field has_shop boolean
@@ -141,7 +142,7 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
     character.hunger = 0
     character.tiredness = 0
 
-    character.stash = STASH.NONE
+    character.stash = nil
     character.wealth = wealth
         
     character.weapon = {level=0, dur=100}
@@ -328,13 +329,30 @@ end
 ---comment
 ---@param shop Building
 function Character:__buy_food(shop)
-    if (self.wealth >= shop.price) and (shop.stash > 0) then
+    if (self.wealth >= shop.buy_price) and (shop.stash > 0) then
         shop.wealth_before_tax[shop] = shop.wealth_before_tax[shop] + shop.price
         self.wealth = self.wealth - shop.price
         shop.stash = shop.stash - 1
         self:__change_hp(10)
         self:__set_hunger(0)
+    else
+        
     end
+end
+
+---Character attempts to sell food in shop  
+---If shop has enough money then returns ActionFinished event  
+---Otherwise returns ActionFailed event
+---@param shop Building
+---@return Character
+function Character:__sell_food(shop)
+    if shop:get_wealth() > shop.sell_price and self.stash == "food" then
+        shop:pay(self, shop.sell_price)
+        shop.stash = shop.stash + 1
+        self.stash = nil
+        return Event_ActionFinished()
+    end
+    return Event_ActionFailed()
 end
 
 ---collects **taxes** from **building** according to **tax rate** which collecting **character** remembers  
@@ -584,12 +602,6 @@ function Character:execute_order()
         return nil
     end
 
-    if self.order == "find_food_shop" then
-        local closest = self:__closest_shop('food')
-        local event = Event_ShopFound(closest)
-        self.had_finished_order = true
-        return event
-    end
 
     if self.order == "buy_food" then
         local tmp = self.__move_to_target()
@@ -604,38 +616,14 @@ function Character:execute_order()
     end
 
 
-    if self.order == "patrol" then -- character wanders toward target and when it notices an enemy, it sends a notification to current AI
-        local tmp = self.__move_to_target()
-
-        local rat = self.__check_rat()
-        if (rat ~= nil) then
-            return Event_EnemySpotted:new(rat)
+    if self.order == "find_shop" then
+        local closest = self:__closest_shop()
+        if closest == nil then
+            return Event_ActionFailed()
         end
-        
-        if tmp == MOVE_RESPONSE.TARGET_REACHED then
-            return Event_RatNotFound:new()
-        else
-            return nil
-        end
-
+        return Event_TargetFound(closest)
     end
 
-    if self.order == "find_potion_shop" then
-        local closest = self:__closest_shop('potion')
-        self.had_finished_order = true
-        return Event_ShopFound:new(closest)
-    end
-
-    if self.order == "buy_potion" then
-        local tmp = self.__move_to_target()
-        if tmp == MOVE_RESPONSE.TARGET_REACHED then
-            self:__buy_potions(self.target)
-            local event = Event_Bought()
-            self.had_finished_order = true
-            return event
-        end
-        return nil
-    end
 
     if self.order == "rest" then
 		self.target = self.home
@@ -686,7 +674,11 @@ function Character:execute_order()
         return food
     end
     if self.order == "gather_eat" then
-        return self:__collect_food(self.target)
+        return self:__collect_food(self.target, "eat")
+    end
+
+    if self.order == "collect_food" then
+        return self:__collect_food(self.target, "keep")
     end
 
     if self.order == "return_to_castle" then
@@ -734,16 +726,30 @@ end
 ---        sets hunger to 0  
 ---        increases tiredness 
 ---@param food Target
+---@param property "keep"|"eat"
 ---@return table
-function Character:__collect_food(food)
+function Character:__collect_food(food, property)
     if food.cooldown > 0 then
         return Event_ActionFailed()
     end
-    self:__change_hp(10)
-    self:__set_hunger(0)
+
+    if property == "eat" then
+        self:__eat_effect()
+    end
+    if property == "keep" then
+        self.stash = "food"
+    end
+
     self:__change_tiredness(1)
     self.target.cooldown = 10000
+
     return Event_ActionFinished()
+end
+
+
+function Character:__eat_effect()
+    self:__change_hp(10)
+    self:__set_hunger(0)
 end
 
 ---comment

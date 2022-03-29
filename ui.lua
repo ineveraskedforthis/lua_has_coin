@@ -162,7 +162,10 @@ function UI:draw()
     love.graphics.setColor(1, 1, 0)
     for _, building in pairs(buildings) do
         local tmp = building:cell()
+        local pos = building:pos()
         love.graphics.rectangle('line', tmp.x * grid_size, tmp.y * grid_size, grid_size, grid_size)
+        love.graphics.print(tostring(building.wealth), pos.x + 2, pos.y + 10)
+        love.graphics.print(tostring(building.wealth_before_tax), pos.x + 2, pos.y + 20)
     end
 
     love.graphics.rectangle('line', castle:get_cell().x * grid_size, castle:get_cell().x * grid_size, grid_size, grid_size)

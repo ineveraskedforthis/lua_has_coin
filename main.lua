@@ -19,6 +19,7 @@ SleepInstruction = require "modules.instructions.Sleep"
 OpenShopInstruction = require "modules.instructions.OpenShop"
 SleepPaidInstruction = require "modules.instructions.SleepPaid"
 WanderInstruction = require "modules.instructions.Wander"
+SellFoodInstruction = require "modules.instructions.SellFood"
 
 function love.load()
     love.window.setMode(800, 600)   
