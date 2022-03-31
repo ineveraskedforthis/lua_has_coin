@@ -75,12 +75,14 @@ function MostUsefulAction(character)
 		money_utility_total = money_utility_total + sleep_paid_utility
 	end
 
-	local wander_utility = 30
-	
-
 	if money_required_total ~= 0 then
 		money_utility_per_unit = money_utility_total / money_required_total
 	end
+
+	local shop = character:get_closest_shop()
+
+	local wander_utility = 30
+
 	local max_utility = math.max(eat_utility, sleep_utility, open_shop_utility, sleep_paid_utility, wander_utility)
 	if eat_utility == max_utility then
 		return GatherFoodInstruction

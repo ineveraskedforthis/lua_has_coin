@@ -491,6 +491,10 @@ function Character:__closest_shop(shop_type)
     return tmp_target
 end
 
+function Character:get_closest_shop()
+    return self:__closest_shop()
+end
+
 ---comment
 ---@return Character|nil
 function Character:__check_rat()
@@ -718,6 +722,8 @@ function Character:execute_order()
             return space
         end
     end
+
+    pcall(function () error("Character " .. self.name .. " got unknown order: " .. self.order) end)
 end
 
 ---Collects food and eat it  
