@@ -34,6 +34,14 @@ function UI:set_up()
         :size(198, 600)
         :toogle_background()
 
+    self.toogle_character_screen_button = milky.panel
+        :new(milky, self.main_ui)
+        :position(5, 575)
+        :size(80, 20)
+        :toogle_border()
+        :update_label("characters")
+        :button(milky, function (self, button) toggle_char_screen() end)
+
     self:set_up_budget_block()
     self:set_up_hire_block()
     self:set_up_invest_block()
@@ -43,6 +51,10 @@ function UI:set_up()
     self:set_up_units_table()
 end
 
+function toggle_char_screen()
+    game_ui.table_of_units:toogle_hidden()
+end
+
 function UI:set_up_units_table()
     self.table_of_units = milky.panel
         :new(milky, nil, nil, nil)
@@ -50,7 +62,7 @@ function UI:set_up_units_table()
         :size(550, 550)
         :toogle_background()
         :toogle_border()
-        -- :toogle_hidden()
+        :toogle_hidden()
     self.lines_of_units = {}
     for i = 1, 15 do
         table.insert(self.lines_of_units, #self.lines_of_units + 1, UnitLine:new(self.table_of_units, i))
