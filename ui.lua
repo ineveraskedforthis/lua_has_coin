@@ -50,6 +50,7 @@ function UI:set_up_units_table()
         :size(550, 550)
         :toogle_background()
         :toogle_border()
+        -- :toogle_hidden()
     self.lines_of_units = {}
     for i = 1, 15 do
         table.insert(self.lines_of_units, #self.lines_of_units + 1, UnitLine:new(self.table_of_units, i))

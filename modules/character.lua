@@ -326,17 +326,17 @@ function Character:__buy_potions(shop)
     end
 end
 
----comment
+---buys food from a shop and eats it
 ---@param shop Building
 function Character:__buy_food(shop)
     if (self.wealth >= shop.buy_price) and (shop.stash > 0) then
-        shop.wealth_before_tax[shop] = shop.wealth_before_tax[shop] + shop.price
-        self.wealth = self.wealth - shop.price
-        shop.stash = shop.stash - 1
+        self:pay(shop, shop.buy_price)
+        shop:update_on_buy()
         self:__change_hp(10)
         self:__set_hunger(0)
+        return Event_ActionFinished()
     else
-        
+        return Event_ActionFailed()
     end
 end
 
@@ -348,6 +348,7 @@ end
 function Character:__sell_food(shop)
     if shop:get_wealth() > shop.sell_price and self.stash == "food" then
         shop:pay(self, shop.sell_price)
+        shop:update_on_sell()
         shop.stash = shop.stash + 1
         self.stash = nil
         return Event_ActionFinished()
@@ -728,6 +729,11 @@ function Character:execute_order()
 
     if self.order == "sell" then
         local responce = self:__sell_food(self.target)
+        return responce
+    end
+
+    if self.order == "buy_eat" then
+        local responce = self:__buy_food(self.target)
         return responce
     end
 

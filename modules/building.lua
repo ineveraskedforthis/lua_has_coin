@@ -94,6 +94,28 @@ function Building:pay(target, x)
     return Event_ActionFailed()
 end
 
+function Building:update_on_sell()
+    if math.random() > 0.5 then
+        self.sell_price = math.max(0, self.sell_price - 1)
+    end
+end
+
+function Building:update()
+    if math.random() > 0.999 then
+        self.sell_price = self.sell_price + 1
+    end
+    if math.random() > 0.999 then
+        self.buy_price = self.buy_price + 1
+    end
+end
+
+function Building:update_on_buy()
+    self.stash = math.max(0, self.stash - 1)
+    if math.random() > 0.5 then
+        self.buy_price = math.max(0, self.buy_price + 1)
+    end
+end
+
 ---comment
 ---@param agent Character
 function Building:enter(agent)
@@ -106,7 +128,5 @@ function Building:exit(agent)
     self.num_of_visitors = self.num_of_visitors - 1
 end
 
-function Building:update()
-end
 
 return Building

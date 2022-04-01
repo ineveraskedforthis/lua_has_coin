@@ -47,6 +47,7 @@ end
 ---@param condition fun(character:Character):boolean
 function InstructionNode:add_child(node, condition)
     table.insert(self.children, {node=node, condition=condition})
+    return self
 end
 
 ---returns next node to use.  
