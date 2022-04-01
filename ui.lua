@@ -39,6 +39,78 @@ function UI:set_up()
     self:set_up_invest_block()
     self:set_up_reward_block()
     self:set_up_tax_block()
+
+    self:set_up_units_table()
+end
+
+function UI:set_up_units_table()
+    self.table_of_units = milky.panel
+        :new(milky, nil, nil, nil)
+        :position(20, 20)
+        :size(550, 550)
+        :toogle_background()
+        :toogle_border()
+    self.lines_of_units = {}
+    for i = 1, 15 do
+        table.insert(self.lines_of_units, #self.lines_of_units + 1, UnitLine:new(self.table_of_units, i))
+    end
+end
+
+UnitLine = {}
+UnitLine.__index = UnitLine
+
+function UnitLine:new(parent, line_number)
+    _ = {}
+    _.ui_element = milky.panel
+        :new(milky, parent)
+        :position(10, 30 * (line_number - 1) + 10)
+        :size(530, 25)
+        :toogle_border()
+    
+    _.name_label = milky.panel
+        :new(milky, _.ui_element)
+        :position(5, 4)
+        :size(50, 20)
+        :update_label("name")
+    
+    _.wealth_label = milky.panel
+        :new(milky, _.ui_element)
+        :position(100, 4)
+        :size(50, 20)
+        :update_label("wealth")
+
+    _.tiredness_label = milky.panel
+        :new(milky, _.ui_element)
+        :position(150, 4)
+        :size(50, 20)
+        :update_label("tired")
+
+    
+    _.hunger_label = milky.panel
+        :new(milky, _.ui_element)
+        :position(200, 4)
+        :size(50, 20)
+        :update_label("hunger")
+
+    _.sell_food_utility_label = milky.panel
+        :new(milky, _.ui_element)
+        :position(300, 4)
+        :size(50, 20)
+        :update_label("sell util")
+    
+    setmetatable(_, UnitLine)
+    return _
+end
+
+---loads character data into line
+---@param character Character
+function UnitLine:load_data(character)
+    self.name_label:update_label(character.name)
+    self.wealth_label:update_label(character.wealth)
+    self.tiredness_label:update_label(character.tiredness)
+    self.hunger_label:update_label(character.hunger)
+    local utili = Calculate_Utility(character)
+    self.sell_food_utility_label:update_label(utili[5])
 end
 
 function UI:set_up_budget_block()
@@ -153,6 +225,9 @@ function UI:draw()
     love.graphics.setColor(1, 1, 0)
     for _, agent in pairs(agents) do
         local pos = agent.agent:pos()
+
+        self.lines_of_units[_]:load_data(agent.agent)
+
         love.graphics.circle('line', pos.x, pos.y, 2)
         love.graphics.print(agent.agent.name, pos.x + 2, pos.y - 15)
         love.graphics.print(tostring(agent.agent:get_hunger()), pos.x + 2, pos.y + 2)
@@ -189,6 +264,7 @@ function UI:draw()
 
     love.graphics.setColor(1, 1, 0)
     self.main_ui:draw()
+    self.table_of_units:draw()
 end
 
 

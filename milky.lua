@@ -20,6 +20,8 @@ function milky.panel:new(milky, parent, label, image)
 	o.id = milky.next_id
 	milky.next_id = milky.next_id + 1
 
+	o.hidden = false
+
 	o.button_callback = nil
 	o.skin_texture_name = nil
 	o.active = true
@@ -93,8 +95,15 @@ function milky.panel:destroy(milky)
 		self.parent.active_children[self.id] = nil
 	end
 end
+
+
+
 -- Draws the panel
 function milky.panel:draw()
+	if self.hidden then
+		return
+	end
+
 	local r = self.rect
 	if self.sprite_batch then
 		--love.graphics.draw(self.image, r.screen_space_x, r.screen_space_y, 0, r.draw_scale_x, r.draw_scale_y)
@@ -181,13 +190,18 @@ function milky.panel:setActive(is_active)
 
 	return self
 end
--- toogle border/bg
+--- toogle border
 function milky.panel:toogle_border()
 	self.border_toogle = not self.border_toogle;
 	return self
 end
 function milky.panel:toogle_background()
 	self.background_toogle = not self.background_toogle;
+	return self
+end
+--- toogles modifier "hidden" 
+function milky.panel:toogle_hidden()
+	self.hidden = not self.hidden
 	return self
 end
 -- Updates screen_space_x,screen_space_y based on x,y,parent,pivot,width,height
@@ -357,6 +371,7 @@ function milky.panel:orientation(x, y)
 end
 function milky.panel:update_label(label)
 	self.label = label
+	return self
 end
 -- Inputs are booleans
 -- Stretching doesn't work if there is no parent!

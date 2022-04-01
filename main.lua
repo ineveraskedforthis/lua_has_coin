@@ -57,7 +57,7 @@ function love.load()
     local rich_character = Character:new(100, 1000, convert_cell_to_coord(zero_cell), 10, 10, false)
     table.insert(agents, #agents + 1, new_agent(rich_character))
 
-    game_ui = UI:new(true)
+    game_ui = UI:new(false)
     
     for i = 1, 100 do
         for j = 1, 100 do

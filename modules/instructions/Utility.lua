@@ -107,3 +107,45 @@ function MostUsefulAction(character)
 		return WanderInstruction
 	end
 end
+
+function Calculate_Utility(character)
+	---local food_price = castle.FOOD_PRICE
+	local sleep_price = castle.SLEEP_PRICE
+	---local potion_price = castle.POTION_PRICE
+
+	local money_utility_total = 0
+	local money_required_total = 0
+	local money_utility_per_unit = 0
+
+	local eat_utility = character:get_hunger()
+	local sleep_utility = character:get_tiredness()
+	if character.home == nil then
+		sleep_utility = character:get_tiredness() - 50
+	end
+
+	local open_shop_utility = -100
+	if (character.wealth > 200) and (character.has_shop == false) then
+		open_shop_utility = 200
+	end
+
+	local sleep_paid_utility = character:get_tiredness()
+	if character.wealth < castle.SLEEP_PRICE then
+		sleep_paid_utility = 0
+		money_required_total = money_required_total + castle.SLEEP_PRICE
+		money_utility_total = money_utility_total + sleep_paid_utility
+	end
+
+	if money_required_total ~= 0 then
+		money_utility_per_unit = money_utility_total / money_required_total
+	end
+
+	local shop = character:get_closest_shop()
+	local sell_food_utility = 0
+	if (shop ~= nil) and (shop:get_wealth() >= shop.sell_price) then
+		sell_food_utility = money_utility_per_unit * shop.sell_price
+	end	
+
+	local wander_utility = 30
+
+	return {eat_utility, sleep_utility, open_shop_utility, sleep_paid_utility, sell_food_utility, wander_utility}
+end
