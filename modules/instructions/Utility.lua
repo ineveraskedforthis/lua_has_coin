@@ -70,9 +70,9 @@ function MostUsefulAction(character)
 
 	local sleep_paid_utility = character:get_tiredness()
 	if character.wealth < castle.SLEEP_PRICE then
-		sleep_paid_utility = 0
 		money_required_total = money_required_total + castle.SLEEP_PRICE
 		money_utility_total = money_utility_total + sleep_paid_utility
+		sleep_paid_utility = 0
 	end
 
 	if money_required_total ~= 0 then
@@ -130,9 +130,9 @@ function Calculate_Utility(character)
 
 	local sleep_paid_utility = character:get_tiredness()
 	if character.wealth < castle.SLEEP_PRICE then
-		sleep_paid_utility = 0
 		money_required_total = money_required_total + castle.SLEEP_PRICE
 		money_utility_total = money_utility_total + sleep_paid_utility
+		sleep_paid_utility = 0
 	end
 
 	if money_required_total ~= 0 then

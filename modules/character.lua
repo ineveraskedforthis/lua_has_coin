@@ -344,7 +344,7 @@ end
 ---If shop has enough money then returns ActionFinished event  
 ---Otherwise returns ActionFailed event
 ---@param shop Building
----@return Character
+---@return EventSimple
 function Character:__sell_food(shop)
     if shop:get_wealth() > shop.sell_price and self.stash == "food" then
         shop:pay(self, shop.sell_price)
@@ -627,6 +627,7 @@ function Character:execute_order()
         if closest == nil then
             return Event_ActionFailed()
         end
+        self:set_target(closest)
         return Event_TargetFound(closest)
     end
 
@@ -723,6 +724,11 @@ function Character:execute_order()
             self.target = space.target
             return space
         end
+    end
+
+    if self.order == "sell" then
+        local responce = self:__sell_food(self.target)
+        return responce
     end
 
     pcall(function () error("Character " .. self.name .. " got unknown order: " .. self.order) end)

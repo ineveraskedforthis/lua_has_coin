@@ -97,6 +97,12 @@ function UnitLine:new(parent, line_number)
         :position(300, 4)
         :size(50, 20)
         :update_label("sell util")
+
+    _.order_label = milky.panel
+        :new(milky, _.ui_element)
+        :position(350, 4)
+        :size(50, 20)
+        :update_label("order")
     
     setmetatable(_, UnitLine)
     return _
@@ -111,6 +117,7 @@ function UnitLine:load_data(character)
     self.hunger_label:update_label(character.hunger)
     local utili = Calculate_Utility(character)
     self.sell_food_utility_label:update_label(utili[5])
+    self.order_label:update_label(character.order)
 end
 
 function UI:set_up_budget_block()

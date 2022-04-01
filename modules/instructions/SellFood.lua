@@ -1,22 +1,22 @@
 ---comment
 ---@param character Character
 local function FindFoodAction(character)
-    character.set_order_WanderForFood()
+    character:set_order_WanderForFood()
 end
 local function GoToFoodAction(character)
-    character.set_order("move")
+    character:set_order("move")
 end
 local function CollectFoodAction(character)
-    character.set_order("collect_food")
+    character:set_order("collect_food")
 end 
 local function FindShopAction(character)
-    character.set_order("find_shop")
+    character:set_order("find_shop")
 end 
 local function GoToShopAction(character)
-    character.set_order("move")
+    character:set_order("move")
 end
 local function SellAction(character)
-    character.set_order("sell")
+    character:set_order("sell")
 end
 
 
@@ -32,6 +32,7 @@ FindFoodNode:add_child(GoToFoodNode, TargetFoundCondition)
 FindFoodNode:add_child(FindFoodNode, ActionFinishedCondition)
 
 GoToFoodNode:add_child(GatherFoodNode, ActionFinishedCondition)
+
 GatherFoodNode:add_child(FindShopNode, ActionFinishedCondition)
 
 FindShopNode:add_child(GoToShopNode, TargetFoundCondition)
