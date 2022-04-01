@@ -45,6 +45,8 @@ function Building:new(cell, class, progress, owner)
     building.num_of_visitors = 0
     building.food_price_sell = 10
     building.food_price_buy = 15
+    building.sell_price = 10
+    building.buy_price = 15
     building.stash = 0
     return building
 end

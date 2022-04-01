@@ -80,10 +80,14 @@ function MostUsefulAction(character)
 	end
 
 	local shop = character:get_closest_shop()
+	local sell_food_utility = 0
+	if (shop ~= nil) and (shop:get_wealth() >= shop.sell_price) then
+		sell_food_utility = money_utility_per_unit * shop.sell_price
+	end	
 
 	local wander_utility = 30
 
-	local max_utility = math.max(eat_utility, sleep_utility, open_shop_utility, sleep_paid_utility, wander_utility)
+	local max_utility = math.max(eat_utility, sleep_utility, open_shop_utility, sleep_paid_utility, sell_food_utility, wander_utility)
 	if eat_utility == max_utility then
 		return GatherFoodInstruction
 	end
@@ -95,6 +99,9 @@ function MostUsefulAction(character)
 	end
 	if sleep_paid_utility == max_utility then
 		return SleepPaidInstruction
+	end
+	if sell_food_utility == max_utility then
+		return SellFoodInstruction
 	end
 	if wander_utility == max_utility then
 		return WanderInstruction

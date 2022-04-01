@@ -475,22 +475,24 @@ end
 
 ---comment
 ---@param shop_type ShopType
----@return Building
+---@return Building|nil
 function Character:__closest_shop(shop_type)
     local tmp_target = nil
     local tmp_dist = nil
     for k, v in pairs(buildings) do
-        if v.class == shop_type then
+        -- if v.class == shop_type then
             local tmp = self:__dist_to(v)
             if (tmp_target == nil) or (tmp_dist > tmp) then
                 tmp_target = v
                 tmp_dist = tmp
             end
-        end
+        -- end
     end
     return tmp_target
 end
 
+---Returns closest shop to character. nil if no shop exists.
+---@return Building|nil
 function Character:get_closest_shop()
     return self:__closest_shop()
 end
