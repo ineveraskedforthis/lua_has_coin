@@ -162,6 +162,8 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
 
     character.quest = nil
 
+    character.occupation_data = 0
+
     return character
 end
 
@@ -355,9 +357,10 @@ function Character:__sell_food(shop)
     return Event_ActionFailed()
 end
 
----collects **taxes** from **building** according to **tax rate** which collecting **character** remembers  
----remaining money are sent to wealth pool which can be collected by **owner**  
----function is supposed to be used by **tax collector**
+---Collects **taxes** from **building** into **temporary wealth** according to **tax rate**  
+---which collecting **character** remembers  in **occupation_data**  
+---Remaining money are sent to wealth pool which can be collected by **owner**  
+---Function is supposed to be used by **tax collector**
 ---@param shop Building
 function Character:__tax_building(shop)
     local tax = 0
@@ -736,7 +739,32 @@ function Character:execute_order()
         return responce
     end
 
+    if self.order == "apply" then
+        return self:__apply(self.target)
+    end
+
     pcall(function () error("Character " .. self.name .. " got unknown order: " .. self.order) end)
+end
+
+---Apply for a tax collector job
+---@param castle Castle
+function Character:__apply(castle)
+    if castle == nil then
+        return Event_ActionFailed
+    end
+    return castle:apply_for_office(self)
+end
+
+function Character:hire(tag)
+    if tag == "tax_collector" then
+        self.is_tax_collector = true
+    end
+end
+
+function Character:fire(tag)
+    if tag == "tax_collector" then
+        self.is_tax_collector = false
+    end
 end
 
 ---Collects food and eat it  

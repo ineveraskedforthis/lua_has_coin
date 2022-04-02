@@ -47,6 +47,9 @@ end
 ---@field HUNT_REWARD number
 ---@field budget Budget
 ---@field INCOME_TAX number
+---@field tax_collectors Character[]
+---@field open_tax_collector_positions number
+---@field tax_collection_reward number
 Castle = {}
 Castle.__index = Castle
 -- local globals = require('constants')
@@ -79,6 +82,9 @@ function Castle:new(cell, progress, wealth)
         HUNT_REWARD = 10,
         budget = Budget:new(),
         INCOME_TAX = 10,
+        tax_collectors = {},
+        open_tax_collector_positions = 0,
+        tax_collection_reward= 10
     }
     setmetatable(_, self)
     return _
@@ -125,9 +131,48 @@ end
 ---hires a new hero (NOT TESTED)
 function Castle:hire_hero()
     if self.wealth >= 100 then
-        self.wealth = self.wealth - 100
-        new_hero(100)
+        -- self.wealth = self.wealth - 100
+        -- new_hero(100)
     end
+end
+
+function Castle:open_tax_collector_position()
+    if self.open_tax_collector_positions < 7 then
+        self.open_tax_collector_positions = self.open_tax_collector_positions + 1
+    end
+end
+
+function Castle:close_tax_collector_position()
+    if self.open_tax_collector_positions == 0 then
+        return
+    end
+    if self.tax_collectors[self.open_tax_collector_positions] == nil then
+        self.open_tax_collector_positions = self.open_tax_collector_positions - 1
+        return
+    end
+    for i = 1, self.open_tax_collector_positions - 1 do
+        if self.tax_collectors[i] == nil then
+            self.tax_collectors[i] = self.tax_collectors[self.open_tax_collector_positions]
+            self.open_tax_collector_positions = self.open_tax_collector_positions - 1
+            return
+        end
+    end
+    self.tax_collectors[self.open_tax_collector_positions].fire("tax_collector")
+    self.open_tax_collector_positions = self.open_tax_collector_positions - 1
+end
+
+---Apply character to tax collector office
+---@param character Character
+---@return EventSimple
+function Castle:apply_for_office(character)
+    for _, i in pairs(self.tax_collectors) do
+        if i == nil then
+            self.tax_collectors[_] = character
+            character:hire("tax_collector")
+            return Event_ActionFinished()
+        end
+    end
+    return Event_ActionFailed()
 end
 
 ---increases hunt budget by 10%

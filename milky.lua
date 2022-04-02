@@ -204,6 +204,14 @@ function milky.panel:toogle_hidden()
 	self.hidden = not self.hidden
 	return self
 end
+function milky.panel:hide()
+	self.hidden = true
+	return self
+end
+function milky.panel:unhide()
+	self.hidden = false
+	return self
+end
 -- Updates screen_space_x,screen_space_y based on x,y,parent,pivot,width,height
 -- Shouldn't be used by the end user
 function milky.panel:refresh_rect()

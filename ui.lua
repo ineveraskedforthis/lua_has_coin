@@ -183,16 +183,16 @@ function UI:set_up_invest_block()
         :position(10, 35)
     hunt_invest_body
         :position(10, 55)
-    add_hunt_budget_button = milky.panel
-        :new(milky, self.main_ui)
-        :position(3, 527)
-        :size(192, 24)
-        :button(milky, function (self, button) castle.add_hunt_budget() end)
-        :toogle_border()
-        :toogle_background()
-    add_hunt_budget_label = milky.panel
-        :new(milky, add_hunt_budget_button, "ADD HUNT MONEY (100)")
-        :position(5, 2)
+    -- add_hunt_budget_button = milky.panel
+    --     :new(milky, self.main_ui)
+    --     :position(3, 527)
+    --     :size(192, 24)
+    --     :button(milky, function (self, button) castle.add_hunt_budget() end)
+    --     :toogle_border()
+    --     :toogle_background()
+    -- add_hunt_budget_label = milky.panel
+    --     :new(milky, add_hunt_budget_button, "ADD HUNT MONEY (100)")
+    --     :position(5, 2)
 end
 
 function UI:set_up_reward_block()
@@ -217,7 +217,7 @@ function UI:set_up_tax_block()
     tax_widget = milky.panel
         :new(milky, self.main_ui)
         :position(3, 236)
-        :size(192, 70)
+        :size(192, 74)
         :toogle_border()
     
     tax_label = milky.panel
@@ -232,13 +232,53 @@ function UI:set_up_tax_block()
 end
 
 function UI:set_up_hire_block()
-    hire_button = milky.panel:new(milky, self.main_ui)
-        :position(3, 500)
-        :size(192, 24)
-        :button(milky, function (self, button) castle.hire_hero() end)
+    self.offices_block = milky.panel
+        :new(milky, self.main_ui)
+        :position(3, 313)
+        :size(192, 200)
+        :toogle_border()
+
+    local label = milky.panel
+        :new(milky, self.offices_block, "Tax Collectors")
+        :position(4, 5)
+    
+    tax_collectors_list = {}
+    for i = 1, 10 do
+        tax_collectors_list[i] = milky.panel
+            :new(milky, self.offices_block, "- Empty")
+            :position(7, i * 20 + 5)
+            :toogle_hidden()
+    end
+    local hire_tax_collector_button = milky.panel
+        :new(milky, self.offices_block, " +")
+        :position(100, 5)
+        :size(14, 14)
         :toogle_border()
         :toogle_background()
-    hire_button_label = milky.panel:new(milky, hire_button, "HIRE A HERO (100)"):position(5, 2)
+        :button(milky, function (self, button) castle:open_tax_collector_position() show_office_position(castle.open_tax_collector_positions) end)
+    local fire_tax_collector_button = milky.panel
+        :new(milky, self.offices_block, " -")
+        :position(130, 5)
+        :size(14, 14)
+        :toogle_border()
+        :toogle_background()
+        :button(milky, function (self, button) castle:close_tax_collector_position() hide_office_position(castle.open_tax_collector_positions + 1) end)
+
+    -- hire_button = milky.panel:new(milky, self.main_ui)
+    --     :position(3, 500)
+    --     :size(192, 24)
+    --     :button(milky, function (self, button) castle.hire_hero() end)
+    --     :toogle_border()
+    --     :toogle_background()
+    -- hire_button_label = milky.panel:new(milky, hire_button, "HIRE A HERO (100)"):position(5, 2)
+end
+
+function hide_office_position(i)
+    tax_collectors_list[i]:hide()
+end
+
+function show_office_position(i)
+    tax_collectors_list[i]:unhide()
 end
 
 
@@ -294,6 +334,7 @@ function UI:draw()
         local c1, c2 = (i + k) / 2, (j + h) / 2
         love.graphics.setColor(0, 1, 0, 0.95)
     end
+
     
     
     local x, y = love.mouse.getPosition()

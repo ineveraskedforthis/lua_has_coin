@@ -17,7 +17,8 @@
 ---		there is always a harmless action with at least 0 utility (to avoid choosing actions with negative utility)
 --- A7:
 ---     between action with no cost and some cost but with same utility character chooses action with no cost
-
+--- A8:
+---		applying for a royal job has Payment * 10 utility
 
 --- Description of actions
 --- Sleep:
@@ -42,6 +43,10 @@
 ---	  walk around doing nothing:
 ---		cost:      None
 ---		utility:   30
+--- Apply to job:
+---   apply for a royal job:
+---		cost:	   None
+---     utility:   payment * 10
 
 
 
@@ -110,14 +115,10 @@ function MostUsefulAction(character)
 		return SellFoodInstruction
 	end
 	if eat_paid_utility == max_utility then
-		print('!!!')
-		print(eat_paid_utility, eat_utility)
 		return BuyEatInstruction
 	end
 
 	if eat_utility == max_utility then
-		print('???')
-		print(eat_paid_utility, eat_utility)
 		return GatherFoodInstruction
 	end
     if sleep_utility == max_utility then

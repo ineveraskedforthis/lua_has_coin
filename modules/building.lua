@@ -101,7 +101,7 @@ function Building:update_on_sell()
 end
 
 function Building:update()
-    if math.random() > 0.9998 then
+    if math.random() > 0.9995 then
         self.sell_price = math.min(self.sell_price + 1, self:get_wealth(), self.buy_price)
     end
     if math.random() > 0.9995 then
