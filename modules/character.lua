@@ -115,6 +115,7 @@ end
 ---@field has_shop boolean
 ---@field order Order
 ---@field quest Quest|nil
+---@field job_index nil|number
 Character = {}
 Character.__index = Character
 
@@ -163,6 +164,7 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
     character.quest = nil
 
     character.occupation_data = 0
+    character.job_index = nil
 
     return character
 end
@@ -756,15 +758,17 @@ function Character:__apply(castle)
     return castle:apply_for_office(self)
 end
 
-function Character:hire(tag)
+function Character:hire(tag, index)
     if tag == "tax_collector" then
         self.is_tax_collector = true
+        self.job_index = index
     end
 end
 
 function Character:fire(tag)
     if tag == "tax_collector" then
         self.is_tax_collector = false
+        self.job_index = nil
     end
 end
 

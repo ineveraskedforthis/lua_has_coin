@@ -128,14 +128,17 @@ end
 time_passed = 0
 tps = 20
 tick = 1 / tps / 20 --/ 50
+day_mod_100 = 0
 
 function love.update(dt)
     time_passed = time_passed + dt
     while time_passed > tick do
         time_passed = time_passed - tick
-        
-        -- chars update
-
+        day_mod_100 = day_mod_100 + 1
+        if day_mod_100 == 100 then
+            castle:update()
+            day_mod_100 = 0    
+        end       
 
         for _, agent in pairs(agents) do
             agent.agent:update()

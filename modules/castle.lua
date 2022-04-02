@@ -50,6 +50,7 @@ end
 ---@field tax_collectors Character[]
 ---@field open_tax_collector_positions number
 ---@field tax_collection_reward number
+---@field payment_timer number[]
 Castle = {}
 Castle.__index = Castle
 -- local globals = require('constants')
@@ -85,7 +86,8 @@ function Castle:new(cell, progress, wealth)
         tax_collectors = {},
         open_tax_collector_positions = 0,
         tax_collection_reward= 10,
-        vacant_job= false
+        vacant_job= false,
+        payment_timer= {0, 0, 0, 0, 0, 0, 0, 0, 0}
     }
     setmetatable(_, self)
     return _
@@ -180,7 +182,7 @@ function Castle:apply_for_office(character)
         local i = self.tax_collectors[_]
         if i == nil then
             self.tax_collectors[_] = character
-            character:hire("tax_collector")
+            character:hire("tax_collector", _)
             tax_collectors_list[_]:update_label("- " .. character.name)
             return Event_ActionFinished()
         end
@@ -200,6 +202,13 @@ function Castle:add_hunt_budget()
     end
 end
 
+function Castle:update()
+    for _, i in pairs(self.tax_collectors) do
+        if self.payment_timer[_] < 100 then
+            self.payment_timer[_] = self.payment_timer[_] + 1
+        end
+    end
+end
 
 function Castle:dec_inv(tag)
     self.budget:dec(tag)

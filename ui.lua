@@ -243,11 +243,16 @@ function UI:set_up_hire_block()
         :position(4, 5)
     
     tax_collectors_list = {}
+    tax_collectors_payment = {}
+
     for i = 1, 10 do
         tax_collectors_list[i] = milky.panel
             :new(milky, self.offices_block, "- Empty")
             :position(7, i * 20 + 5)
             :toogle_hidden()
+        tax_collectors_payment[i] = milky.panel
+            :new(milky, tax_collectors_list[i], "0")
+            :position(100, 0)
     end
     local hire_tax_collector_button = milky.panel
         :new(milky, self.offices_block, " +")
@@ -285,6 +290,10 @@ end
 function UI:draw()
     love.graphics.setColor(1, 1, 0)
     local grid_size = globals.CONSTANTS.GRID_SIZE
+
+    for _, t in pairs(castle.payment_timer) do
+        tax_collectors_payment[_]:update_label(t)
+    end
 
     for _, food_obj in pairs(food) do
         if food_obj.cooldown == 0 then
