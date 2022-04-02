@@ -39,5 +39,5 @@ FindShopPlaceNode:add_child(SetUpShopSpotNode, CellFoundCondition)
 FindShopPlaceNode:add_child(FindShopPlaceNode, ActionFinishedCondition)
 SetUpShopSpotNode:add_child(EndNode, TrivialCondition)
 
-local SetUpShopSpotInstruction = AgentInstruction:new(ReturnToCastleNode)
+local SetUpShopSpotInstruction = AgentInstruction:new(ReturnToCastleNode, "Open new shop")
 return SetUpShopSpotInstruction

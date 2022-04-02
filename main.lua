@@ -54,7 +54,12 @@ function love.load()
     table.insert(agents, #agents + 1, new_agent(Character:new(100, 20, convert_cell_to_coord(zero_cell), 10, 10, false)))
     table.insert(agents, #agents + 1, new_agent(Character:new(100, 50, convert_cell_to_coord(zero_cell), 10, 10, false)))
     table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
 
+    
     local rich_character = Character:new(100, 1000, convert_cell_to_coord(zero_cell), 10, 10, false)
     table.insert(agents, #agents + 1, new_agent(rich_character))
 

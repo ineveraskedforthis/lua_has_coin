@@ -15,6 +15,7 @@ InstructionManager.__index = InstructionManager
 function InstructionManager:new(character)
     _ = {current_instruction= nil, character= character}
     setmetatable(_, InstructionManager)
+    _:select_new_instruction(character)
     return _
 end
 

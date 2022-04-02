@@ -33,6 +33,6 @@ StartNode:add_child(GoHomeNode, HasHomeCondition)
 StartNode:add_child(SleepAtGroundNode, TrivialCondition)
     SleepAtGroundNode:add_child(EndNode, ActionFinishedCondition)
 
-local SleepInstruction = AgentInstruction:new(StartNode)
+local SleepInstruction = AgentInstruction:new(StartNode, "Sleep for free")
 
 return SleepInstruction

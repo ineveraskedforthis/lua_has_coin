@@ -39,6 +39,6 @@ GoToFood:add_child(CollectFood, ActionFinishedCondition)
 CollectFood:add_child(FindFood, ActionFailedCondition)
 CollectFood:add_child(EndNode, ActionFinishedCondition)
 
-local GatherFoodInstruction = AgentInstruction:new(FindFood)
+local GatherFoodInstruction = AgentInstruction:new(FindFood, "Gather food")
 
 return GatherFoodInstruction

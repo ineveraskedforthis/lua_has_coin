@@ -24,6 +24,6 @@ BuyFoodNode
     :add_child(EndNode, ActionFinishedCondition)
     :add_child(EndNode, ActionFailedCondition)
 
-local BuyEatInstruction = AgentInstruction:new(FindShopNode)
+local BuyEatInstruction = AgentInstruction:new(FindShopNode, "Buy some food")
 
 return BuyEatInstruction

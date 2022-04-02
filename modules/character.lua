@@ -332,8 +332,7 @@ function Character:__buy_food(shop)
     if (self.wealth >= shop.buy_price) and (shop.stash > 0) then
         self:pay(shop, shop.buy_price)
         shop:update_on_buy()
-        self:__change_hp(10)
-        self:__set_hunger(0)
+        self:__eat_effect()
         return Event_ActionFinished()
     else
         return Event_ActionFailed()

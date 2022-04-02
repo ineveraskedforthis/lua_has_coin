@@ -1,14 +1,15 @@
 ---@class AgentInstruction
 ---@field stage "idle"|"move"
 ---@field starting_node InstructionNode
+---@field name string
 local AgentInstruction = {}
 AgentInstruction.__index = AgentInstruction
 
 
 ---comment
 ---@return AgentInstruction
-function AgentInstruction:new(starting_node)
-    local _ = { starting_node= starting_node }
+function AgentInstruction:new(starting_node, name)
+    local _ = { starting_node= starting_node, name= name }
     setmetatable(_, self)
     return _
 end

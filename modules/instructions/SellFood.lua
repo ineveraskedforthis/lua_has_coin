@@ -42,6 +42,6 @@ GoToShopNode:add_child(SellNode, ActionFinishedCondition)
 SellNode:add_child(EndNode, ActionFinishedCondition)
 SellNode:add_child(EndNode, ActionFailedCondition)
 
-local SellFoodInstruction = AgentInstruction:new(FindFoodNode)
+local SellFoodInstruction = AgentInstruction:new(FindFoodNode, "Sell food")
 
 return SellFoodInstruction
