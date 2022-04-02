@@ -21,6 +21,7 @@ SleepPaidInstruction = require "modules.instructions.SleepPaid"
 WanderInstruction = require "modules.instructions.Wander"
 SellFoodInstruction = require "modules.instructions.SellFood"
 BuyEatInstruction = require "modules.instructions.BuyFood"
+GetJobInstruction = require "modules.instructions.TakeTaxCollectJob"
 
 function love.load()
     love.window.setMode(800, 600)   
@@ -59,7 +60,7 @@ function love.load()
     table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
     table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
 
-    
+
     local rich_character = Character:new(100, 1000, convert_cell_to_coord(zero_cell), 10, 10, false)
     table.insert(agents, #agents + 1, new_agent(rich_character))
 

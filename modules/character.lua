@@ -750,7 +750,8 @@ end
 ---@param castle Castle
 function Character:__apply(castle)
     if castle == nil then
-        return Event_ActionFailed
+        print("???")
+        return Event_ActionFailed()
     end
     return castle:apply_for_office(self)
 end

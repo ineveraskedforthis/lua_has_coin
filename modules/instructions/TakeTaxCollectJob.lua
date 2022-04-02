@@ -9,12 +9,14 @@ local function GetJobAction(character)
     character:set_order('apply')
 end 
 
-local MoveNode = InstructionNode(GoToCastleAction)
-local GetJob = InstructionNode(GetJobAction)
-local EndNode = InstructionNode(Empty, true)
+local MoveNode = InstructionNode:new(GoToCastleAction)
+local GetJob = InstructionNode:new(GetJobAction)
+local EndNode = InstructionNode:new(Empty, true)
 
 MoveNode:add_child(GetJob, ActionFinishedCondition)
 GetJob:add_child(EndNode, ActionFailedCondition)
 GetJob:add_child(EndNode, ActionFinishedCondition)
 
-local instruction = AgentInstruction(MoveNode, "Take job")
+local instruction = AgentInstruction:new(MoveNode, "Take job")
+
+return instruction

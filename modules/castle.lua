@@ -84,7 +84,8 @@ function Castle:new(cell, progress, wealth)
         INCOME_TAX = 10,
         tax_collectors = {},
         open_tax_collector_positions = 0,
-        tax_collection_reward= 10
+        tax_collection_reward= 10,
+        vacant_job= false
     }
     setmetatable(_, self)
     return _
@@ -139,39 +140,52 @@ end
 function Castle:open_tax_collector_position()
     if self.open_tax_collector_positions < 7 then
         self.open_tax_collector_positions = self.open_tax_collector_positions + 1
+        self.vacant_job = true
     end
 end
 
+function Castle:has_vacant_job() 
+    return self.vacant_job
+end
+
 function Castle:close_tax_collector_position()
-    if self.open_tax_collector_positions == 0 then
+    local last = self.open_tax_collector_positions
+    if last == 0 then
         return
     end
-    if self.tax_collectors[self.open_tax_collector_positions] == nil then
-        self.open_tax_collector_positions = self.open_tax_collector_positions - 1
+    if self.tax_collectors[last] == nil then
+        self.open_tax_collector_positions = last - 1
         return
     end
-    for i = 1, self.open_tax_collector_positions - 1 do
+    for i = 1, last - 1 do
         if self.tax_collectors[i] == nil then
             self.tax_collectors[i] = self.tax_collectors[self.open_tax_collector_positions]
-            self.open_tax_collector_positions = self.open_tax_collector_positions - 1
+            self.tax_collectors[last] = nil
+            tax_collectors_list[last]:update_label("- Empty")
+            self.open_tax_collector_positions = last - 1
             return
         end
     end
-    self.tax_collectors[self.open_tax_collector_positions].fire("tax_collector")
-    self.open_tax_collector_positions = self.open_tax_collector_positions - 1
+    self.tax_collectors[last].fire("tax_collector")
+    tax_collectors_list[last]:update_label("- Empty")
+    self.tax_collectors[last] = nil
+    self.open_tax_collector_positions = last - 1
 end
 
 ---Apply character to tax collector office
 ---@param character Character
 ---@return EventSimple
 function Castle:apply_for_office(character)
-    for _, i in pairs(self.tax_collectors) do
+    for _ = 1, self.open_tax_collector_positions do
+        local i = self.tax_collectors[_]
         if i == nil then
             self.tax_collectors[_] = character
             character:hire("tax_collector")
+            tax_collectors_list[_]:update_label("- " .. character.name)
             return Event_ActionFinished()
         end
     end
+    self.vacant_job =  false
     return Event_ActionFailed()
 end
 

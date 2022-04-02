@@ -21,6 +21,9 @@
 ---		applying for a royal job has Payment * 10 utility
 
 --- Description of actions
+--- Sell 													  done
+---     cost: none
+---     utility: price * money_utility
 --- Sleep:
 ---   sleep at the floor:                                     done
 ---     cost:      None
@@ -35,18 +38,21 @@
 ---   find and eat raw food:                                  done
 ---     cost:      None
 ---     utility:   hunger * 0.2
+---   buy and eat											  done
+---     cost:      price
+---     utility:   hunger
 --- OpenShop:
 ---   find an empty spot and build a shop:                    done
 ---     cost:      200 money into building's bank
 ---     utility:   200 if wealth > 200 and no shop yet
 --- Wander:
----	  walk around doing nothing:
+---	  walk around doing nothing:							  done
 ---		cost:      None
 ---		utility:   30
 --- Apply to job:
 ---   apply for a royal job:
 ---		cost:	   None
----     utility:   payment * 10
+---     utility:   payment * 10 * money_utility 
 
 
 
@@ -103,7 +109,17 @@ function MostUsefulAction(character)
 
 	local wander_utility = 30
 
-	local max_utility = math.max(eat_utility, eat_paid_utility, sleep_utility, open_shop_utility, sleep_paid_utility, sell_food_utility, wander_utility)
+
+	local take_job_utility = castle.tax_collection_reward * 10 * money_utility_per_unit
+	if (not castle:has_vacant_job()) or character.is_tax_collector then
+		take_job_utility = 0
+	end
+
+	local max_utility = math.max(take_job_utility, eat_utility, eat_paid_utility, sleep_utility, open_shop_utility, sleep_paid_utility, sell_food_utility, wander_utility)
+
+	if take_job_utility == max_utility then
+		return GetJobInstruction	
+	end
 
 	if open_shop_utility == max_utility then
 		return OpenShopInstruction
