@@ -85,7 +85,7 @@ function Castle:new(cell, progress, wealth)
         INCOME_TAX = 10,
         tax_collectors = {},
         open_tax_collector_positions = 0,
-        tax_collection_reward= 10,
+        tax_collection_reward= 20,
         vacant_job= false,
         payment_timer= {0, 0, 0, 0, 0, 0, 0, 0, 0}
     }
@@ -137,6 +137,35 @@ function Castle:hire_hero()
         -- self.wealth = self.wealth - 100
         -- new_hero(100)
     end
+end
+
+---if character is employed here then pay tax_collection_reward to him
+---@param character Character
+function Castle:pay_earnings(character)
+    if character.job_index == nil then
+        return Event_ActionFailed()
+    end
+    if self.payment_timer[character.job_index] == 100 then
+        if self.wealth > self.tax_collection_reward then
+            self.wealth = self.wealth - self.tax_collection_reward
+            character:add_wealth(self.tax_collection_reward)
+            self.payment_timer[character.job_index] = 0
+            return Event_ActionFinished()
+        end
+    end
+    return Event_ActionFailed()
+end
+
+function Castle:payment_ready(character)
+    if character.job_index == nil then
+        return false
+    end
+    if self.payment_timer[character.job_index] == 100 then
+        if self.wealth > self.tax_collection_reward then
+            return true
+        end
+    end
+    return false
 end
 
 function Castle:open_tax_collector_position()

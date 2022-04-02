@@ -109,13 +109,21 @@ function MostUsefulAction(character)
 
 	local wander_utility = 30
 
+	local get_paid_utility = castle.tax_collection_reward * money_utility_per_unit * 2
+	if not castle:payment_ready(character) then
+		get_paid_utility = 0
+	end
 
 	local take_job_utility = castle.tax_collection_reward * 10 * money_utility_per_unit
 	if (not castle:has_vacant_job()) or character.is_tax_collector then
 		take_job_utility = 0
 	end
 
-	local max_utility = math.max(take_job_utility, eat_utility, eat_paid_utility, sleep_utility, open_shop_utility, sleep_paid_utility, sell_food_utility, wander_utility)
+	local max_utility = math.max(get_paid_utility, take_job_utility, eat_utility, eat_paid_utility, sleep_utility, open_shop_utility, sleep_paid_utility, sell_food_utility, wander_utility)
+
+	if get_paid_utility == max_utility then
+		return GetPaidInstruction	
+	end
 
 	if take_job_utility == max_utility then
 		return GetJobInstruction	
@@ -183,6 +191,8 @@ function Calculate_Utility(character)
 		money_utility_total = money_utility_total + eat_paid_utility
 		eat_paid_utility = 0
 	end
+
+
 
 	if money_required_total ~= 0 then
 		money_utility_per_unit = money_utility_total / money_required_total

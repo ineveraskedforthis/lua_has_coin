@@ -22,6 +22,7 @@ WanderInstruction = require "modules.instructions.Wander"
 SellFoodInstruction = require "modules.instructions.SellFood"
 BuyEatInstruction = require "modules.instructions.BuyFood"
 GetJobInstruction = require "modules.instructions.TakeTaxCollectJob"
+GetPaidInstruction = require "modules.instructions.GetPayment"
 
 function love.load()
     love.window.setMode(800, 600)   
@@ -127,7 +128,7 @@ end
 -- game logic loop
 time_passed = 0
 tps = 20
-tick = 1 / tps / 20 --/ 50
+tick = 1 / tps / 50 --/ 50
 day_mod_100 = 0
 
 function love.update(dt)

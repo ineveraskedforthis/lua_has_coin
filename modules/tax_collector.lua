@@ -3,8 +3,7 @@ function init_tax_collector()
 	-- TAX COLLECTOR
 
 	-- TAX COLLECTOR SETTINGS
-	MIN_GOLD_TO_TAX = 9
-	MAX_GOLD_TO_CARRY = 100
+
 
 	-- TAX_COLLECTOR STATES
 	CHAR_STATE.TAX_COLLECTOR_COLLECT_TAXES = new_state_id()
@@ -128,16 +127,5 @@ function init_tax_collector()
 		return TAX_COLLECTOR_RESPONCES.FOUND_TARGET
 	end
 
-	function FIND_OPTIMAL_BUILDING_TO_TAX(i)
-		local optimal = 0
-		local final_target = nil
-		
-		for j, w in ipairs(buildings_wealth_before_taxes) do
-			if (w > MIN_GOLD_TO_TAX) and (w / char_build_dist(i, j) > optimal) then
-				optimal = w / char_build_dist(i, j)
-				final_target = j
-			end
-		end
-		return optimal, final_target
-	end
+
 end

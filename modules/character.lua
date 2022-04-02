@@ -745,8 +745,37 @@ function Character:execute_order()
         return self:__apply(self.target)
     end
 
+    if self.order == "get_paid" then
+        return castle:pay_earnings(self)
+    end
+
+    if self.order == "find_tax_target" then
+        return self:__find_building_to_tax()
+    end
+
     pcall(function () error("Character " .. self.name .. " got unknown order: " .. self.order) end)
 end
+
+
+MIN_GOLD_TO_TAX = 9
+MAX_GOLD_TO_CARRY = 100
+function Character:__find_building_to_tax()
+    local optimal = 0
+    local final_target = nil
+    for j, w in pairs(buildings) do
+        local p_tax = w.wealth_before_tax
+        local dist = self:__dist_to(w)
+        if (p_tax > MIN_GOLD_TO_TAX) and (p_tax / dist > optimal) then
+            optimal = w / dist
+            final_target = w
+        end
+    end
+    if final_target == nil then
+        return Event_ActionFailed()
+    end
+    return Event_TargetFound(final_target)
+end
+
 
 ---Apply for a tax collector job
 ---@param castle Castle
