@@ -77,9 +77,12 @@ function MostUsefulAction(character)
 	end
 
 	local eat_paid_utility = character:get_hunger()
+	if (shop == nil) or (shop.stash == 0) then
+		eat_paid_utility = 0
+	end
 	if (shop ~= nil) and (character.wealth < shop.buy_price) and (shop.stash > 0) then
 		money_required_total = money_required_total + shop.buy_price
-		money_utility_total = money_utility_total + shop.buy_price
+		money_utility_total = money_utility_total + eat_paid_utility
 		eat_paid_utility = 0
 	end
 

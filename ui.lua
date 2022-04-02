@@ -41,6 +41,7 @@ function UI:set_up()
         :toogle_border()
         :update_label("characters")
         :button(milky, function (self, button) toggle_char_screen() end)
+        :toogle_background()
 
     self:set_up_budget_block()
     self:set_up_hire_block()
@@ -261,6 +262,9 @@ function UI:draw()
         love.graphics.rectangle('line', tmp.x * grid_size, tmp.y * grid_size, grid_size, grid_size)
         love.graphics.print(tostring(building.wealth), pos.x + 2, pos.y + 10)
         love.graphics.print(tostring(building.wealth_before_tax), pos.x + 2, pos.y + 20)
+        love.graphics.print("buy   " .. tostring(building.buy_price), pos.x + 40, pos.y + 10)
+        love.graphics.print("sell  " .. tostring(building.sell_price), pos.x + 40, pos.y + 20)
+        love.graphics.print("stash " .. tostring(building.stash), pos.x + 40, pos.y + 30)
     end
 
     love.graphics.rectangle('line', castle:get_cell().x * grid_size, castle:get_cell().x * grid_size, grid_size, grid_size)

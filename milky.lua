@@ -37,7 +37,7 @@ function milky.panel:new(milky, parent, label, image)
 	o.background_color = {0.4, 0.4, 0.4, 0.7}
 	o.border_color = {0.9, 0.9, 0.9, 0.9}
 	o.text_color = {0.90, 0.90, 0.90, 0.9}
-	o.hovered_background_color = {0.4, 0.4, 0.4, 0.7}
+	o.hovered_background_color = {0.4, 0.4, 0.1, 0.7}
 	o.hovered_border_color = {0.9, 0.9, 0.9, 0.9}
 	o.hovered_text_color = {0.90, 0.90, 0.90, 0.9}
 	o.pressed_background_color = {0.9, 0.4, 0.4, 0.9}
@@ -490,7 +490,7 @@ end
 -- mouse_x and mouse_y are in scaled screen pixels
 function milky:onClick(mouse_x, mouse_y, button)
 	for i,j in pairs(self.buttons) do
-		-- Check if we're in bounds, if we are, execute callback
+		-- Check if we're in bounds, if we are, set state as pressed
 		if j:xy_in_rect_test(mouse_x, mouse_y) then
 			j.pressed = true
 		end

@@ -101,18 +101,18 @@ function Building:update_on_sell()
 end
 
 function Building:update()
-    if math.random() > 0.999 then
-        self.sell_price = self.sell_price + 1
+    if math.random() > 0.9998 then
+        self.sell_price = math.min(self.sell_price + 1, self:get_wealth(), self.buy_price)
     end
-    if math.random() > 0.999 then
-        self.buy_price = self.buy_price + 1
+    if math.random() > 0.9995 then
+        self.buy_price = math.max(self.buy_price - 1, 1)
     end
 end
 
 function Building:update_on_buy()
     self.stash = math.max(0, self.stash - 1)
-    if math.random() > 0.5 then
-        self.buy_price = math.max(0, self.buy_price + 1)
+    if math.random() > 0.2 then
+        self.buy_price = self.buy_price + 1
     end
 end
 
