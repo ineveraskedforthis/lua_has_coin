@@ -366,13 +366,14 @@ end
 ---@param shop Building
 function Character:__tax_building(shop)
     local tax = 0
-    if shop.owner.entity_type == "KINGDOM" then
+    self.occupation_data = castle.INCOME_TAX
+    if shop.owner == castle then
         tax = shop.wealth_before_tax[shop]
     else
         tax = math.floor(shop.wealth_before_tax[shop] * self.occupation_data / 100)
     end
-    self.wealth = self.wealth + tax
-    shop.wealth = shop.wealth_before_tax - tax
+    self.temp_wealth = self.temp_wealth + tax
+    shop.wealth = shop.wealth + shop.wealth_before_tax - tax
     shop.wealth_before_tax = 0
 end
 
@@ -753,11 +754,15 @@ function Character:execute_order()
         return self:__find_building_to_tax()
     end
 
+    if self.order == "tax_target" then
+        return self:__tax_building(self.target)
+    end
+
     pcall(function () error("Character " .. self.name .. " got unknown order: " .. self.order) end)
 end
 
 
-MIN_GOLD_TO_TAX = 9
+MIN_GOLD_TO_TAX = 20
 MAX_GOLD_TO_CARRY = 100
 function Character:__find_building_to_tax()
     local optimal = 0
