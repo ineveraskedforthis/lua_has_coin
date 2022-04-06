@@ -145,6 +145,7 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
 
     character.stash = nil
     character.wealth = wealth
+    character.temp_wealth = 0
         
     character.weapon = {level=0, dur=100}
     character.armour = {level=0, dur=100}
@@ -368,20 +369,22 @@ function Character:__tax_building(shop)
     local tax = 0
     self.occupation_data = castle.INCOME_TAX
     if shop.owner == castle then
-        tax = shop.wealth_before_tax[shop]
+        tax = shop.wealth_before_tax
     else
-        tax = math.floor(shop.wealth_before_tax[shop] * self.occupation_data / 100)
+        tax = math.floor(shop.wealth_before_tax * self.occupation_data / 100)
     end
     self.temp_wealth = self.temp_wealth + tax
     shop.wealth = shop.wealth + shop.wealth_before_tax - tax
     shop.wealth_before_tax = 0
+    return Event_ActionFinished()
 end
 
 ---comment
 ---@param castle any
 function Character:__return_tax(castle)
-    castle.income(self.wealth)
-    self.wealth = 0
+    castle:income(self.temp_wealth)
+    self.temp_wealth = 0
+    return Event_ActionFinished()
 end
 
 ---character rests  
@@ -751,18 +754,27 @@ function Character:execute_order()
     end
 
     if self.order == "find_tax_target" then
-        return self:__find_building_to_tax()
+        local tmp = self:__find_building_to_tax()
+        if tmp.target == nil then
+            return tmp
+        end
+        self:set_target(tmp.target)
+        return tmp
     end
 
     if self.order == "tax_target" then
         return self:__tax_building(self.target)
     end
 
+    if self.order == "return_tax" then
+        return self:__return_tax(castle)
+    end
+
     pcall(function () error("Character " .. self.name .. " got unknown order: " .. self.order) end)
 end
 
 
-MIN_GOLD_TO_TAX = 20
+MIN_GOLD_TO_TAX = 50
 MAX_GOLD_TO_CARRY = 100
 function Character:__find_building_to_tax()
     local optimal = 0
@@ -771,14 +783,20 @@ function Character:__find_building_to_tax()
         local p_tax = w.wealth_before_tax
         local dist = self:__dist_to(w)
         if (p_tax > MIN_GOLD_TO_TAX) and (p_tax / dist > optimal) then
-            optimal = w / dist
+            optimal = p_tax / dist
             final_target = w
         end
     end
     if final_target == nil then
         return Event_ActionFailed()
     end
+    
     return Event_TargetFound(final_target)
+end
+
+function Character:check_for_tax_target()
+    local tmp = self:__find_building_to_tax()
+    return (tmp.type == "target_found")
 end
 
 

@@ -119,7 +119,19 @@ function MostUsefulAction(character)
 		take_job_utility = 0
 	end
 
-	local max_utility = math.max(get_paid_utility, take_job_utility, eat_utility, eat_paid_utility, sleep_utility, open_shop_utility, sleep_paid_utility, sell_food_utility, wander_utility)
+	local collect_tax_utility = 0
+	if character.is_tax_collector then
+		local temp = character:check_for_tax_target()
+		if temp then
+			collect_tax_utility = 50
+		end
+	end
+
+	local max_utility = math.max(collect_tax_utility, get_paid_utility, take_job_utility, eat_utility, eat_paid_utility, sleep_utility, open_shop_utility, sleep_paid_utility, sell_food_utility, wander_utility)
+
+	if collect_tax_utility == max_utility then
+		return CollectTaxInstruction
+	end
 
 	if get_paid_utility == max_utility then
 		return GetPaidInstruction	

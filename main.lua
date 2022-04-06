@@ -23,6 +23,7 @@ SellFoodInstruction = require "modules.instructions.SellFood"
 BuyEatInstruction = require "modules.instructions.BuyFood"
 GetJobInstruction = require "modules.instructions.TakeTaxCollectJob"
 GetPaidInstruction = require "modules.instructions.GetPayment"
+CollectTaxInstruction = require "modules.instructions.CollectTax"
 
 function love.load()
     love.window.setMode(800, 600)   
