@@ -87,11 +87,14 @@ local function utility_sleep_free(character)
 	return utility_sleep_full(character)
 end
 
+---comment
+---@param character Character
+---@return number
 local function utility_open_shop(character)
-	if (character.wealth > 200) and (character.has_shop == false) then
+	if (character.traits.business_ambition) and (character.has_shop == false) then
 		return 200
 	end
-	return -100
+	return 0
 end
 
 local function utility_eat_free(character)
@@ -151,6 +154,7 @@ local function income_sell_food(character)
 end
 local function income_get_paid(character)
 	if character.is_tax_collector and castle:payment_ready(character) then
+		print('!!!')
 		return castle.tax_collection_reward
 	end
 	return 0
@@ -184,7 +188,7 @@ local HomeMoney = 	UtilitySource:new(GetMoneyFromShopInstruction,	utility_zero,	
 local CollectTax = 	UtilitySource:new(CollectTaxInstruction, 		utility_work_tax,		wealth_none, 		income_none)
 local TakeJob =		UtilitySource:new(GetJobInstruction, 			utility_zero,			wealth_none, 		income_get_job)
 local Wander = 		UtilitySource:new(WanderInstruction, 			utility_wander, 		wealth_none, 		income_none)
-local OpenShop = 	UtilitySource:new(OpenShopInstruction, 			utility_open_shop, 		wealth_none,		income_none)
+local OpenShop = 	UtilitySource:new(OpenShopInstruction, 			utility_open_shop, 		wealth_open_shop,	income_none)
 
 local sources = {SleepFree, SleepPaid, EatFree, EatPaid, SellFood, GetPaid, HomeMoney, CollectTax,
 				 TakeJob, Wander, OpenShop}
@@ -194,6 +198,7 @@ local sources = {SleepFree, SleepPaid, EatFree, EatPaid, SellFood, GetPaid, Home
 ---@return AgentInstruction
 function MostUsefulAction(character)
 	local raw_utility = {}
+	local price = {}
 	local money_utility_total = 0
 	local money_required_total = 0
 	local money_utility_per_unit = 0
@@ -203,82 +208,59 @@ function MostUsefulAction(character)
 		if temp_wealth == nil then
 			--- it means that this thing is unavailable
 		elseif temp_wealth > character:get_wealth() then
-			money_utility_total = money_utility_total + temp_utility
-			money_required_total = money_required_total + temp_wealth
+			if temp_wealth ~= 0 then
+				money_utility_per_unit = math.max(money_utility_per_unit, temp_utility / temp_wealth)
+			end
+			price[_]  = temp_wealth
 		else
 			raw_utility[_] = temp_utility
+			price[_]  = temp_wealth
 		end
 	end
-	if money_required_total ~= 0 then
-		money_utility_per_unit = money_utility_total / money_required_total
-	end
+
 	local true_utility = {}
 	for ind, _ in pairs(raw_utility) do
 		local source = sources[ind]
 		local income = source.wealth_income(character)
-		true_utility[ind] = _ + income * money_utility_per_unit
+		true_utility[ind] = _ + (income - price[ind]) * money_utility_per_unit
 	end
+
 	local optimal = nil
 	for k, v in pairs(true_utility) do
 		if optimal == nil or true_utility[optimal] < v then
 			optimal = k
 		end
-	end
-	
+	end	
 	return sources[optimal].instruction
 end
 
 function Calculate_Utility(character)
-    ---local food_price = castle.FOOD_PRICE
-	local sleep_price = castle.SLEEP_PRICE
-	local shop = character:get_closest_shop()
-	---local potion_price = castle.POTION_PRICE
-
+	local raw_utility = {}
+	local price = {}
 	local money_utility_total = 0
 	local money_required_total = 0
 	local money_utility_per_unit = 0
-
-	local eat_utility = character:get_hunger() * 0.5
-	local sleep_utility = character:get_tiredness()
-	if character.home == nil then
-		sleep_utility = character:get_tiredness() - 50
+	for _, source in pairs(sources) do
+		local temp_utility = source.utility(character)
+		local temp_wealth = source.required_wealth(character)
+		if temp_wealth == nil then
+			--- it means that this thing is unavailable
+		elseif temp_wealth > character:get_wealth() then
+			if temp_wealth ~= 0 then
+				money_utility_per_unit = math.max(money_utility_per_unit, temp_utility / temp_wealth)
+			end
+			price[_]  = temp_wealth
+		else
+			raw_utility[_] = temp_utility
+			price[_]  = temp_wealth
+		end
 	end
 
-	local open_shop_utility = -100
-	if (character.wealth > 200) and (character.has_shop == false) then
-		open_shop_utility = 200
+	local true_utility = {}
+	for ind, _ in pairs(raw_utility) do
+		local source = sources[ind]
+		local income = source.wealth_income(character)
+		true_utility[ind] = _ + (income - price[ind]) * money_utility_per_unit
 	end
-
-	local sleep_paid_utility = character:get_tiredness()
-	if character.wealth < castle.SLEEP_PRICE then
-		money_required_total = money_required_total + castle.SLEEP_PRICE
-		money_utility_total = money_utility_total + sleep_paid_utility
-		sleep_paid_utility = 0
-	end
-
-	local eat_paid_utility = character:get_hunger()
-	if (shop == nil) or (shop.stash == 0) then
-		eat_paid_utility = 0
-	end
-	if (shop ~= nil) and (character.wealth < shop.buy_price) and (shop.stash > 0) then
-		money_required_total = money_required_total + shop.buy_price
-		money_utility_total = money_utility_total + eat_paid_utility
-		eat_paid_utility = 0
-	end
-
-
-
-	if money_required_total ~= 0 then
-		money_utility_per_unit = money_utility_total / money_required_total
-	end
-
-	
-	local sell_food_utility = 0
-	if (shop ~= nil) and (shop:get_wealth() >= shop.sell_price) then
-		sell_food_utility = money_utility_per_unit * shop.sell_price
-	end	
-
-	local wander_utility = 30
-
-	return {eat_utility, sleep_utility, open_shop_utility, sleep_paid_utility, eat_paid_utility, sell_food_utility, wander_utility}
+	return money_utility_per_unit
 end

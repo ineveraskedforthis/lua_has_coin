@@ -88,6 +88,9 @@ end
 ---@field level number
 ---@field dur number
 
+---@class TraitsList
+---@field business_ambition boolean
+
 ---@class Character
 ---@field name string
 ---@field hp number
@@ -108,6 +111,7 @@ end
 ---@field order Order
 ---@field quest Quest|nil
 ---@field job_index nil|number
+---@field traits TraitsList
 Character = {}
 Character.__index = Character
 
@@ -138,7 +142,13 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
     character.stash = nil
     character.wealth = wealth
     character.temp_wealth = 0
-        
+    character.skill = {}
+    character.skill.gather = 0
+    character.skill.tool_making = 0
+    
+    character.traits = {}
+    character.traits.business_ambition = false
+
     character.weapon = {level=0, dur=100}
     character.armour = {level=0, dur=100}
     character.potion = {level=0, dur=100}
@@ -300,7 +310,7 @@ function Character:__move_to_target()
     end
     local dx, dy, norm = true_dist(self, self.target)
     norm = norm * (1 + self.tiredness / 50)
-    if math.random() > 0.98 then
+    if math.random() > 0.99 then
         self:__change_tiredness(1)
     end    
     if (norm > 1) then

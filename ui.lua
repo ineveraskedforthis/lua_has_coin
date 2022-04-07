@@ -158,13 +158,8 @@ function UnitLine:new(parent, line_number)
         :new(milky, _.ui_element)
         :position(210, 4)
         :size(50, 20)
-        :update_label("eat")
+        :update_label("moneyutil")
 
-    _.utility_label_2 = milky.panel
-        :new(milky, _.ui_element)
-        :position(230, 4)
-        :size(50, 20)
-        :update_label("eat")
 
     _.order_label = milky.panel
         :new(milky, _.ui_element)
@@ -189,9 +184,8 @@ function UnitLine:load_data(character, instruction)
     self.wealth_label:update_label(character.wealth)
     self.tiredness_label:update_label(character.tiredness)
     self.hunger_label:update_label(character.hunger)
-    local utili = Calculate_Utility(character)
-    self.utility_label_1:update_label(utili[5])
-    self.utility_label_2:update_label(utili[1])
+    local utili = math.floor(Calculate_Utility(character) * 1000) / 1000
+    self.utility_label_1:update_label(utili)
     self.order_label:update_label(character.order.name)
     self.instruction_label:update_label(instruction)
 end
