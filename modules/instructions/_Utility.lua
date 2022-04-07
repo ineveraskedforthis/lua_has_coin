@@ -135,7 +135,7 @@ local function wealth_sleep_paid(character)
 	return castle.SLEEP_PRICE
 end
 local function wealth_buy_food(character)
-	local shop = character:get_closest_shop()
+	local shop = character:get_optimal_buy_shop()
 	if shop == nil then
 		return nil
 	end
@@ -146,7 +146,7 @@ local function wealth_none(character)
 end
 
 local function income_sell_food(character)
-	local shop = character:get_closest_shop()
+	local shop = character:get_optimal_sell_shop()
 	if shop == nil then
 		return 0
 	end
@@ -154,7 +154,6 @@ local function income_sell_food(character)
 end
 local function income_get_paid(character)
 	if character.is_tax_collector and castle:payment_ready(character) then
-		print('!!!')
 		return castle.tax_collection_reward
 	end
 	return 0

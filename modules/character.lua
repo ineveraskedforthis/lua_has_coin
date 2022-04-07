@@ -502,10 +502,48 @@ function Character:__closest_shop(shop_type)
     return tmp_target
 end
 
+function Character:__optimal_sell_shop(shop_type)
+    local tmp_target = nil
+    local tmp_value = nil
+    for k, v in pairs(buildings) do
+        -- if v.class == shop_type then
+            local tmp = v.sell_price - self:__dist_to(v)/1000
+            if (tmp_target == nil) or (tmp_value < tmp) then
+                tmp_target = v
+                tmp_value = tmp
+            end
+        -- end
+    end
+    return tmp_target
+end
+
+function Character:__optimal_buy_shop(shop_type)
+    local tmp_target = nil
+    local tmp_value = nil
+    for k, v in pairs(buildings) do
+        -- if v.class == shop_type then
+            local tmp = v.buy_price + self:__dist_to(v)/1000
+            if (tmp_target == nil) or (tmp_value > tmp) then
+                tmp_target = v
+                tmp_value = tmp
+            end
+        -- end
+    end
+    return tmp_target
+end
+
 ---Returns closest shop to character. nil if no shop exists.
 ---@return Building|nil
 function Character:get_closest_shop()
     return self:__closest_shop()
+end
+
+function Character:get_optimal_sell_shop()
+    return self:__optimal_sell_shop()
+end
+
+function Character:get_optimal_buy_shop()
+    return self:__optimal_buy_shop()
 end
 
 ---comment

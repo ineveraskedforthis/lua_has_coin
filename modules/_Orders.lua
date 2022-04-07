@@ -7,8 +7,17 @@ local function move_action(character)
 end 
 
 
-local function find_shop(character)
-    local closest = character:__closest_shop()
+local function find_shop_buy(character)
+    local closest = character:__optimal_buy_shop()
+    if closest == nil then
+        return Event_ActionFailed()
+    end
+    character:set_target(closest)
+    return Event_TargetFound(closest)
+end
+
+local function find_shop_sell(character)
+    local closest = character:__optimal_sell_shop()
     if closest == nil then
         return Event_ActionFailed()
     end
@@ -105,7 +114,8 @@ OrderRestHome = Order:new("Rest at home", rest_at_home)
 OrderRestCastle = Order:new("Rest at castle", rest_at_castle)
 OrderRestGround = Order:new("Rest on ground", rest_on_ground)
 
-OrderFindShop = Order:new("Find shop", find_shop)
+OrderFindShopBuy = Order:new("Find shop to buy", find_shop_buy)
+OrderFindShopSell = Order:new("Find shop to sell", find_shop_sell)
 
 OrderGatherEat = Order:new("Gather and eat", gather_eat)
 OrderGatherKeep = Order:new("Gather and keep", gather_keep)
