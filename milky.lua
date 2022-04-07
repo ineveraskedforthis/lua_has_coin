@@ -25,7 +25,13 @@ function milky.panel:new(milky, parent, label, image)
 	o.button_callback = nil
 	o.skin_texture_name = nil
 	o.active = true
+
+
+	--- setting up label 
 	o.label = label
+	o.label_centered = false 
+	o.label_shift = {0, 0}
+
 	o.image = image
 	
 	o.background_toogle = false
@@ -60,6 +66,7 @@ function milky.panel:new(milky, parent, label, image)
 		o.parent.children[o.id] = o
 		o.parent.active_children[o.id] = o
 	end
+
 
 	-- SETTING UP THE RECT
 	-- Rect uses absolute screen position
@@ -96,6 +103,11 @@ function milky.panel:destroy(milky)
 	end
 end
 
+function milky.panel:center_text()
+	self.label_centered = true
+	self:refresh_rect()
+	return self
+end
 
 
 -- Draws the panel
@@ -143,7 +155,9 @@ function milky.panel:draw()
 		end
 		love.graphics.setColor(self.text_color)
 	end
-	if self.label then love.graphics.print(self.label, self.rect.screen_space_x, self.rect.screen_space_y) end
+	if self.label then 
+		love.graphics.print(self.label, self.rect.screen_space_x + self.label_shift[1], self.rect.screen_space_y+ self.label_shift[2]) 
+	end
 	for j,k in pairs(self.active_children) do
 		k:draw()
 	end
@@ -251,6 +265,13 @@ function milky.panel:refresh_rect()
 	if self.image then
 		self.rect.draw_scale_x = self.rect.width / self.image:getWidth()
 		self.rect.draw_scale_y = self.rect.height / self.image:getHeight()
+	end
+
+	if self.label_centered then
+		local font = love.graphics.getFont()
+		local x = math.floor((rect.width - font:getWidth(self.label)) / 2)
+		local y = math.floor((rect.height - font:getHeight()) / 2)
+		self.label_shift = {x, y}
 	end
 
 	if self.image then
@@ -379,6 +400,7 @@ function milky.panel:orientation(x, y)
 end
 function milky.panel:update_label(label)
 	self.label = label
+	self:refresh_rect()
 	return self
 end
 -- Inputs are booleans
