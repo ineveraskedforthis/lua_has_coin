@@ -56,7 +56,9 @@ local function rest_at_castle(character)
     return Event_ActionFailed()
 end
 
-
+---comment
+---@param character Character
+---@return EventSimple
 local function gather_eat(character)
     return character:__collect_food(character.target, "eat")
 end

@@ -60,14 +60,16 @@
 ---@class UtilitySource
 ---@field instruction AgentInstruction
 ---@field utility function
+---@field long_term_utility function
 ---@field required_wealth function
 ---@field wealth_income function
 UtilitySource = {}
 UtilitySource.__index = UtilitySource
-function UtilitySource:new(instruction, utility, required_wealth, wealth_income)
+function UtilitySource:new(instruction, utility, required_wealth, wealth_income, long_term_utility)
 	_ = {}
 	_.instruction = instruction
 	_.utility = utility
+	_.long_term_utility = long_term_utility
 	_.required_wealth = required_wealth
 	_.wealth_income = wealth_income
 	setmetatable(_, UtilitySource)
@@ -92,7 +94,7 @@ end
 ---@return number
 local function utility_open_shop(character)
 	if (character.traits.business_ambition) and (character.has_shop == false) then
-		return 200
+		return 400
 	end
 	return 0
 end
@@ -104,13 +106,13 @@ end
 local function utility_eat_paid(character)
 	local shop = character:get_closest_shop()
 	if (shop ~= nil) and (shop.stash > 0) then
-		return character:get_hunger()	
+		return character:get_hunger()
 	end
 	return 0
 end
 
 local function utility_wander(character)
-	return 10
+	return 20
 end
 
 local function utility_work_tax(character)
@@ -177,17 +179,24 @@ local function income_none(character)
 	return 0
 end
 
-local SleepFree = 	UtilitySource:new(SleepInstruction, 			utility_sleep_free, 	wealth_none, 		income_none)
-local SleepPaid = 	UtilitySource:new(SleepPaidInstruction, 		utility_sleep_full, 	wealth_sleep_paid, 	income_none)
-local EatFree =		UtilitySource:new(GatherFoodInstruction,		utility_eat_free,		wealth_none,		income_none)
-local EatPaid = 	UtilitySource:new(BuyEatInstruction,			utility_eat_paid, 		wealth_buy_food, 	income_none)
-local SellFood = 	UtilitySource:new(SellFoodInstruction,			utility_zero, 			wealth_none,		income_sell_food)
-local GetPaid =		UtilitySource:new(GetPaidInstruction, 			utility_zero, 			wealth_none,		income_get_paid)
-local HomeMoney = 	UtilitySource:new(GetMoneyFromShopInstruction,	utility_zero,			wealth_none,		income_from_home)
-local CollectTax = 	UtilitySource:new(CollectTaxInstruction, 		utility_work_tax,		wealth_none, 		income_none)
-local TakeJob =		UtilitySource:new(GetJobInstruction, 			utility_zero,			wealth_none, 		income_get_job)
-local Wander = 		UtilitySource:new(WanderInstruction, 			utility_wander, 		wealth_none, 		income_none)
-local OpenShop = 	UtilitySource:new(OpenShopInstruction, 			utility_open_shop, 		wealth_open_shop,	income_none)
+local function utility_50()
+	return 50
+end
+local function utility_20()
+	return 20
+end
+
+local SleepFree = 	UtilitySource:new(SleepInstruction, 			utility_sleep_free, 	wealth_none, 		income_none, 		utility_zero)
+local SleepPaid = 	UtilitySource:new(SleepPaidInstruction, 		utility_sleep_full, 	wealth_sleep_paid, 	income_none,		utility_50)
+local EatFree =		UtilitySource:new(GatherFoodInstruction,		utility_eat_free,		wealth_none,		income_none, 		utility_zero)
+local EatPaid = 	UtilitySource:new(BuyEatInstruction,			utility_eat_paid, 		wealth_buy_food, 	income_none,		utility_20)
+local SellFood = 	UtilitySource:new(SellFoodInstruction,			utility_zero, 			wealth_none,		income_sell_food, 	utility_zero)
+local GetPaid =		UtilitySource:new(GetPaidInstruction, 			utility_zero, 			wealth_none,		income_get_paid, 	utility_zero)
+local HomeMoney = 	UtilitySource:new(GetMoneyFromShopInstruction,	utility_zero,			wealth_none,		income_from_home, 	utility_zero)
+local CollectTax = 	UtilitySource:new(CollectTaxInstruction, 		utility_work_tax,		wealth_none, 		income_none, 		utility_zero)
+local TakeJob =		UtilitySource:new(GetJobInstruction, 			utility_zero,			wealth_none, 		income_get_job, 	utility_zero)
+local Wander = 		UtilitySource:new(WanderInstruction, 			utility_wander, 		wealth_none, 		income_none, 		utility_zero)
+local OpenShop = 	UtilitySource:new(OpenShopInstruction, 			utility_open_shop, 		wealth_open_shop,	income_none, 		utility_zero)
 
 local sources = {SleepFree, SleepPaid, EatFree, EatPaid, SellFood, GetPaid, HomeMoney, CollectTax,
 				 TakeJob, Wander, OpenShop}
@@ -202,19 +211,33 @@ function MostUsefulAction(character)
 	local money_required_total = 0
 	local money_utility_per_unit = 0
 	for _, source in pairs(sources) do
-		local temp_utility = source.utility(character)
+		local temp_utility = source.utility(character) 
 		local temp_wealth = source.required_wealth(character)
 		if temp_wealth == nil then
 			--- it means that this thing is unavailable
 		elseif temp_wealth > character:get_wealth() then
 			if temp_wealth ~= 0 then
-				money_utility_per_unit = math.max(money_utility_per_unit, temp_utility / temp_wealth)
+				money_utility_per_unit = math.max(
+					money_utility_per_unit,
+					(temp_utility) / temp_wealth)
 			end
 			price[_]  = temp_wealth
 		else
 			raw_utility[_] = temp_utility
 			price[_]  = temp_wealth
 		end
+
+		if (temp_wealth ~= nil) then
+			local long_term_temp_wealth = temp_wealth * character.traits.long_term_planning
+			local long_term_temp_utility = (temp_utility + source.long_term_utility(character) * character.traits.long_term_planning)
+			if (long_term_temp_wealth > character:get_wealth()) then
+				if temp_wealth ~= 0 then
+					money_utility_per_unit = math.max(
+						money_utility_per_unit,
+						long_term_temp_utility / long_term_temp_wealth)
+				end
+			end
+		end 
 	end
 
 	local true_utility = {}
@@ -240,19 +263,33 @@ function Calculate_Utility(character)
 	local money_required_total = 0
 	local money_utility_per_unit = 0
 	for _, source in pairs(sources) do
-		local temp_utility = source.utility(character)
+		local temp_utility = source.utility(character) 
 		local temp_wealth = source.required_wealth(character)
 		if temp_wealth == nil then
 			--- it means that this thing is unavailable
 		elseif temp_wealth > character:get_wealth() then
 			if temp_wealth ~= 0 then
-				money_utility_per_unit = math.max(money_utility_per_unit, temp_utility / temp_wealth)
+				money_utility_per_unit = math.max(
+					money_utility_per_unit,
+					(temp_utility) / temp_wealth)
 			end
 			price[_]  = temp_wealth
 		else
 			raw_utility[_] = temp_utility
 			price[_]  = temp_wealth
 		end
+
+		if (temp_wealth ~= nil) then
+			local long_term_temp_wealth = temp_wealth * character.traits.long_term_planning
+			local long_term_temp_utility = (temp_utility + source.long_term_utility(character) * character.traits.long_term_planning)
+			if (long_term_temp_wealth > character:get_wealth()) then
+				if temp_wealth ~= 0 then
+					money_utility_per_unit = math.max(
+						money_utility_per_unit,
+						long_term_temp_utility / long_term_temp_wealth)
+				end
+			end
+		end 
 	end
 
 	local true_utility = {}

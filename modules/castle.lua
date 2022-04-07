@@ -79,7 +79,7 @@ function Castle:new(cell, progress, wealth)
         num_of_visitors = 0,
         FOOD_PRICE = 10,
         POTION_PRICE = 10,
-        SLEEP_PRICE = 3,
+        SLEEP_PRICE = 2,
         HUNT_REWARD = 10,
         budget = Budget:new(),
         INCOME_TAX = 10,

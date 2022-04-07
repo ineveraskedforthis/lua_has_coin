@@ -83,6 +83,7 @@ function love.load()
 
     local poor_ambitious_character = Character:new(100, 0, zero_cell:pos(), 10, 10, false)
     poor_ambitious_character.traits.business_ambition = true
+    poor_ambitious_character.traits.long_term_planning = 20
     table.insert(agents, #agents + 1, new_agent(poor_ambitious_character))
 
     game_ui = UI:new(false)

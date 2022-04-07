@@ -90,6 +90,10 @@ end
 
 ---@class TraitsList
 ---@field business_ambition boolean
+---@field long_term_planning number --- character tries to gather resources for future needs
+
+---@class SkillList
+---@field gathering number
 
 ---@class Character
 ---@field name string
@@ -112,6 +116,7 @@ end
 ---@field quest Quest|nil
 ---@field job_index nil|number
 ---@field traits TraitsList
+---@field skill SkillList
 Character = {}
 Character.__index = Character
 
@@ -138,16 +143,19 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
     character.max_hp = max_hp
     character.hunger = 0
     character.tiredness = 0
+    character.progress = 0
 
     character.stash = nil
     character.wealth = wealth
     character.temp_wealth = 0
     character.skill = {}
-    character.skill.gather = 0
-    character.skill.tool_making = 0
+    character.skill.gathering = 1
+    character.skill.tool_making = 1
+    
     
     character.traits = {}
     character.traits.business_ambition = false
+    character.traits.long_term_planning = 5
 
     character.weapon = {level=0, dur=100}
     character.armour = {level=0, dur=100}
@@ -310,7 +318,7 @@ function Character:__move_to_target()
     end
     local dx, dy, norm = true_dist(self, self.target)
     norm = norm * (1 + self.tiredness / 50)
-    if math.random() > 0.99 then
+    if math.random() > 0.995 then
         self:__change_tiredness(1)
     end    
     if (norm > 1) then
@@ -685,11 +693,17 @@ end
 ---        increases tiredness 
 ---@param food Target
 ---@param property "keep"|"eat"
----@return table
+---@return EventSimple
 function Character:__collect_food(food, property)
     if food.cooldown > 0 then
         return Event_ActionFailed()
     end
+
+    if self.progress < 200 then
+        self.progress = self.progress + self.skill.gathering
+        return Event_ActionInProgress()
+    end
+    self.progress = 0
 
     if property == "eat" then
         self:__eat_effect()
