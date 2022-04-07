@@ -156,19 +156,22 @@ end
 
 
 -- game logic loop
-time_passed = 0
-tps = 20
-tick = 1 / tps / 50 --/ 50
-day_mod_100 = 0
-
+TIME_PASSED = 0
+BASE_TICKS_PER_SECOND = 20
+TICK = 1 / BASE_TICKS_PER_SECOND 
+SPEED = 0
+function UPDATE_GAME_SPEED(newSPEED)
+    SPEED = newSPEED
+end
+DAY_MOD_100 = 0
 function love.update(dt)
-    time_passed = time_passed + dt
-    while time_passed > tick do
-        time_passed = time_passed - tick
-        day_mod_100 = day_mod_100 + 1
-        if day_mod_100 == 100 then
+    TIME_PASSED = TIME_PASSED + dt * SPEED
+    while TIME_PASSED > TICK do
+        TIME_PASSED = TIME_PASSED - TICK
+        DAY_MOD_100 = DAY_MOD_100 + 1
+        if DAY_MOD_100 == 100 then
             castle:update()
-            day_mod_100 = 0    
+            DAY_MOD_100 = 0    
         end       
 
         for _, agent in pairs(agents) do

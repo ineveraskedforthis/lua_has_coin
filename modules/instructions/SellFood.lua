@@ -13,6 +13,7 @@ FindFoodNode:add_child(FindFoodNode, ActionFinishedCondition)
 GoToFoodNode:add_child(GatherFoodNode, ActionFinishedCondition)
 
 GatherFoodNode:add_child(FindShopNode, ActionFinishedCondition)
+GatherFoodNode:add_child(EndNode, ActionFailedCondition)
 
 FindShopNode:add_child(GoToShopNode, TargetFoundCondition)
 

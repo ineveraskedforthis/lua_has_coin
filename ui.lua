@@ -36,7 +36,7 @@ function UI:set_up()
 
     self.toogle_character_screen_button = milky.panel
         :new(milky, self.main_ui)
-        :position(5, 575)
+        :position(3, 520)
         :size(80, 20)
         :toogle_border()
         :update_label("characters")
@@ -48,12 +48,55 @@ function UI:set_up()
     self:set_up_invest_block()
     self:set_up_reward_block()
     self:set_up_tax_block()
-
+    self:set_up_speed_control()
     self:set_up_units_table()
 end
 
 function toggle_char_screen()
     game_ui.table_of_units:toogle_hidden()
+end
+
+function UI:set_up_speed_control()
+    local speed_control_frame = milky.panel
+        :new(milky, self.main_ui)
+        :position(3, 550)
+        :size(192, 48)
+        :toogle_background()
+    
+    local label = milky.panel
+        :new(milky, speed_control_frame, "Game speed:")
+        :position(0, 0)
+    SPEED_LABEL = milky.panel
+        :new(milky, speed_control_frame, "0")
+        :position(150, 0)
+
+    local button_h = 28
+    local button_w = 48
+    local button_top = 20
+    local speed_0 = milky.panel
+        :new(milky, speed_control_frame, "0")
+        :position(button_w * 0, button_top)
+        :size(button_w, button_h)
+        :toogle_border()
+        :button(milky, function(self, button) UPDATE_GAME_SPEED(0) SPEED_LABEL:update_label("0") end)
+    local speed_1 = milky.panel
+        :new(milky, speed_control_frame, "1")
+        :position(button_w * 1, button_top)
+        :size(button_w, button_h)
+        :toogle_border()
+        :button(milky, function(self, button) UPDATE_GAME_SPEED(1) SPEED_LABEL:update_label("1") end)
+    local speed_2 = milky.panel
+        :new(milky, speed_control_frame, "2")
+        :position(button_w * 2, button_top)
+        :size(button_w, button_h)
+        :toogle_border()
+        :button(milky, function(self, button) UPDATE_GAME_SPEED(8) SPEED_LABEL:update_label("2") end)
+    local speed_3 = milky.panel
+        :new(milky, speed_control_frame, "3")
+        :position(button_w * 3, button_top)
+        :size(button_w, button_h)
+        :toogle_border()
+        :button(milky, function(self, button) UPDATE_GAME_SPEED(64) SPEED_LABEL:update_label("3") end)
 end
 
 function UI:set_up_units_table()
