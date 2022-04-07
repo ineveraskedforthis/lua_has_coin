@@ -7,13 +7,18 @@ local UI = require "ui"
 local Castle = require "modules.castle"
 local InstructionManager = require "modules.instructions._InstructionManager"
 
+Order = require "modules._Order"
+
+
 
 AgentInstruction = require "modules.instructions._AgentInstructionClass"
 InstructionNode = require "modules.instructions._InstructionNodeClass"
 Character = require "modules.character"
-require "modules.instructions.Events"
-require "modules.instructions.Conditions"
-require "modules.instructions.Utility"
+require "modules.instructions._Events"
+require "modules.instructions._Conditions"
+require "modules.instructions._Utility"
+require "modules.instructions._Actions"
+
 GatherFoodInstruction = require "modules.instructions.GatherEat"
 SleepInstruction = require "modules.instructions.Sleep"
 OpenShopInstruction = require "modules.instructions.OpenShop"
@@ -24,6 +29,8 @@ BuyEatInstruction = require "modules.instructions.BuyFood"
 GetJobInstruction = require "modules.instructions.TakeTaxCollectJob"
 GetPaidInstruction = require "modules.instructions.GetPayment"
 CollectTaxInstruction = require "modules.instructions.CollectTax"
+GetMoneyFromShopInstruction = require "modules.instructions.GetMoneyFromShop"
+
 
 function love.load()
     love.window.setMode(800, 600)   
@@ -129,7 +136,7 @@ end
 -- game logic loop
 time_passed = 0
 tps = 20
-tick = 1 / tps / 50 --/ 50
+tick = 1 / tps / 2 --/ 50
 day_mod_100 = 0
 
 function love.update(dt)

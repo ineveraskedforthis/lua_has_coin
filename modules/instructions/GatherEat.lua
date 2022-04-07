@@ -1,34 +1,7 @@
-InstructionNode = require "modules.instructions._InstructionNodeClass"
-
----Gives character an order to move toward target
----@type Action
-function MoveToTarget(character)
-    character:set_order("move")
-end
-
----comment
----@param character Character
-function FindFood(character)
-    character:set_order_WanderForFood()
-end
----@type Action
-function CollectFood(character)
-    character:set_order("gather_eat")
-end
----@type Action
-function Empty(character)
-
-end
-
-
-
-
+local FindFood = InstructionNode:new(FindFoodAction)
+local GoToFood = InstructionNode:new(MoveAction)
+local CollectFood = InstructionNode:new(GatherEatAction)
 local EndNode = InstructionNode:new(Empty, true)
-
-local FindFood = InstructionNode:new(FindFood)
-local GoToFood = InstructionNode:new(MoveToTarget)
-local CollectFood = InstructionNode:new(CollectFood)
-
 FindFood:add_child(GoToFood, TargetFoundCondition)
 FindFood:add_child(FindFood, ActionFinishedCondition)
 FindFood:add_child(EndNode, TiredCondition)

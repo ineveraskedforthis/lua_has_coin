@@ -38,22 +38,14 @@ CHARACTER_STATE = enum {
 local moraes = {'xi', 'lo', 'mi', 'ki', 'a', 'i', 'ku'}
 
 
----@class Castle
-
-
-
 
 ---@class Quest
 ---@field castle Castle
 ---@field reward number
 
-
-
 ---@class Position
 ---@field x number
 ---@field y number
-
-
 
 ---returns vector FROM a TO b as first two numbers and vector's length
 ---@param a Target
@@ -563,216 +555,31 @@ function Character:set_target(target)
     self.target = target
 end
 
----@alias Order "patrol"|"attack"|"move"|"idle"|"buy_food"|
-
 ---Gives an order to a character, replacing old one
 ---@param order Order
 function Character:set_order(order)
     self.order = order
-    self.had_finished_order = false
+    order:set_up(self)
 end
 
-
-function Character:set_order_Wander()
-    self:set_order("wander")
-    self:__set_random_target_circle()
-end
-
-function Character:set_order_WanderForFood()
-    self:set_order("wander_food")
-    self:__set_random_target_circle()
-end
-
-function Character:set_order_WanderForVacantSpace()
-    self:set_order("wander_vacant_space")
-    self:__set_random_target_circle()
-end
-
----comment
+---executes current order and returns event generated during execution
 ---@return Event
 function Character:execute_order()
-
-    if self.order == "move" then -- character moves to current target
-        local tmp = self:__move_to_target()
-        if tmp == MOVE_RESPONSE.TARGET_REACHED then
-            self.had_finished_order = true
-            return Event_ActionFinished()
-        end
-        return nil
-    end
-
-    if self.order == "attack" then -- character attacks current target
-        dist = self.__dist_to_target()
-        if dist > 1 then 
-            self.__move_to_target()
-        end
-        if dist < 2 then
-            local tmp = self.__attack_char(self.target)
-            if tmp == ATTACK_RESPONSE.KILL then
-                self.had_finished_order = true
-                return Event_EnemyKilled:new()
-            end
-            return tmp
-        end
-        return nil
-    end
-
-
-    if self.order == "buy_food" then
-        local tmp = self.__move_to_target()
-        if tmp == MOVE_RESPONSE.TARGET_REACHED then
-            self:__buy_food(self.target)
-
-            local event = Event_Bought()
-            self.had_finished_order = true
-            return event
-        end
-        return nil
-    end
-
-
-    if self.order == "find_shop" then
-        local closest = self:__closest_shop()
-        if closest == nil then
-            return Event_ActionFailed()
-        end
-        self:set_target(closest)
-        return Event_TargetFound(closest)
-    end
-
-
-    if self.order == "rest" then
-		self.target = self.home
-		if self:__dist_to_target() < 0.1 then
-            local tmp = self:__sleep(50);
-			return tmp
-		else
-			return Event_ActionFailed()
-		end
-    end
-
-    if self.order == "rest_on_ground" then
-		self.target = self.home
-        local tmp = self:__sleep();
-        return tmp
-    end
-
-    if self.order == "rest_at_castle" then
-		self.target = castle
-        if self:__dist_to_target() < 0.1 then
-            local tmp = self:__sleep(50);
-			return tmp
-		else
-			return Event_ActionFailed()
-		end
-    end
-
-    
-    if self.order == "wander" then  -- characters wanders around and sending events about food related things he found
-        local tmp = self:__move_to_target()
-        if tmp == MOVE_RESPONSE.TARGET_REACHED then
-            return Event_ActionFinished()
-        end
-        return Event_ActionInProgress()
-    end
-
-    --- food related actions
-    if self.order == "wander_food" then  -- characters wanders around and sending events about food related things he found
-        local tmp = self:__move_to_target()
-        local food = self:__check_food()
-        if tmp == MOVE_RESPONSE.TARGET_REACHED then
-            return Event_ActionFinished()
-        end
-        if food == nil then
-            return nil
-        end
-        self:set_target(food.target)
-        return food
-    end
-    if self.order == "gather_eat" then
-        return self:__collect_food(self.target, "eat")
-    end
-
-    if self.order == "collect_food" then
-        return self:__collect_food(self.target, "keep")
-    end
-
-    if self.order == "return_to_castle" then
-        local target = castle
-        self.target = target
-        local tmp = self:__move_to_target()
-        if tmp == MOVE_RESPONSE.TARGET_REACHED then
-            return Event_ActionFinished()
-        end
-        return Event_ActionInProgress()
-    end
-
-    if self.order == "return_home" then
-        if self.home == nil then
-            return Event_ActionFailed()
-        end
-        local target = self.home
-        self.target = target
-        local tmp = self:__move_to_target()
-        if tmp == MOVE_RESPONSE.TARGET_REACHED then
-            return Event_ActionFinished()
-        end
-        return Event_ActionInProgress()
-    end
-
-    if self.order == "wander_vacant_space" then
-        local tmp = self:__move_to_target()
-        local space = self:__check_space()
-        if space == nil then
-            if tmp == MOVE_RESPONSE.TARGET_REACHED then
-                return Event_ActionFinished()
-            else
-                return Event_ActionInProgress()
-            end
-        else
-            self.target = space.target
-            return space
-        end
-    end
-
-    if self.order == "sell" then
-        local responce = self:__sell_food(self.target)
-        return responce
-    end
-
-    if self.order == "buy_eat" then
-        local responce = self:__buy_food(self.target)
-        return responce
-    end
-
-    if self.order == "apply" then
-        return self:__apply(self.target)
-    end
-
-    if self.order == "get_paid" then
-        return castle:pay_earnings(self)
-    end
-
-    if self.order == "find_tax_target" then
-        local tmp = self:__find_building_to_tax()
-        if tmp.target == nil then
-            return tmp
-        end
-        self:set_target(tmp.target)
-        return tmp
-    end
-
-    if self.order == "tax_target" then
-        return self:__tax_building(self.target)
-    end
-
-    if self.order == "return_tax" then
-        return self:__return_tax(castle)
-    end
-
-    pcall(function () error("Character " .. self.name .. " got unknown order: " .. self.order) end)
+    return self.order:execute(self)
 end
 
+
+---takes *x* money from building
+---@param building Building
+---@param x number
+---@return EventSimple
+function Character:__take_gold(building, x)
+    if building == nil or building:get_wealth() < x then
+        return Event_ActionFailed()
+    end
+    building:pay(self, x)
+    return Event_ActionFinished()
+end
 
 MIN_GOLD_TO_TAX = 50
 MAX_GOLD_TO_CARRY = 100

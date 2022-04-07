@@ -1,10 +1,10 @@
-function CollectWood(character)
-    character:set_order("gather_wood")
-end
+-- function CollectWood(character)
+--     character:set_order("gather_wood")
+-- end
 
-function BringWoodBack(character)
-    character:set_order("bring_wood")
-end
+-- function BringWoodBack(character)
+--     character:set_order("bring_wood")
+-- end
 
 function FindPlaceForShop(character)
     -- print("????")

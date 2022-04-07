@@ -1,17 +1,5 @@
-local function FindShopAction(character)
-    character:set_order("find_shop")
-end
-
-local function MoveToShopAction(character)
-    character:set_order("move")
-end
-
-local function BuyFood(character)
-    character:set_order("buy_eat")
-end
-
 local FindShopNode = InstructionNode:new(FindShopAction)
-local MoveNode = InstructionNode:new(MoveToShopAction)
+local MoveNode = InstructionNode:new(MoveAction)
 local BuyFoodNode = InstructionNode:new(BuyFood)
 local EndNode = InstructionNode:new(Empty, true)
 

@@ -127,7 +127,18 @@ function MostUsefulAction(character)
 		end
 	end
 
-	local max_utility = math.max(collect_tax_utility, get_paid_utility, take_job_utility, eat_utility, eat_paid_utility, sleep_utility, open_shop_utility, sleep_paid_utility, sell_food_utility, wander_utility)
+	local get_money_from_home_utility = 0
+	if character.home ~= nil then
+		if character.home:get_wealth() > 200 then
+			get_money_from_home_utility = 50 * money_utility_per_unit
+		end
+	end
+
+	local max_utility = math.max(get_money_from_home_utility, collect_tax_utility, get_paid_utility, take_job_utility, eat_utility, eat_paid_utility, sleep_utility, open_shop_utility, sleep_paid_utility, sell_food_utility, wander_utility)
+
+	if get_money_from_home_utility == max_utility then
+		return GetMoneyFromShopInstruction
+	end
 
 	if collect_tax_utility == max_utility then
 		return CollectTaxInstruction
@@ -144,6 +155,9 @@ function MostUsefulAction(character)
 	if open_shop_utility == max_utility then
 		return OpenShopInstruction
 	end
+	if sleep_utility == max_utility then
+        return SleepInstruction
+    end
 	if sleep_paid_utility == max_utility then
 		return SleepPaidInstruction
 	end
@@ -157,9 +171,7 @@ function MostUsefulAction(character)
 	if eat_utility == max_utility then
 		return GatherFoodInstruction
 	end
-    if sleep_utility == max_utility then
-        return SleepInstruction
-    end
+    
 
 	if wander_utility == max_utility then
 		return WanderInstruction

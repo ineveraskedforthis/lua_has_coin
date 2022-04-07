@@ -2,12 +2,12 @@
 
 
 function GoHomeAction(character)
-    character.set_target(character.home)
-    character.set_order("move")
+    character:set_target(character.home)
+    character:set_order("move")
 end
 
 function TakeGoldAction(character)
-    character.set_order("take_gold")
+    character:set_order("take_gold")
 end
 
 local MoveNode = InstructionNode:new(GoHomeAction)
@@ -18,6 +18,6 @@ MoveNode:add_child(TakeNode, ActionFinishedCondition)
 TakeNode:add_child(EndNode, ActionFinishedCondition)
 TakeNode:add_child(EndNode, ActionFailedCondition)
 
-local instruction = AgentInstruction:new(MoveNode)
+local instruction = AgentInstruction:new(MoveNode, "Get money from shop")
 
 return instruction

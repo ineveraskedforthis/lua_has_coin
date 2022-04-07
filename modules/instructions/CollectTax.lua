@@ -1,26 +1,5 @@
-local function FindTargetAction(character)
-    character:set_order("find_tax_target")
-end
-
-local function MoveToTaxTargetAction(character)
-    character:set_order("move")
-end
-
-local function TaxTargetAction(character)
-    character:set_order("tax_target")
-end
-
-local function ReturnToCastleAction(character)
-    character:set_target(castle)
-    character:set_order("move")
-end
-
-local function ReturnTaxesAction(character)
-    character:set_order("return_tax")
-end
-
-local FindNode = InstructionNode:new(FindTargetAction)
-local MoveNode = InstructionNode:new(MoveToTaxTargetAction)
+local FindNode = InstructionNode:new(FindTaxTargetAction)
+local MoveNode = InstructionNode:new(MoveAction)
 local TaxNode = InstructionNode:new(TaxTargetAction)
 local ReturnToCastleNode = InstructionNode:new(ReturnToCastleAction)
 local ReturnTaxNode = InstructionNode:new(ReturnTaxesAction)
