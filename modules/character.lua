@@ -298,11 +298,6 @@ function Character:__move_to_target()
     if self.target == nil then
         return
     end
-    if self.target.pos == nil then
-        for k, v in pairs(self.target) do
-            print(k)
-        end
-    end
     local dx, dy, norm = true_dist(self, self.target)
     norm = norm * (1 + self.tiredness / 50)
     if math.random() > 0.98 then
@@ -616,7 +611,6 @@ end
 ---@param castle Castle
 function Character:__apply(castle)
     if castle == nil then
-        print("???")
         return Event_ActionFailed()
     end
     return castle:apply_for_office(self)

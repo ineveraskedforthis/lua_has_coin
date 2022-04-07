@@ -5,20 +5,22 @@ local globals = require "modules.constants"
 local Building = require "modules.building"
 local UI = require "ui"
 local Castle = require "modules.castle"
+Character = require "modules.character"
+
 local InstructionManager = require "modules.instructions._InstructionManager"
 
-Order = require "modules._Order"
+require "modules.instructions._Events"
 
+Order = require "modules._Order"
+require "modules._Orders"
+
+require "modules.instructions._Conditions"
+require "modules.instructions._Actions"
 
 
 AgentInstruction = require "modules.instructions._AgentInstructionClass"
 InstructionNode = require "modules.instructions._InstructionNodeClass"
-Character = require "modules.character"
-require "modules.instructions._Events"
-require "modules.instructions._Conditions"
-require "modules.instructions._Utility"
-require "modules.instructions._Actions"
-require "modules._Orders"
+
 
 GatherFoodInstruction = require "modules.instructions.GatherEat"
 SleepInstruction = require "modules.instructions.Sleep"
@@ -32,6 +34,10 @@ GetPaidInstruction = require "modules.instructions.GetPayment"
 CollectTaxInstruction = require "modules.instructions.CollectTax"
 GetMoneyFromShopInstruction = require "modules.instructions.GetMoneyFromShop"
 
+
+
+
+require "modules.instructions._Utility"
 
 function love.load()
     love.window.setMode(800, 600)   
