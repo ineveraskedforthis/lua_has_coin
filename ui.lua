@@ -271,12 +271,28 @@ function UI:set_up_tax_block()
     tax_label = milky.panel
         :new(milky, tax_widget, 'TAXES')
         :position(4, 5)    
-    inc_tax_label = milky.panel
+    local tax_label = milky.panel
         :new(milky, tax_widget, 'INCOME TAX')
         :position(10, 35)
-    inc_tax_value = milky.panel
+    tax_value = milky.panel
         :new(milky, tax_widget, '0%')
-        :position(120, 35)
+        :position(130, 35)
+    local decrease_tax_b = milky.panel
+        :new(milky, tax_widget, "-")
+        :position(100, 35)
+        :size(15, 15)
+        :center_text()
+        :toogle_border()
+        :toogle_background()
+        :button(milky, function(self, button) castle:dec_tax() end)
+    local increase_tax_b = milky.panel
+        :new(milky, tax_widget, "+")
+        :position(170, 35)
+        :size(15, 15)
+        :center_text()
+        :toogle_border()
+        :toogle_background()
+        :button(milky, function(self, button) castle:inc_tax() end)
 end
 
 function UI:set_up_hire_block()

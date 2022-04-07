@@ -1,5 +1,4 @@
 --- takes 50 gold from shop
-
 local MoveNode = InstructionNode:new(MoveToHomeAction)
 local TakeNode = InstructionNode:new(TakeGoldAction)
 local EndNode = InstructionNode:new(Empty, true)

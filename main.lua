@@ -194,7 +194,7 @@ function love.update(dt)
     
     hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
     treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')
-    inc_tax_value:update_label(tostring(castle.INCOME_TAX) .. '%')
+    tax_value:update_label(tostring(castle.INCOME_TAX) .. '%')
 end
 
 
