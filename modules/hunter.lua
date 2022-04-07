@@ -11,14 +11,7 @@
 -- AI object have stages, which represents what exactly agent is trying to accomplish right now
 -- they could be seen as nodes of flow diagram of AI
 
---- utility axioms:  
---- A1: abstract need being at 100 has an utility of satifying it of 100  
---- A2: if some action/resource is lacking and required for eating/sleaping, add eating/sleaping utility to action,
----  multiplied by MONEY_DESIRE_MOD (always more than 1!)  
---- A3: Potions utility is 100 / (x + 1) where x is current amount of potions  
---- 0 -> 100, 1 -> 50, 2 -> 33 and so on  
---- money don't have inherent utility, their utility is calculated from A2  
---- after calculations utility is multiplied by zero if agent lacks resources  
+
 
 
 ---@alias PotentialTarget Target|Character|Building
@@ -55,27 +48,7 @@ MONEY_DESIRE_MOD = 10
 --- chooses action with largest possible utility  
 ---@param character Character
 function Hunter_AI:choose_algo(character)
-	local food_price = self.kingdom.FOOD_PRICE
-	local sleep_price = self.kingdom.SLEEP_PRICE
-	local potion_price = self.kingdom.POTION_PRICE
 
-	local eat_utility = character:get_hunger()
-	local sleep_utility = character:get_tiredness()
-	local potion_utility = 100 / (character:get_potions_amount() + 1)
-	local money_utility = (eat_utility + sleep_price + potion_utility) / (food_price + sleep_price + potion_price) * MONEY_DESIRE_MOD
-	local hunt_utility = self.kingdom.HUNT_REWARD * money_utility
-
-	if food_price > character:get_wealth() then eat_utility = 0 end
-	if sleep_price > character:get_wealth() then sleep_utility = 0 end
-	if potion_price > character:get_wealth() then potion_utility = 0 end
-
-	local max_utility = math.max(eat_utility, sleep_utility, potion_utility, hunt_utility)
-
-	if eat_utility == max_utility then
-		self:set_stage('eat_journey_started')
-		local _ = Event_ShoppingJourneyStarted:new()
-		self:eat(character, _)
-	end
 
 end
 

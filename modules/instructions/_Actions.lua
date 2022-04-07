@@ -6,19 +6,39 @@ end
 function MoveAction(character)
     character:set_order(OrderMove)
 end
-function ReturnToCastleAction(character)
+function WanderAction(character)
+    character:set_order(OrderWander)
+end
+function WanderFoodAction(character)
+    character:set_order(OrderWanderFood)
+end
+function WanderSpaceAction(character)
+    character:set_order(OrderWanderSpace)
+end
+function MoveToCastleAction(character)
     character:set_target(castle)
     character:set_order(OrderMove)
 end
-function GoHomeAction(character)
+function MoveToHomeAction(character)
     character:set_target(character.home)
     character:set_order(OrderMove)
 end
 
 
-function BuyFood(character)
+
+function BuyFoodAction(character)
     character:set_order(OrderBuyFood)
 end
+function SellFoodAction(character)
+    character:set_order(OrderSellFood)
+end
+function CollectFoodAndKeepAction(character)
+    character:set_order(OrderGatherKeep)
+end 
+function CollectFoodAndEatAction(character)
+    character:set_order(OrderGatherEat)
+end
+
 
 
 function FindTaxTargetAction(character)
@@ -32,6 +52,8 @@ function FindShopAction(character)
     character:set_order(OrderFindShop)
 end
 
+
+
 function TaxTargetAction(character)
     character:set_order(OrderTaxTarget)
 end
@@ -42,11 +64,10 @@ function TakeGoldAction(character)
     character:set_order(OrderTakeGoldFromHome)
 end
 function GetJobAction(character)
-    character:set_order(OrderGetPaid)
+    character:set_order(OrderApplyForJob)
 end 
-
-function GatherEatAction(character)
-    character:set_order(OrderGatherEat)
+function GetPaymentAction(character)
+    character:set_order(OrderGetPaid)
 end
 
 
@@ -55,7 +76,6 @@ end
 function FindPlaceForShop(character)
     character:set_order(OrderWanderSpace)
 end
-
 ---@param character Character
 function SetUpShopSpot(character)
     local shop = Building:new(character.target, "shop", 0, character)
@@ -63,11 +83,33 @@ function SetUpShopSpot(character)
     character:pay(shop, 200)
     character.has_shop = true
     add_building(shop)
-    character:set_order(OrderSetUpShop)
 end
 
 
----@type Action
-function ReturnToCastle(character)
-    character:set_order("return_to_castle")
+
+
+function TakeGoldAction(character)
+    character:set_order(OrderTakeGoldFromHome)
 end
+
+
+---Orders character to sleep
+---@param character Character
+function SleepGroundAction(character)
+    character:set_order(OrderRestGround)
+end
+---Commands character to rest at home
+---@param character Character
+function SleepHomeAction(character)
+    character:set_order(OrderRestHome)
+end
+function SleepCastleAction(character)
+    character.wealth = character.wealth - castle.SLEEP_PRICE
+    castle:income(castle.SLEEP_PRICE)
+    character:set_order(OrderRestCastle)    
+end
+
+
+function ApplyToJobAction(character)
+    character:set_order(OrderApplyForJob)
+end 

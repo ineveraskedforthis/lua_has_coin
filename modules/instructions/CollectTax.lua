@@ -1,7 +1,7 @@
 local FindNode = InstructionNode:new(FindTaxTargetAction)
 local MoveNode = InstructionNode:new(MoveAction)
 local TaxNode = InstructionNode:new(TaxTargetAction)
-local ReturnToCastleNode = InstructionNode:new(ReturnToCastleAction)
+local ReturnToCastleNode = InstructionNode:new(MoveToCastleAction)
 local ReturnTaxNode = InstructionNode:new(ReturnTaxesAction)
 local EndNode = InstructionNode:new(Empty, true)
 

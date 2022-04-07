@@ -1,5 +1,3 @@
-Order = require "_O"
-
 local function move_action(character) 
     local tmp = character:__move_to_target()
     if tmp == MOVE_RESPONSE.TARGET_REACHED then
@@ -28,20 +26,25 @@ local function rest_at_home(character)
     end
 end
 
+---comment
+---@param character Character
+---@return EventSimple
 local function rest_on_ground(character)
     character.target = character.home
     local tmp = character:__sleep();
     return tmp
 end
 
+---rest at castle
+---@param character Character
+---@return EventSimple
 local function rest_at_castle(character)
     character.target = castle
     if character:__dist_to_target() < 0.1 then
         local tmp = character:__sleep(50);
         return tmp
-    else
-        return Event_ActionFailed()
     end
+    return Event_ActionFailed()
 end
 
 
@@ -87,6 +90,10 @@ local function take_gold_from_home(character)
     return character:__take_gold(character.home, 50)
 end
 
+local function idle(character)
+    return Event_ActionFinished()
+end
+
 
 
 OrderMove = Order:new("Move", move_action)
@@ -115,3 +122,4 @@ OrderReturnTaxCastle = Order:new("Return tax to castle", return_tax_to_castle)
 
 OrderTakeGoldFromHome = Order:new("Take gold from home", take_gold_from_home)
 
+OrderIdle = Order:new("Idle", idle)

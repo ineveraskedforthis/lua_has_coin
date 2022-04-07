@@ -18,6 +18,7 @@ require "modules.instructions._Events"
 require "modules.instructions._Conditions"
 require "modules.instructions._Utility"
 require "modules.instructions._Actions"
+require "modules._Orders"
 
 GatherFoodInstruction = require "modules.instructions.GatherEat"
 SleepInstruction = require "modules.instructions.Sleep"
@@ -58,19 +59,19 @@ function love.load()
     buildings = {}    
     
     -- game data
-    zero_cell = {x=30, y=30}
-    castle = Castle:new(zero_cell, 100, 500)
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 30, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 20, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 50, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, convert_cell_to_coord(zero_cell), 10, 10, false)))
+    zero_cell = Cell:new(30, 30)
+    castle = Castle:new(zero_cell:clone(), 100, 500)
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 30, zero_cell:pos(), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 20, zero_cell:pos(), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 50, zero_cell:pos(), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
 
 
-    local rich_character = Character:new(100, 1000, convert_cell_to_coord(zero_cell), 10, 10, false)
+    local rich_character = Character:new(100, 1000, zero_cell:pos(), 10, 10, false)
     table.insert(agents, #agents + 1, new_agent(rich_character))
 
     game_ui = UI:new(false)
@@ -114,21 +115,36 @@ end
 ---@class Cell
 ---@field x number
 ---@field y number
-
----comment
----@param cell Cell
----@return Position
-function convert_cell_to_coord(cell)
-    local grid_size = globals.CONSTANTS.GRID_SIZE
-    return {x = cell.x * grid_size + grid_size/2, y = cell.y * grid_size + grid_size/2}
+Cell = {}
+Cell.__index = Cell
+---Creates new cell
+---@param x number
+---@param y number
+function Cell:new(x, y)
+    _ = {x=x, y=y}
+    setmetatable(_, Cell)
+    return _
 end
-
+function Cell:pos()
+    local grid_size = globals.CONSTANTS.GRID_SIZE
+    return {x = self.x * grid_size + grid_size/2, y = self.y * grid_size + grid_size/2}
+end
+function Cell:clone()
+    _ = {x=self.x, y=self.y}
+    setmetatable(_, Cell)
+    return _
+end
+function Cell:center()
+    local grid_size = globals.CONSTANTS.GRID_SIZE
+    local shift = grid_size / 2
+    return {x = self.x * grid_size + shift, y = self.y * grid_size + shift}
+end
 ---comment
 ---@param position Position
 ---@return Cell
-function convert_coord_to_cell(position)
+function Cell:new_from_coordinate(position)
     local grid_size = globals.CONSTANTS.GRID_SIZE
-    return {x= math.floor(position.x / grid_size), y= math.floor(position.y / grid_size)}
+    return Cell:new(math.floor(position.x / grid_size), math.floor(position.y / grid_size))
 end
 
 
@@ -136,7 +152,7 @@ end
 -- game logic loop
 time_passed = 0
 tps = 20
-tick = 1 / tps / 2 --/ 50
+tick = 1 / tps / 50 --/ 50
 day_mod_100 = 0
 
 function love.update(dt)
@@ -174,7 +190,6 @@ end
 
 
 function init_food_array()
-    last_food = 1
     ---@type Target[]
     food = {}
 end
@@ -224,10 +239,11 @@ end
 
 
 function new_food(x, y)
-    food[last_food] = Target:new(convert_cell_to_coord({x = x, y= y}))
-    food[last_food].cell = {x = x, y= y}
+    local cell = Cell:new(x, y)
+    local last_food = #food + 1
+    food[last_food] = Target:new(cell:pos())
+    food[last_food].cell = cell
     food[last_food].cooldown = 0
-    last_food = last_food + 1
 end
 
 

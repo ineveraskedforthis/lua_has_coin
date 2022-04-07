@@ -1,5 +1,5 @@
-local MoveNode = InstructionNode:new(ReturnToCastleAction)
-local GetPaidNode = InstructionNode:new(GetJobAction)
+local MoveNode = InstructionNode:new(MoveToCastleAction)
+local GetPaidNode = InstructionNode:new(GetPaymentAction)
 local EndNode = InstructionNode:new(Empty, true)
 
 MoveNode:add_child(GetPaidNode, ActionFinishedCondition)

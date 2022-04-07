@@ -1,6 +1,6 @@
 local FindShopNode = InstructionNode:new(FindShopAction)
 local MoveNode = InstructionNode:new(MoveAction)
-local BuyFoodNode = InstructionNode:new(BuyFood)
+local BuyFoodNode = InstructionNode:new(BuyFoodAction)
 local EndNode = InstructionNode:new(Empty, true)
 
 FindShopNode

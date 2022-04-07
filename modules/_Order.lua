@@ -32,14 +32,14 @@ end
 ---@return Event
 function Order:execute(character)
     if self.notification == "food" then
-        food = character:__check_food()
+        local food = character:__check_food()
         if food ~= nil then
             character:set_target(food.target)
             return food
         end
     end
     if self.notification == "space" then
-        space = character:__check_space()
+        local space = character:__check_space()
         if space ~= nil then
             character:set_target(space.target)
             return space

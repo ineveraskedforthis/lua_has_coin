@@ -144,7 +144,7 @@ function UnitLine:load_data(character, instruction)
     local utili = Calculate_Utility(character)
     self.utility_label_1:update_label(utili[5])
     self.utility_label_2:update_label(utili[1])
-    self.order_label:update_label(character.order)
+    self.order_label:update_label(character.order.name)
     self.instruction_label:update_label(instruction)
 end
 
@@ -301,9 +301,8 @@ function UI:draw()
         else 
             love.graphics.setColor(0.3, 0, 0)
         end
-        local c_x = food_obj.cell.x * grid_size + grid_size / 2
-        local c_y = food_obj.cell.y * grid_size + grid_size / 2
-        love.graphics.circle('line', c_x, c_y, 2)
+        local center = food_obj.cell:center()
+        love.graphics.circle('line', center.x, center.y, 2)
     end
 
     love.graphics.setColor(1, 1, 0)
@@ -362,7 +361,7 @@ function UI:draw_on_map_ui(x, y)
         local tmp = {
         x = x + self.camera.x,
         y = y + self.camera.y}
-        local b = convert_coord_to_cell(tmp);
+        local b = Cell:new_from_coordinate(tmp);
 
         if PRESSED_ON_MAP then
             love.graphics.setColor(0, 1, 1, 1)
@@ -376,7 +375,7 @@ function UI:draw_on_map_ui(x, y)
 
             if PRESSED_ON_MAP then
                 love.graphics.setColor(0, 1, 0, 0.2)
-                local a = convert_coord_to_cell({x = ORIGIN_OF_PRESSING[1], y = ORIGIN_OF_PRESSING[2]})
+                local a = Cell:new_from_coordinate({x = ORIGIN_OF_PRESSING[1], y = ORIGIN_OF_PRESSING[2]})
                 love.graphics.rectangle('fill', a.x * grid_size, a.y * grid_size, (b.x - a.x) * grid_size, (b.y - a.y) * grid_size)
             end
 
@@ -407,8 +406,8 @@ end
 
 function UI:release_on_map_ui(x, y)  
     if ZONE_SELECTION and PRESSED_ON_MAP then
-        local a = convert_coord_to_cell({x=x, y=y});
-        local b = convert_coord_to_cell({x-ORIGIN_OF_PRESSING[1], y=ORIGIN_OF_PRESSING[2]})
+        local a = Cell:new_from_coordinate({x=x, y=y});
+        local b = Cell:new_from_coordinate({x-ORIGIN_OF_PRESSING[1], y=ORIGIN_OF_PRESSING[2]})
         -- new_zone(nil, b.x, b.y, a.x, a.y)
     end
     PRESSED_ON_MAP = false

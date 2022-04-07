@@ -148,7 +148,7 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
 
     character.target = nil
     character.home = nil
-    character.order = "idle"
+    character.order = OrderIdle
 
     character.rat = is_rat
     character.had_finished_order = true
@@ -179,7 +179,7 @@ end
 ---returns cell at which character is
 ---@return Cell
 function Character:cell()
-    return convert_coord_to_cell(self:pos())
+    return Cell:new_from_coordinate(self.position)
 end
 
 ---comment
@@ -298,6 +298,11 @@ function Character:__move_to_target()
     if self.target == nil then
         return
     end
+    if self.target.pos == nil then
+        for k, v in pairs(self.target) do
+            print(k)
+        end
+    end
     local dx, dy, norm = true_dist(self, self.target)
     norm = norm * (1 + self.tiredness / 50)
     if math.random() > 0.98 then
@@ -312,16 +317,16 @@ function Character:__move_to_target()
     end
 end
 
----comment
----@param shop Building
-function Character:__buy_potions(shop)
-    if (self.wealth >= shop.price) and (shop.stash > 0) then
-        shop.wealth_before_tax = shop.wealth_before_tax + shop.price
-        shop.stash = shop.stash - 1
-        self.wealth = self.wealth - shop.price
-        self.potion.level = self.potion.level + 1
-    end
-end
+-- ---comment
+-- ---@param shop Building
+-- function Character:__buy_potions(shop)
+--     if (self.wealth >= shop.price) and (shop.stash > 0) then
+--         shop.wealth_before_tax = shop.wealth_before_tax + shop.price
+--         shop.stash = shop.stash - 1
+--         self.wealth = self.wealth - shop.price
+--         self.potion.level = self.potion.level + 1
+--     end
+-- end
 
 ---buys food from a shop and eats it
 ---@param shop Building
@@ -380,10 +385,10 @@ function Character:__return_tax(castle)
 end
 
 ---character rests  
---- until gets to `50 - quality` tiredness 
---- quality of 50 gives 3 times larger speed of rest
---- returns ActionFinished event if got to minimal tiredness
---- returns ActionInProgress if still resting
+--- until gets to `50 - quality` tiredness  
+--- quality of 50 gives 3 times larger speed of rest  
+--- returns ActionFinished event if got to minimal tiredness    
+--- returns ActionInProgress if still resting  
 ---@return EventSimple
 function Character:__sleep(quality)
     local lower_bound = 50

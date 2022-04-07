@@ -1,6 +1,4 @@
-local function WanderAction(character)
-    character:set_order_Wander()
-end
+
 
 local EndNode = InstructionNode:new(Empty, true)
 local WanderNode = InstructionNode:new(WanderAction)

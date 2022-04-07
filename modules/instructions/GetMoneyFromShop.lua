@@ -1,16 +1,6 @@
 --- takes 50 gold from shop
 
-
-function GoHomeAction(character)
-    character:set_target(character.home)
-    character:set_order("move")
-end
-
-function TakeGoldAction(character)
-    character:set_order("take_gold")
-end
-
-local MoveNode = InstructionNode:new(GoHomeAction)
+local MoveNode = InstructionNode:new(MoveToHomeAction)
 local TakeNode = InstructionNode:new(TakeGoldAction)
 local EndNode = InstructionNode:new(Empty, true)
 
