@@ -105,7 +105,7 @@ end
 
 local function utility_eat_paid(character)
 	local shop = character:get_closest_shop()
-	if (shop ~= nil) and (shop.stash > 0) then
+	if (shop ~= nil) and (shop:get_stash(GOODS.FOOD) > 0) then
 		return character:get_hunger()
 	end
 	return 0
@@ -137,22 +137,22 @@ local function wealth_sleep_paid(character)
 	return castle.SLEEP_PRICE
 end
 local function wealth_buy_food(character)
-	local shop = character:get_optimal_buy_shop()
+	local shop = character:get_optimal_buy_shop(GOODS.FOOD)
 	if shop == nil then
 		return nil
 	end
-	return shop.buy_price
+	return shop:get_buy_price(GOODS.FOOD)
 end
 local function wealth_none(character)
 	return 0
 end
 
 local function income_sell_food(character)
-	local shop = character:get_optimal_sell_shop()
+	local shop = character:get_optimal_sell_shop(GOODS.FOOD)
 	if shop == nil then
 		return 0
 	end
-	return shop.sell_price
+	return shop:get_sell_price(GOODS.FOOD)
 end
 local function income_get_paid(character)
 	if character.is_tax_collector and castle:payment_ready(character) then

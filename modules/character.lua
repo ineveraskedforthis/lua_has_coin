@@ -344,9 +344,9 @@ end
 ---buys food from a shop and eats it
 ---@param shop Building
 function Character:__buy_food(shop)
-    if (self.wealth >= shop.buy_price) and (shop.stash > 0) then
-        self:pay(shop, shop.buy_price)
-        shop:update_on_buy()
+    if (self.wealth >= shop:get_buy_price(GOODS.FOOD)) and (shop:get_stash(GOODS.FOOD) > 0) then
+        self:pay(shop, shop:get_buy_price(GOODS.FOOD))
+        shop:update_on_buy(GOODS.FOOD)
         self:__eat_effect()
         return Event_ActionFinished()
     else
@@ -360,10 +360,9 @@ end
 ---@param shop Building
 ---@return EventSimple
 function Character:__sell_food(shop)
-    if shop:get_wealth() > shop.sell_price and self.stash == "food" then
-        shop:pay(self, shop.sell_price)
-        shop:update_on_sell()
-        shop.stash = shop.stash + 1
+    if shop:get_wealth() > shop:get_sell_price(GOODS.FOOD) and self.stash == "food" then
+        shop:pay(self, shop:get_sell_price(GOODS.FOOD))
+        shop:update_on_sell(GOODS.FOOD)
         self.stash = nil
         return Event_ActionFinished()
     end
@@ -474,12 +473,6 @@ function Character:__recieve_reward(castle)
 end
 
 
----comment
----@param building Building
-function Character:__transfer_item_to_building(building)
-    buildings.stash = building.stash + 1
-end
-
 ---collects **after tax** money from building  
 ---reserved for **owner**s of building
 ---@param building Building
@@ -510,12 +503,12 @@ function Character:__closest_shop(shop_type)
     return tmp_target
 end
 
-function Character:__optimal_sell_shop(shop_type)
+function Character:__optimal_sell_shop(x)
     local tmp_target = nil
     local tmp_value = nil
     for k, v in pairs(buildings) do
         -- if v.class == shop_type then
-            local tmp = v.sell_price - self:__dist_to(v)/1000
+            local tmp = v:get_sell_price(x) - self:__dist_to(v)/1000
             if (tmp_target == nil) or (tmp_value < tmp) then
                 tmp_target = v
                 tmp_value = tmp
@@ -525,13 +518,13 @@ function Character:__optimal_sell_shop(shop_type)
     return tmp_target
 end
 
-function Character:__optimal_buy_shop(shop_type)
+function Character:__optimal_buy_shop(x)
     local tmp_target = nil
     local tmp_value = nil
     for k, v in pairs(buildings) do
         -- if v.class == shop_type then
-            local tmp = v.buy_price + self:__dist_to(v)/1000
-            if (tmp_target == nil) or (tmp_value > tmp) then
+            local tmp = v:get_buy_price(x) + self:__dist_to(v)/1000
+            if (tmp_target == nil) or (tmp_value > tmp) and v:get_stash(x) > 0 then
                 tmp_target = v
                 tmp_value = tmp
             end
@@ -546,12 +539,12 @@ function Character:get_closest_shop()
     return self:__closest_shop()
 end
 
-function Character:get_optimal_sell_shop()
-    return self:__optimal_sell_shop()
+function Character:get_optimal_sell_shop(x)
+    return self:__optimal_sell_shop(x)
 end
 
-function Character:get_optimal_buy_shop()
-    return self:__optimal_buy_shop()
+function Character:get_optimal_buy_shop(x)
+    return self:__optimal_buy_shop(x)
 end
 
 ---comment

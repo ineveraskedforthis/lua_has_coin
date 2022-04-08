@@ -5,19 +5,21 @@
 --- When someone sells, it decreases sell price by 1 with some probability
 --- During update, with some probability sell price rises and buy price falls
 
+GOODS = {}
+GOODS.POTION = "POTION"
+GOODS.FOOD = "FOOD"
+
 ---@class Building
 ---@field _cell Position
 ---@field class number
 ---@field progress number
 ---@field wealth number
----@field food_price_buy number
----@field food_price_sell number
 ---@field wealth_before_tax number
 ---@field num_of_visitors number
----@field buy_price number
----@field sell_price number
+---@field _buy_price number[]
+---@field _sell_price number[]
 ---@field owner any
----@field stash number
+---@field _stash number[]
 Building = {}
 Building.__index = Building
 -- local globals = require('constants')
@@ -43,11 +45,14 @@ function Building:new(cell, class, progress, owner)
     building.wealth = 0
     building.wealth_before_tax = 0
     building.num_of_visitors = 0
-    building.food_price_sell = 10
-    building.food_price_buy = 15
-    building.sell_price = 10
-    building.buy_price = 15
-    building.stash = 0
+    building._sell_price = {}
+    building._buy_price = {}
+    building._stash = {}
+    for _, v in pairs(GOODS) do
+        building._sell_price[v] = 10
+        building._buy_price[v] = 15
+        building._stash[v] = 0
+    end    
     return building
 end
 
@@ -94,26 +99,61 @@ function Building:pay(target, x)
     return Event_ActionFailed()
 end
 
-function Building:update_on_sell()
+---updates state of shop after selling x to it  
+---reduces stash and updates price
+---@param x string
+---@return EventSimple
+function Building:update_on_sell(x)
+    self._stash[x] = self._stash[x] + 1
     if math.random() > 0.5 then
-        self.sell_price = math.max(0, self.sell_price - 1)
+        self._sell_price[x] = math.max(0, self._sell_price[x] - 1)
     end
+    return Event_ActionFinished()
+end
+---updates state of shop after buying x from it  
+---reduces stash and updates price
+---@param x string
+---@return EventSimple
+function Building:update_on_buy(x)
+    if self._stash[x] == 0 then
+        return Event_ActionFailed()
+    end
+    self._stash[x] = self._stash[x] - 1
+    if math.random() > 0.2 then
+        self._buy_price[x] = self._buy_price[x] + 1
+    end
+    return Event_ActionFinished()
 end
 
 function Building:update()
-    if math.random() > 0.9995 then
-        self.sell_price = math.min(self.sell_price + 1, self:get_wealth(), self.buy_price)
-    end
-    if math.random() > 0.9995 then
-        self.buy_price = math.max(self.buy_price - 1, 1)
+    for k, v in pairs(GOODS) do
+        if math.random() > 0.9995 then
+            self._sell_price[v] = math.min(self._sell_price[v] + 1, self:get_wealth(), self._buy_price[v])
+        end
+        if math.random() > 0.9995 then
+            self._buy_price[v] = math.max(self._buy_price[v] - 1, 1)
+        end
     end
 end
-
-function Building:update_on_buy()
-    self.stash = math.max(0, self.stash - 1)
-    if math.random() > 0.2 then
-        self.buy_price = self.buy_price + 1
-    end
+---Returns price of x where x is one of GOODS  
+---price for which you can sell there  
+---@param x string
+---@return number
+function Building:get_sell_price(x)
+    return self._sell_price[x]
+end
+---Returns price of x where x is one of GOODS  
+---price for which you can buy there  
+---@param x string
+---@return number
+function Building:get_buy_price(x)
+    return self._buy_price[x]
+end
+---Returns remaining anount of x
+---@param x string
+---@return number
+function Building:get_stash(x)
+    return self._stash[x]
 end
 
 ---comment

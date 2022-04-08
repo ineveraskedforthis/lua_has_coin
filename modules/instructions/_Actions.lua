@@ -48,11 +48,11 @@ end
 function FindFoodAction(character)
     character:set_order(OrderWanderFood)
 end
-function FindShopSellAction(character)
-    character:set_order(OrderFindShopSell)
+function FindShopSellFoodAction(character)
+    character:set_order(OrderFindShopSellFood)
 end
-function FindShopBuyAction(character)
-    character:set_order(OrderFindShopBuy)
+function FindShopBuyFoodAction(character)
+    character:set_order(OrderFindShopBuyFood)
 end
 
 

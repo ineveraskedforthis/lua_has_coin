@@ -384,9 +384,9 @@ function UI:draw()
         love.graphics.rectangle('line', tmp.x * grid_size, tmp.y * grid_size, grid_size, grid_size)
         love.graphics.print(tostring(building.wealth), pos.x + 2, pos.y + 10)
         love.graphics.print(tostring(building.wealth_before_tax), pos.x + 2, pos.y + 20)
-        love.graphics.print("buy   " .. tostring(building.buy_price), pos.x + 40, pos.y + 10)
-        love.graphics.print("sell  " .. tostring(building.sell_price), pos.x + 40, pos.y + 20)
-        love.graphics.print("stash " .. tostring(building.stash), pos.x + 40, pos.y + 30)
+        love.graphics.print("buy   " .. tostring(building:get_buy_price(GOODS.FOOD)), pos.x + 40, pos.y + 10)
+        love.graphics.print("sell  " .. tostring(building:get_sell_price(GOODS.FOOD)), pos.x + 40, pos.y + 20)
+        love.graphics.print("stash " .. tostring(building:get_stash(GOODS.FOOD)), pos.x + 40, pos.y + 30)
     end
 
     love.graphics.rectangle('line', castle:get_cell().x * grid_size, castle:get_cell().x * grid_size, grid_size, grid_size)
