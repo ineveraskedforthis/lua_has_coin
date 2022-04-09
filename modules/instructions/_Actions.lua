@@ -38,6 +38,12 @@ end
 function CollectFoodAndEatAction(character)
     character:set_order(OrderGatherEat)
 end
+function SellPotionAction(character)
+    character:set_order(OrderSellPotion)
+end
+function BuyPotionAction(character)
+    character:set_order(OrderBuyPotion)
+end
 
 
 

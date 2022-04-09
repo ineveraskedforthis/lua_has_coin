@@ -73,7 +73,12 @@ end
 local function buy_food_eat(character)
     return character:__buy_food(character.target)
 end
-
+local function sell_potion(character)
+    return character:__sell_potion(character.target)
+end
+local function buy_potion(character)
+    return character:__buy_potion(character.target)
+end
 
 local function apply_for_job(character)
     return character:__apply(character.target)
@@ -107,6 +112,8 @@ end
 
 
 
+
+
 OrderMove = Order:new("Move", move_action)
 OrderWander = Order:new("Wander", move_action, nil, true)
 OrderWanderFood = Order:new("Search for food", move_action, "food", true)
@@ -124,6 +131,8 @@ OrderGatherKeep = Order:new("Gather and keep", gather_keep)
 
 OrderSellFood = Order:new("Sell food", sell_food)
 OrderBuyFood = Order:new("Buy food", buy_food_eat)
+OrderSellPotion = Order:new("Sell food", sell_potion)
+OrderBuyPotion = Order:new("Buy food", buy_potion)
 
 OrderApplyForJob = Order:new("Apply for a job", apply_for_job)
 OrderGetPaid = Order:new("Get paid", get_paid)

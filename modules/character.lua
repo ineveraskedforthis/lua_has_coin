@@ -25,15 +25,6 @@ STASH = enum {
     "NONE"
 }
 
----@type table<string, number>
-CHARACTER_STATE = enum {
-    "MOVE_TO_TARGET",
-    "ATTACK_TARGET",
-    "REST",
-    "PATROL",
-    "BUY_FOOD",
-    "BUY_POTION"
-}
 
 local moraes = {'xi', 'lo', 'mi', 'ki', 'a', 'i', 'ku'}
 
@@ -94,6 +85,7 @@ end
 
 ---@class SkillList
 ---@field gathering number
+---@field alchemist number
 
 ---@class Character
 ---@field name string
@@ -151,6 +143,7 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
     character.skill = {}
     character.skill.gathering = 1
     character.skill.tool_making = 1
+    character.skill.alchemist = 0
     
     
     character.traits = {}
@@ -361,6 +354,18 @@ end
 ---@return EventSimple
 function Character:__sell_food(shop)
     if shop:get_wealth() > shop:get_sell_price(GOODS.FOOD) and self.stash == "food" then
+        shop:pay(self, shop:get_sell_price(GOODS.FOOD))
+        shop:update_on_sell(GOODS.FOOD)
+        self.stash = nil
+        return Event_ActionFinished()
+    end
+    return Event_ActionFailed()
+end
+
+---@param shop Building
+---@return EventSimple
+function Character:__sell_potion(shop)
+    if shop:get_wealth() > shop:get_sell_price(GOODS.FOOD) and self.potion.level > 0 then
         shop:pay(self, shop:get_sell_price(GOODS.FOOD))
         shop:update_on_sell(GOODS.FOOD)
         self.stash = nil

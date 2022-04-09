@@ -1,0 +1,13 @@
+local GoToSafeSpaceNode = InstructionNode:new(MoveToCastleAction)
+local MakePotionNode = InstructionNode:new(MakePotionOrder)
+local FindShopNode = InstructionNode:new(FindShopSellPotionAction)
+local GoToShopNode = InstructionNode:new(MoveAction)
+local SellNode = InstructionNode:new(SellPotionAction)
+local EndNode = InstructionNode:new(Empty, true)
+GoToSafeSpaceNode:add_child(MakePotionNode, ActionFinishedCondition)
+MakePotionNode:add_child(FindShopNode, ActionFinishedCondition)
+GoToShopNode:add_child(SellNode, ActionFinishedCondition)
+SellNode:add_child(EndNode, ActionFinishedCondition)
+SellNode:add_child(EndNode, ActionFailedCondition)
+
+return AgentInstruction:new(GoToSafeSpaceNode)
