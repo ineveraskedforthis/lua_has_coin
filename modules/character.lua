@@ -347,6 +347,19 @@ function Character:__buy_food(shop)
     end
 end
 
+---buys food from a shop and eats it
+---@param shop Building
+function Character:__buy_potion(shop)
+    if (self.wealth >= shop:get_buy_price(GOODS.POTION)) and (shop:get_stash(GOODS.POTION) > 0) then
+        self:pay(shop, shop:get_buy_price(GOODS.POTION))
+        shop:update_on_buy(GOODS.POTION)
+        self:__add_potion()
+        return Event_ActionFinished()
+    else
+        return Event_ActionFailed()
+    end
+end
+
 ---Character attempts to sell food in shop  
 ---If shop has enough money then returns ActionFinished event  
 ---Otherwise returns ActionFailed event
@@ -365,9 +378,9 @@ end
 ---@param shop Building
 ---@return EventSimple
 function Character:__sell_potion(shop)
-    if shop:get_wealth() > shop:get_sell_price(GOODS.FOOD) and self.potion.level > 0 then
-        shop:pay(self, shop:get_sell_price(GOODS.FOOD))
-        shop:update_on_sell(GOODS.FOOD)
+    if shop:get_wealth() > shop:get_sell_price(GOODS.POTION) and self.potion.level > 0 then
+        shop:pay(self, shop:get_sell_price(GOODS.POTION))
+        shop:update_on_sell(GOODS.POTION)
         self:__remove_potion()
         return Event_ActionFinished()
     end

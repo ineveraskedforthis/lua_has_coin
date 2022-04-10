@@ -102,6 +102,9 @@ end
 local function sell_potion(character)
     return character:__sell_potion(character.target)
 end
+---comment
+---@param character Character
+---@return EventSimple
 local function buy_potion(character)
     return character:__buy_potion(character.target)
 end

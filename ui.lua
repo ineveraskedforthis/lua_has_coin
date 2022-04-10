@@ -216,6 +216,71 @@ function UI:set_up_buildings_table()
         :toogle_background()
         :toogle_border()
         :toogle_hidden()
+    self.building_indices = {}
+    local height = 30
+    local block1 = 50
+    local block_size = 50
+    local pad = 15
+    for i = 1, 15 do
+        self.building_indices[i] = milky.panel 
+            :new(milky, self.table_of_buildings)
+            :position(10, (height + 5) * (i - 1) + 10)
+            :size(530, height)
+            :toogle_border()
+        self.building_indices[i].label = milky.panel
+            :new(milky, self.building_indices[i], "label")
+            :position(5, 0)
+            :size(block_size, height)
+            :center_text()
+        self.building_indices[i].label_price_food = milky.panel
+            :new(milky, self.building_indices[i])
+            :position(block1 + pad, 0)
+            :size(block_size + pad * 2, height)
+            :toogle_border()
+        self.building_indices[i].label_price_food.buy = milky.panel 
+            :new(milky, self.building_indices[i].label_price_food, "buy")
+            :position(0, 0)
+            :size(block_size, math.floor(height / 2))
+            :toogle_border()
+            :center_text()
+        self.building_indices[i].label_price_food.sell = milky.panel 
+            :new(milky, self.building_indices[i].label_price_food, "sell")
+            :position(0, math.floor(height / 2))
+            :size(block_size, math.floor(height / 2))
+            :toogle_border()
+            :center_text()
+        self.building_indices[i].label_price_food.stash = milky.panel 
+            :new(milky, self.building_indices[i].label_price_food, "stash")
+            :position(block_size, 0)
+            :size(pad * 2, height)
+            :toogle_border()
+            :center_text()
+        self.building_indices[i].label_price_potion = milky.panel
+            :new(milky, self.building_indices[i])
+            :position(block1 + pad * 2 + block_size + pad * 2, 0)
+            :size(block_size + pad * 2, height)
+            :toogle_border()
+        self.building_indices[i].label_price_potion.buy = milky.panel 
+            :new(milky, self.building_indices[i].label_price_potion, "buy")
+            :position(0, 0)
+            :size(block_size, math.floor(height / 2))
+            :toogle_border()
+            :center_text()
+        self.building_indices[i].label_price_potion.sell = milky.panel 
+            :new(milky, self.building_indices[i].label_price_potion, "sell")
+            :position(0, math.floor(height / 2))
+            :size(block_size, math.floor(height / 2))
+            :toogle_border()
+            :center_text()
+        self.building_indices[i].label_price_potion.stash = milky.panel 
+            :new(milky, self.building_indices[i].label_price_potion, "stash")
+            :position(block_size, 0)
+            :size(pad * 2, height)
+            :toogle_border()
+            :center_text()
+    end
+    
+        -- :size()
     -- self.lines_of_units = {}
     -- for i = 1, 15 do
     --     table.insert(self.lines_of_units, #self.lines_of_units + 1, UnitLine:new(self.table_of_units, i))
@@ -423,6 +488,12 @@ function UI:draw()
         love.graphics.print("buy   " .. tostring(building:get_buy_price(GOODS.FOOD)), pos.x + 40, pos.y + 10)
         love.graphics.print("sell  " .. tostring(building:get_sell_price(GOODS.FOOD)), pos.x + 40, pos.y + 20)
         love.graphics.print("stash " .. tostring(building:get_stash(GOODS.FOOD)), pos.x + 40, pos.y + 30)
+        game_ui.building_indices[_].label_price_food.buy:update_label(building:get_buy_price(GOODS.FOOD))
+        game_ui.building_indices[_].label_price_food.sell:update_label(building:get_sell_price(GOODS.FOOD))
+        game_ui.building_indices[_].label_price_food.stash:update_label(building:get_stash(GOODS.FOOD))
+        game_ui.building_indices[_].label_price_potion.buy:update_label(building:get_buy_price(GOODS.POTION))
+        game_ui.building_indices[_].label_price_potion.sell:update_label(building:get_sell_price(GOODS.POTION))
+        game_ui.building_indices[_].label_price_potion.stash:update_label(building:get_stash(GOODS.POTION))
     end
 
     love.graphics.rectangle('line', castle:get_cell().x * grid_size, castle:get_cell().x * grid_size, grid_size, grid_size)
