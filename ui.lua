@@ -34,13 +34,26 @@ function UI:set_up()
         :size(198, 600)
         :toogle_background()
 
+    local list_button_size = 94
+    local list_button_h = 25
+
     self.toogle_character_screen_button = milky.panel
         :new(milky, self.main_ui)
         :position(3, 520)
-        :size(80, 20)
+        :size(list_button_size, list_button_h)
         :toogle_border()
-        :update_label("characters")
+        :update_label("Characters")
         :button(milky, function (self, button) toggle_char_screen() end)
+        :toogle_background()
+        :center_text()
+
+    self.toogle_buildings_screen_button = milky.panel
+        :new(milky, self.main_ui)
+        :position(list_button_size + 7, 520)
+        :size(list_button_size, list_button_h)
+        :toogle_border()
+        :update_label("Buildings")
+        :button(milky, function (self, button) toggle_buildings_screen() end)
         :toogle_background()
         :center_text()
 
@@ -51,6 +64,7 @@ function UI:set_up()
     self:set_up_tax_block()
     self:set_up_speed_control()
     self:set_up_units_table()
+    self:set_up_buildings_table()
 end
 
 function toggle_char_screen()
@@ -79,6 +93,7 @@ function UI:set_up_speed_control()
         :position(button_w * 0, button_top)
         :size(button_w, button_h)
         :toogle_border()
+        :toogle_background()
         :button(milky, function(self, button) UPDATE_GAME_SPEED(0) SPEED_LABEL:update_label("0") end)
         :center_text()
     local speed_1 = milky.panel
@@ -86,6 +101,7 @@ function UI:set_up_speed_control()
         :position(button_w * 1, button_top)
         :size(button_w, button_h)
         :toogle_border()
+        :toogle_background()
         :button(milky, function(self, button) UPDATE_GAME_SPEED(1) SPEED_LABEL:update_label("1") end)
         :center_text()
     local speed_2 = milky.panel
@@ -93,6 +109,7 @@ function UI:set_up_speed_control()
         :position(button_w * 2, button_top)
         :size(button_w, button_h)
         :toogle_border()
+        :toogle_background()
         :button(milky, function(self, button) UPDATE_GAME_SPEED(8) SPEED_LABEL:update_label("2") end)
         :center_text()
     local speed_3 = milky.panel
@@ -100,6 +117,7 @@ function UI:set_up_speed_control()
         :position(button_w * 3, button_top)
         :size(button_w, button_h)
         :toogle_border()
+        :toogle_background()
         :button(milky, function(self, button) UPDATE_GAME_SPEED(64) SPEED_LABEL:update_label("3") end)
         :center_text()
 end
@@ -188,6 +206,24 @@ function UnitLine:load_data(character, instruction)
     self.utility_label_1:update_label(utili)
     self.order_label:update_label(character.order.name)
     self.instruction_label:update_label(instruction)
+end
+
+function UI:set_up_buildings_table()
+    self.table_of_buildings = milky.panel
+        :new(milky, nil, nil, nil)
+        :position(20, 20)
+        :size(550, 550)
+        :toogle_background()
+        :toogle_border()
+        :toogle_hidden()
+    -- self.lines_of_units = {}
+    -- for i = 1, 15 do
+    --     table.insert(self.lines_of_units, #self.lines_of_units + 1, UnitLine:new(self.table_of_units, i))
+    -- end
+end
+
+function toggle_buildings_screen()
+    game_ui.table_of_buildings:toogle_hidden()
 end
 
 function UI:set_up_budget_block()
@@ -412,6 +448,7 @@ function UI:draw()
     love.graphics.setColor(1, 1, 0)
     self.main_ui:draw()
     self.table_of_units:draw()
+    self.table_of_buildings:draw()
 end
 
 
