@@ -220,7 +220,7 @@ function Character:update()
         self:__set_hunger(self.hunger + 1)    
     end
 
-    if self.potion.level > 0 then
+    if (self.potion.level > 0) and (math.random() > 0.999) then
         self.potion.dur = self.potion.dur - 1
         if (self.potion.dur < 0) or (self.hp < (self.max_hp / 2)) then
             self:__drink_potion()
@@ -368,7 +368,7 @@ function Character:__sell_potion(shop)
     if shop:get_wealth() > shop:get_sell_price(GOODS.FOOD) and self.potion.level > 0 then
         shop:pay(self, shop:get_sell_price(GOODS.FOOD))
         shop:update_on_sell(GOODS.FOOD)
-        self.stash = nil
+        self:__remove_potion()
         return Event_ActionFinished()
     end
     return Event_ActionFailed()
@@ -459,8 +459,22 @@ function Character:__drink_potion()
     if self.potion.level > 0 then
         self.potion.level = self.potion.level - 1
         self.potion.dur = 100
-        self.__change_hp(30)
+        self:__change_hp(30)
     end
+end
+
+function Character:__remove_potion()
+    if self.potion.level > 0 then
+        self.potion.level = self.potion.level - 1
+        self.potion.dur = 100
+    end
+end
+function Character:__add_potion()
+    if self.potion.level == 0 then
+        self.potion.level = 1
+        self.potion.dur = 100
+    end
+    self.potion.level = self.potion.level + 1
 end
 
 ---comment
@@ -697,7 +711,7 @@ function Character:__collect_food(food, property)
         return Event_ActionFailed()
     end
 
-    if self.progress < 200 then
+    if self.progress < 500 then
         self.progress = self.progress + self.skill.gathering
         return Event_ActionInProgress()
     end
@@ -722,11 +736,12 @@ function Character:__make_potion()
         return Event_ActionFailed()
     end
     self.progress = self.progress + self.skill.alchemist
-    if self.progress < 200 then
+    if self.progress < 500 then
         return Event_ActionInProgress()
     end
-    self.potion.level = self.potion.level + 1
-    self.__change_tiredness(5)
+    self:__add_potion()
+    self.progress = 0
+    self:__change_tiredness(5)
     return Event_ActionFinished()
 end
 

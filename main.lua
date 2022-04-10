@@ -33,7 +33,9 @@ GetJobInstruction = require "modules.instructions.TakeTaxCollectJob"
 GetPaidInstruction = require "modules.instructions.GetPayment"
 CollectTaxInstruction = require "modules.instructions.CollectTax"
 GetMoneyFromShopInstruction = require "modules.instructions.GetMoneyFromShop"
-
+SellPotionInstruction = require "modules.instructions.MakePotionForSell"
+MakePotionInstruction = require "modules.instructions.MakePotion"
+BuyPotionInstruction = require "modules.instructions.BuyPotion"
 
 
 
@@ -85,6 +87,11 @@ function love.load()
     poor_ambitious_character.traits.business_ambition = true
     poor_ambitious_character.traits.long_term_planning = 20
     table.insert(agents, #agents + 1, new_agent(poor_ambitious_character))
+
+    local alchemist_1 = Character:new(100, 200, zero_cell:pos(), 10, 10, false)
+    alchemist_1.skill.alchemist = 5
+    alchemist_1.traits.long_term_planning = 10
+    table.insert(agents, #agents + 1, new_agent(alchemist_1))
 
     game_ui = UI:new(false)
     

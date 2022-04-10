@@ -89,6 +89,7 @@ local function utility_sleep_free(character)
 	return utility_sleep_full(character)
 end
 
+
 ---comment
 ---@param character Character
 ---@return number
@@ -104,12 +105,36 @@ local function utility_eat_free(character)
 end
 
 local function utility_eat_paid(character)
-	local shop = character:get_closest_shop()
+	local shop = character:get_optimal_buy_shop(GOODS.FOOD)
 	if (shop ~= nil) and (shop:get_stash(GOODS.FOOD) > 0) then
 		return character:get_hunger()
 	end
 	return 0
 end
+
+---comment
+---@param character Character
+---@return number
+local function utility_buy_potion(character)
+	if character.skill.alchemist > 0 then
+		return 0
+	end
+	local shop = character:get_optimal_buy_shop(GOODS.POTION)
+	if (shop ~= nil) and (shop:get_stash(GOODS.POTION) > 0) then
+		return 50 / (character.potion.level + 1)
+	end
+	return 0
+end 
+
+---comment
+---@param character Character
+---@return number
+local function utility_make_potion(character)
+	if character.skill.alchemist == 0 then
+		return 0
+	end
+	return 50 / (character.potion.level + 1)
+end 
 
 local function utility_wander(character)
 	return 20
@@ -143,16 +168,36 @@ local function wealth_buy_food(character)
 	end
 	return shop:get_buy_price(GOODS.FOOD)
 end
+local function wealth_buy_potion(character)
+	local shop = character:get_optimal_buy_shop(GOODS.POTION)
+	if shop == nil then
+		return nil
+	end
+	return shop:get_buy_price(GOODS.POTION)
+end
 local function wealth_none(character)
 	return 0
 end
 
+---comment
+---@param character Character
+---@return number
 local function income_sell_food(character)
 	local shop = character:get_optimal_sell_shop(GOODS.FOOD)
 	if shop == nil then
 		return 0
 	end
 	return shop:get_sell_price(GOODS.FOOD)
+end
+local function income_sell_potion(character)
+	if character.skill.alchemist == 0 then
+		return 0
+	end
+	local shop = character:get_optimal_sell_shop(GOODS.POTION)
+	if shop == nil then
+		return 0
+	end
+	return shop:get_sell_price(GOODS.POTION)
 end
 local function income_get_paid(character)
 	if character.is_tax_collector and castle:payment_ready(character) then
@@ -197,9 +242,12 @@ local CollectTax = 	UtilitySource:new(CollectTaxInstruction, 		utility_work_tax,
 local TakeJob =		UtilitySource:new(GetJobInstruction, 			utility_zero,			wealth_none, 		income_get_job, 	utility_zero)
 local Wander = 		UtilitySource:new(WanderInstruction, 			utility_wander, 		wealth_none, 		income_none, 		utility_zero)
 local OpenShop = 	UtilitySource:new(OpenShopInstruction, 			utility_open_shop, 		wealth_open_shop,	income_none, 		utility_zero)
+local SellPotion = 	UtilitySource:new(SellPotionInstruction, 		utility_zero, 			wealth_none, 		income_sell_potion,	utility_zero)
+local BuyPotion = 	UtilitySource:new(BuyPotionInstruction, 		utility_buy_potion, 	wealth_buy_potion,	income_none,		utility_20)
+local MakePotion = 	UtilitySource:new(MakePotionInstruction, 		utility_make_potion,	wealth_none,		income_none,		utility_zero)
 
 local sources = {SleepFree, SleepPaid, EatFree, EatPaid, SellFood, GetPaid, HomeMoney, CollectTax,
-				 TakeJob, Wander, OpenShop}
+				 TakeJob, Wander, OpenShop, SellPotion, BuyPotion, MakePotion}
 
 ---Gets character and decides for him the best current instruction
 ---@param character Character

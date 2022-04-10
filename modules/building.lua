@@ -127,10 +127,10 @@ end
 
 function Building:update()
     for k, v in pairs(GOODS) do
-        if math.random() > 0.9995 then
-            self._sell_price[v] = math.min(self._sell_price[v] + 1, self:get_wealth(), self._buy_price[v])
+        if math.random() > 0.9991 then
+            self._sell_price[v] = math.min(self._sell_price[v] + 1, math.floor(self:get_wealth() / 1.5))
         end
-        if math.random() > 0.9995 then
+        if math.random() > 0.9991 then
             self._buy_price[v] = math.max(self._buy_price[v] - 1, 1)
         end
     end
