@@ -710,9 +710,23 @@ function Character:__collect_food(food, property)
         self.stash = "food"
     end
 
-    self:__change_tiredness(1)
+    self:__change_tiredness(5)
     self.target.cooldown = 10000
 
+    return Event_ActionFinished()
+end
+
+
+function Character:__make_potion()
+    if self.skill.alchemist == 0 then
+        return Event_ActionFailed()
+    end
+    self.progress = self.progress + self.skill.alchemist
+    if self.progress < 200 then
+        return Event_ActionInProgress()
+    end
+    self.potion.level = self.potion.level + 1
+    self.__change_tiredness(5)
     return Event_ActionFinished()
 end
 

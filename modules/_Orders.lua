@@ -66,6 +66,13 @@ local function gather_keep(character)
     return character:__collect_food(character.target, "keep")
 end
 
+---forces character to make potion
+---@param character Character
+---@return EventSimple
+local function make_potion(character)
+    return character:__make_potion()
+end
+
 local function sell_food(character)
     return character:__sell_food(character.target)
 end
@@ -125,6 +132,8 @@ OrderRestGround = Order:new("Rest on ground", rest_on_ground)
 
 OrderFindShopBuyFood = Order:new("Find shop to buy", find_shop_buy_food)
 OrderFindShopSellFood = Order:new("Find shop to sell", find_shop_sell_food)
+OrderFindShopBuyPotion = Order:new("Find shop to buy", find_shop_buy_food)
+OrderFindShopSellPotion = Order:new("Find shop to sell", find_shop_sell_food)
 
 OrderGatherEat = Order:new("Gather and eat", gather_eat)
 OrderGatherKeep = Order:new("Gather and keep", gather_keep)
@@ -142,5 +151,9 @@ OrderTaxTarget = Order:new("Tax target", tax_target)
 OrderReturnTaxCastle = Order:new("Return tax to castle", return_tax_to_castle)
 
 OrderTakeGoldFromHome = Order:new("Take gold from home", take_gold_from_home)
+
+
+OrderMakePotion = Order:new("Making potion", make_potion)
+
 
 OrderIdle = Order:new("Idle", idle)

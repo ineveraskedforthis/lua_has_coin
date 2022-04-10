@@ -60,7 +60,12 @@ end
 function FindShopBuyFoodAction(character)
     character:set_order(OrderFindShopBuyFood)
 end
-
+function FindShopSellPotionAction(character)
+    character:set_order(OrderFindShopSellPotion)
+end
+function FindShopBuyPotionAction(character)
+    character:set_order(OrderFindShopBuyPotion)
+end
 
 function TaxTargetAction(character)
     character:set_order(OrderTaxTarget)
@@ -78,6 +83,11 @@ function GetPaymentAction(character)
     character:set_order(OrderGetPaid)
 end
 
+
+
+function MakePotionAction(character)
+    character:set_order(OrderMakePotion)
+end
 
 
 

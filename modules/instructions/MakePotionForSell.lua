@@ -1,5 +1,5 @@
 local GoToSafeSpaceNode = InstructionNode:new(MoveToCastleAction)
-local MakePotionNode = InstructionNode:new(MakePotionOrder)
+local MakePotionNode = InstructionNode:new(MakePotionAction)
 local FindShopNode = InstructionNode:new(FindShopSellPotionAction)
 local GoToShopNode = InstructionNode:new(MoveAction)
 local SellNode = InstructionNode:new(SellPotionAction)
