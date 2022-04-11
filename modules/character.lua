@@ -727,7 +727,7 @@ function Character:__collect_food(food, property)
         return Event_ActionFailed()
     end
 
-    if self.progress < 500 then
+    if self.progress < 1000 then
         self.progress = self.progress + self.skill.gathering
         return Event_ActionInProgress()
     end
@@ -752,7 +752,7 @@ function Character:__make_potion()
         return Event_ActionFailed()
     end
     self.progress = self.progress + self.skill.alchemist
-    if self.progress < 500 then
+    if self.progress < 1000 then
         return Event_ActionInProgress()
     end
     self:__add_potion()

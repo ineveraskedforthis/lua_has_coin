@@ -20,6 +20,10 @@ GOODS.FOOD = "FOOD"
 ---@field _sell_price number[]
 ---@field owner any
 ---@field _stash number[]
+---@field _timer_sell number[]
+---@field _timer_buy number[]
+---@field _av_timer_sell number[]
+---@field _av_timer_buy number[]
 Building = {}
 Building.__index = Building
 -- local globals = require('constants')
@@ -48,9 +52,17 @@ function Building:new(cell, class, progress, owner)
     building._sell_price = {}
     building._buy_price = {}
     building._stash = {}
+    building._av_timer_buy = {}
+    building._av_timer_sell = {}
+    building._timer_buy = {}
+    building._timer_sell = {}
     for _, v in pairs(GOODS) do
         building._sell_price[v] = 10
         building._buy_price[v] = 15
+        building._av_timer_buy[v]   = 10000 --- frequency influences how often update should change price.
+        building._av_timer_sell[v]  = 10000
+        building._timer_buy[v]      = 0
+        building._timer_sell[v]     = 0 
         building._stash[v] = 0
     end    
     return building
@@ -105,7 +117,9 @@ end
 ---@return EventSimple
 function Building:update_on_sell(x)
     self._stash[x] = self._stash[x] + 1
-    if math.random() > 0.5 then
+    self._av_timer_sell[x] = self._av_timer_sell[x] * 9 / 10 + self._timer_sell[x] * 1 / 10
+    self._timer_sell[x] = 0
+    if math.random() > 0.8 then
         self._sell_price[x] = math.max(0, self._sell_price[x] - 1)
     end
     return Event_ActionFinished()
@@ -119,7 +133,9 @@ function Building:update_on_buy(x)
         return Event_ActionFailed()
     end
     self._stash[x] = self._stash[x] - 1
-    if math.random() > 0.2 then
+    self._av_timer_buy[x] = self._av_timer_buy[x] * 9 / 10 + self._timer_buy[x] * 1 / 10
+    self._timer_buy[x] = 0
+    if math.random() > 0.8 then
         self._buy_price[x] = self._buy_price[x] + 1
     end
     return Event_ActionFinished()
@@ -127,10 +143,12 @@ end
 
 function Building:update()
     for k, v in pairs(GOODS) do
-        if math.random() > 0.9991 then
+        self._timer_buy[v]      = self._timer_buy[v]    + 1
+        self._timer_sell[v]     = self._timer_sell[v]   + 1
+        if math.random() < 0.2 / self._av_timer_sell[v] then
             self._sell_price[v] = math.min(self._sell_price[v] + 1, math.floor(self:get_wealth() / 1.5))
         end
-        if math.random() > 0.9991 then
+        if math.random() < 0.2 / self._av_timer_buy[v] then
             self._buy_price[v] = math.max(self._buy_price[v] - 1, 1)
         end
     end
