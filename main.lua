@@ -37,9 +37,8 @@ SellPotionInstruction = require "modules.instructions.MakePotionForSell"
 MakePotionInstruction = require "modules.instructions.MakePotion"
 BuyPotionInstruction = require "modules.instructions.BuyPotion"
 
-
-
 require "modules.instructions._Utility"
+
 
 function love.load()
     love.window.setMode(800, 600)   
@@ -74,9 +73,6 @@ function love.load()
     table.insert(agents, #agents + 1, new_agent(Character:new(100, 50, zero_cell:pos(), 10, 10, false)))
     table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
     table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
 
 
     local rich_character = Character:new(100, 1000, zero_cell:pos(), 10, 10, false)
@@ -92,6 +88,12 @@ function love.load()
     alchemist_1.skill.alchemist = 5
     alchemist_1.traits.long_term_planning = 10
     table.insert(agents, #agents + 1, new_agent(alchemist_1))
+    
+    local alchemist_2 = Character:new(100, 200, zero_cell:pos(), 10, 10, false)
+    alchemist_2.skill.alchemist = 5
+    alchemist_2.traits.long_term_planning = 10
+    table.insert(agents, #agents + 1, new_agent(alchemist_2))
+    
 
     game_ui = UI:new(false)
     

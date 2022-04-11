@@ -257,7 +257,7 @@ function MostUsefulAction(character)
 	local price = {}
 	local money_utility_total = 0
 	local money_required_total = 0
-	local money_utility_per_unit = 0
+	local money_earning_utility = 0
 	for _, source in pairs(sources) do
 		local temp_utility = source.utility(character) 
 		local temp_wealth = source.required_wealth(character)
@@ -265,9 +265,9 @@ function MostUsefulAction(character)
 			--- it means that this thing is unavailable
 		elseif temp_wealth > character:get_wealth() then
 			if temp_wealth ~= 0 then
-				money_utility_per_unit = math.max(
-					money_utility_per_unit,
-					(temp_utility) / temp_wealth)
+				money_earning_utility = math.max(
+					money_earning_utility,
+					(temp_utility))
 			end
 			price[_]  = temp_wealth
 		else
@@ -280,9 +280,9 @@ function MostUsefulAction(character)
 			local long_term_temp_utility = (temp_utility + source.long_term_utility(character) * character.traits.long_term_planning)
 			if (long_term_temp_wealth > character:get_wealth()) then
 				if temp_wealth ~= 0 then
-					money_utility_per_unit = math.max(
-						money_utility_per_unit,
-						long_term_temp_utility / long_term_temp_wealth)
+					money_earning_utility = math.max(
+						money_earning_utility,
+						math.floor(long_term_temp_utility * character:get_wealth() / long_term_temp_wealth))
 				end
 			end
 		end 
@@ -292,15 +292,23 @@ function MostUsefulAction(character)
 	for ind, _ in pairs(raw_utility) do
 		local source = sources[ind]
 		local income = source.wealth_income(character)
-		true_utility[ind] = _ + (income - price[ind]) * money_utility_per_unit
+		if income > 0 then
+			true_utility[ind] = _ + (income - price[ind]) + money_earning_utility 
+		else
+			true_utility[ind] = _ + (income - price[ind])
+		end
 	end
 
 	local optimal = nil
 	for k, v in pairs(true_utility) do
+		-- print(v)
 		if optimal == nil or true_utility[optimal] < v then
 			optimal = k
 		end
 	end	
+	
+	-- print(optimal)
+	-- print(sources[optimal])
 	return sources[optimal].instruction
 end
 
@@ -309,7 +317,7 @@ function Calculate_Utility(character)
 	local price = {}
 	local money_utility_total = 0
 	local money_required_total = 0
-	local money_utility_per_unit = 0
+	local money_earning_utility = 0
 	for _, source in pairs(sources) do
 		local temp_utility = source.utility(character) 
 		local temp_wealth = source.required_wealth(character)
@@ -317,9 +325,9 @@ function Calculate_Utility(character)
 			--- it means that this thing is unavailable
 		elseif temp_wealth > character:get_wealth() then
 			if temp_wealth ~= 0 then
-				money_utility_per_unit = math.max(
-					money_utility_per_unit,
-					(temp_utility) / temp_wealth)
+				money_earning_utility = math.max(
+					money_earning_utility,
+					(temp_utility))
 			end
 			price[_]  = temp_wealth
 		else
@@ -332,19 +340,12 @@ function Calculate_Utility(character)
 			local long_term_temp_utility = (temp_utility + source.long_term_utility(character) * character.traits.long_term_planning)
 			if (long_term_temp_wealth > character:get_wealth()) then
 				if temp_wealth ~= 0 then
-					money_utility_per_unit = math.max(
-						money_utility_per_unit,
-						long_term_temp_utility / long_term_temp_wealth)
+					money_earning_utility = math.max(
+						money_earning_utility,
+						math.floor(long_term_temp_utility * character:get_wealth() / long_term_temp_wealth))
 				end
 			end
 		end 
 	end
-
-	local true_utility = {}
-	for ind, _ in pairs(raw_utility) do
-		local source = sources[ind]
-		local income = source.wealth_income(character)
-		true_utility[ind] = _ + (income - price[ind]) * money_utility_per_unit
-	end
-	return money_utility_per_unit
+	return money_earning_utility
 end

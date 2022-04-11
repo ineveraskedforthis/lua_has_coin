@@ -51,6 +51,7 @@ end
 ---@field open_tax_collector_positions number
 ---@field tax_collection_reward number
 ---@field payment_timer number[]
+---@field vacant_job boolean
 Castle = {}
 Castle.__index = Castle
 -- local globals = require('constants')

@@ -1,5 +1,9 @@
 ---@class UI
 ---@field camera Position
+---@field main_ui table
+---@field lines_of_units table
+---@field table_of_buildings table
+---@field table_of_units table
 UI = {}
 UI.__index = UI
 

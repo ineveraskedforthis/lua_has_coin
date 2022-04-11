@@ -109,6 +109,9 @@ end
 ---@field job_index nil|number
 ---@field traits TraitsList
 ---@field skill SkillList
+---@field wealth number
+---@field target Target
+---@field home Building|nil
 Character = {}
 Character.__index = Character
 
