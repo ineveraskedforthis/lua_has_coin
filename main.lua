@@ -98,6 +98,17 @@ function love.load()
     table.insert(agents, #agents + 1, new_agent(alchemist_2))
     
 
+    --- rats testing 
+    local rats_cell = Cell:new(5, 5)
+    ---@type Character
+    rat_king = Character:new(50, 50, rats_cell:pos(), 10, 10, "rat")
+    local rat_lair = Building:new(Cell:new(5, 5), "home", 100, rat_king)
+    rat_king:set_home(rat_lair)
+
+    table.insert(agents, #agents + 1, new_agent(rat_king)) 
+    add_building(rat_lair)
+
+
     game_ui = UI:new(false)
     
     for i = 1, 100 do

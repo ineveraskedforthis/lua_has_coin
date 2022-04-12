@@ -68,6 +68,10 @@ function Building:new(cell, class, progress, owner)
     return building
 end
 
+function Building:is_shop()
+    return self.class == "shop"
+end
+
 ---Returns coordinate of building
 ---@return Position
 function Building:pos()

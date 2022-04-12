@@ -45,8 +45,8 @@ local moraes = {'xi', 'lo', 'mi', 'ki', 'a', 'i', 'ku'}
 ---@return number
 ---@return number
 function true_dist(a, b)
-    dx = -a:pos().x + b:pos().x;
-    dy = -a:pos().y + b:pos().y;
+    local dx = -a:pos().x + b:pos().x;
+    local dy = -a:pos().y + b:pos().y;
     return dx, dy, math.sqrt(dx * dx + dy * dy)
 end
 
@@ -526,7 +526,7 @@ function Character:__closest_shop(shop_type)
     for k, v in pairs(buildings) do
         -- if v.class == shop_type then
             local tmp = self:__dist_to(v)
-            if (tmp_target == nil) or (tmp_dist > tmp) then
+            if ((tmp_target == nil) or (tmp_dist > tmp)) and (v:is_shop()) then
                 tmp_target = v
                 tmp_dist = tmp
             end
@@ -541,7 +541,7 @@ function Character:__optimal_sell_shop(x)
     for k, v in pairs(buildings) do
         -- if v.class == shop_type then
             local tmp = v:get_sell_price(x) - self:__dist_to(v)/1000
-            if (tmp_target == nil) or (tmp_value < tmp) then
+            if ((tmp_target == nil) or (tmp_value < tmp)) and (v:is_shop()) then
                 tmp_target = v
                 tmp_value = tmp
             end
@@ -556,7 +556,7 @@ function Character:__optimal_buy_shop(x)
     for k, v in pairs(buildings) do
         -- if v.class == shop_type then
             local tmp = v:get_buy_price(x) + self:__dist_to(v)/1000
-            if (tmp_target == nil) or (tmp_value > tmp) and v:get_stash(x) > 0 then
+            if ((tmp_target == nil) or (tmp_value > tmp)) and (v:get_stash(x) > 0) and (v:is_shop()) then
                 tmp_target = v
                 tmp_value = tmp
             end
@@ -620,9 +620,14 @@ end
 
 function Character:__set_random_target_circle()
     local alpha = math.random() * 2 * math.pi
-    local x = self:pos().x + math.cos(alpha) * 80
-    local y = self:pos().y + math.sin(alpha) * 80
-    local dx, dy, norm = true_dist(self, castle)
+    local x = self:pos().x + math.cos(alpha) * 40
+    local y = self:pos().y + math.sin(alpha) * 40
+    local dx, dy, norm = 0, 0, 0
+    if self.home == nil then
+        dx, dy, norm = true_dist(self, castle)
+    else
+        dx, dy, norm = true_dist(self, self.home)
+    end
     x = x + dx / 10
     y = y + dy / 10
     local target = Target:new({x=x , y=y})
