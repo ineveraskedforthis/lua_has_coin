@@ -1,9 +1,11 @@
+local Units_List_Widget = require "modules.UI.Units_List_Widget"
 ---@class UI
 ---@field camera Position
 ---@field main_ui table
 ---@field lines_of_units table
 ---@field table_of_buildings table
 ---@field table_of_units table
+---@field building_indices table
 UI = {}
 UI.__index = UI
 
@@ -27,38 +29,38 @@ end
 
 function UI:set_up()
     self.map_control_ui = milky.panel
-        :new(milky, nil, nil, nil)
+        :new(milky)
         :position(0, 0)
         :size(602, 600)
-        :toogle_background()
+        :toggle_background()
 
     self.main_ui = milky.panel
-        :new(milky, nil, nil, nil)
+        :new(milky)
         :position(602,0)
         :size(198, 600)
-        :toogle_background()
+        :toggle_background()
 
     local list_button_size = 94
     local list_button_h = 25
 
-    self.toogle_character_screen_button = milky.panel
+    self.toggle_character_screen_button = milky.panel
         :new(milky, self.main_ui)
         :position(3, 520)
         :size(list_button_size, list_button_h)
-        :toogle_border()
+        :toggle_border()
         :update_label("Characters")
-        :button(milky, function (self, button) toggle_char_screen() end)
-        :toogle_background()
+        :button(milky, function (self, button) TOGGLE_CHAR_SCREEN() end)
+        :toggle_background()
         :center_text()
 
-    self.toogle_buildings_screen_button = milky.panel
+    self.toggle_buildings_screen_button = milky.panel
         :new(milky, self.main_ui)
         :position(list_button_size + 7, 520)
         :size(list_button_size, list_button_h)
-        :toogle_border()
+        :toggle_border()
         :update_label("Buildings")
         :button(milky, function (self, button) toggle_buildings_screen() end)
-        :toogle_background()
+        :toggle_background()
         :center_text()
 
     self:set_up_budget_block()
@@ -71,8 +73,8 @@ function UI:set_up()
     self:set_up_buildings_table()
 end
 
-function toggle_char_screen()
-    game_ui.table_of_units:toogle_hidden()
+function TOGGLE_CHAR_SCREEN()
+    GAME_UI.table_of_units:toggle_display()
 end
 
 function UI:set_up_speed_control()
@@ -80,7 +82,7 @@ function UI:set_up_speed_control()
         :new(milky, self.main_ui)
         :position(3, 550)
         :size(192, 48)
-        :toogle_background()
+        :toggle_background()
     
     local label = milky.panel
         :new(milky, speed_control_frame, "Game speed:")
@@ -96,121 +98,49 @@ function UI:set_up_speed_control()
         :new(milky, speed_control_frame, "0")
         :position(button_w * 0, button_top)
         :size(button_w, button_h)
-        :toogle_border()
-        :toogle_background()
+        :toggle_border()
+        :toggle_background()
         :button(milky, function(self, button) UPDATE_GAME_SPEED(0) SPEED_LABEL:update_label("0") end)
         :center_text()
     local speed_1 = milky.panel
         :new(milky, speed_control_frame, "1")
         :position(button_w * 1, button_top)
         :size(button_w, button_h)
-        :toogle_border()
-        :toogle_background()
+        :toggle_border()
+        :toggle_background()
         :button(milky, function(self, button) UPDATE_GAME_SPEED(1) SPEED_LABEL:update_label("1") end)
         :center_text()
     local speed_2 = milky.panel
         :new(milky, speed_control_frame, "2")
         :position(button_w * 2, button_top)
         :size(button_w, button_h)
-        :toogle_border()
-        :toogle_background()
+        :toggle_border()
+        :toggle_background()
         :button(milky, function(self, button) UPDATE_GAME_SPEED(8) SPEED_LABEL:update_label("2") end)
         :center_text()
     local speed_3 = milky.panel
         :new(milky, speed_control_frame, "3")
         :position(button_w * 3, button_top)
         :size(button_w, button_h)
-        :toogle_border()
-        :toogle_background()
+        :toggle_border()
+        :toggle_background()
         :button(milky, function(self, button) UPDATE_GAME_SPEED(64) SPEED_LABEL:update_label("3") end)
         :center_text()
 end
 
 function UI:set_up_units_table()
-    self.table_of_units = milky.panel
-        :new(milky, nil, nil, nil)
-        :position(20, 20)
-        :size(550, 550)
-        :toogle_background()
-        :toogle_border()
-        :toogle_hidden()
-    self.lines_of_units = {}
-    for i = 1, 15 do
-        table.insert(self.lines_of_units, #self.lines_of_units + 1, UnitLine:new(self.table_of_units, i))
-    end
+    self.table_of_units = Units_List_Widget:new()
 end
 
-UnitLine = {}
-UnitLine.__index = UnitLine
-
-function UnitLine:new(parent, line_number)
-    _ = {}
-    _.ui_element = milky.panel
-        :new(milky, parent)
-        :position(10, 30 * (line_number - 1) + 10)
-        :size(530, 25)
-        :toogle_border()
-    
-    _.name_label = milky.panel
-        :new(milky, _.ui_element)
-        :position(5, 4)
-        :size(50, 20)
-        :update_label("name")
-    
-    _.wealth_label = milky.panel
-        :new(milky, _.ui_element)
-        :position(70, 4)
-        :size(50, 20)
-        :update_label("wealth")
-
-    _.tiredness_label = milky.panel
-        :new(milky, _.ui_element)
-        :position(120, 4)
-        :size(50, 20)
-        :update_label("tired")
-
-    
-    _.hunger_label = milky.panel
-        :new(milky, _.ui_element)
-        :position(170, 4)
-        :size(50, 20)
-        :update_label("hunger")
-
-    _.order_label = milky.panel
-        :new(milky, _.ui_element)
-        :position(270, 4)
-        :size(50, 20)
-        :update_label("order")
-
-    _.instruction_label = milky.panel
-        :new(milky, _.ui_element)
-        :position(400, 4)
-        :size(50, 20)
-        :update_label("instruction")
-    
-    setmetatable(_, UnitLine)
-    return _
-end
-
----loads character data into line
----@param character Character
-function UnitLine:load_data(character, instruction)
-    self.name_label:update_label(character.name)
-    self.wealth_label:update_label(character.wealth)
-    self.tiredness_label:update_label(character.tiredness)
-    self.hunger_label:update_label(character.hunger)
-    self.order_label:update_label(character.order.name)
-    self.instruction_label:update_label(instruction)
-end
 
 function UI:set_up_buildings_table()
     self.table_of_buildings = milky.panel
         :new(milky, nil, nil, nil)
         :position(20, 20)
         :size(550, 550)
-        :toogle_background()
-        :toogle_border()
-        :toogle_hidden()
+        :toggle_background()
+        :toggle_border()
+        :toggle_hidden()
     self.building_indices = {}
     local height = 30
     local block1 = 50
@@ -221,7 +151,7 @@ function UI:set_up_buildings_table()
             :new(milky, self.table_of_buildings)
             :position(10, (height + 5) * (i - 1) + 10)
             :size(530, height)
-            :toogle_border()
+            :toggle_border()
         self.building_indices[i].label = milky.panel
             :new(milky, self.building_indices[i], "label")
             :position(5, 0)
@@ -231,47 +161,47 @@ function UI:set_up_buildings_table()
             :new(milky, self.building_indices[i])
             :position(block1 + pad, 0)
             :size(block_size + pad * 2, height)
-            :toogle_border()
+            :toggle_border()
         self.building_indices[i].label_price_food.buy = milky.panel 
             :new(milky, self.building_indices[i].label_price_food, "buy")
             :position(0, 0)
             :size(block_size, math.floor(height / 2))
-            :toogle_border()
+            :toggle_border()
             :center_text()
         self.building_indices[i].label_price_food.sell = milky.panel 
             :new(milky, self.building_indices[i].label_price_food, "sell")
             :position(0, math.floor(height / 2))
             :size(block_size, math.floor(height / 2))
-            :toogle_border()
+            :toggle_border()
             :center_text()
         self.building_indices[i].label_price_food.stash = milky.panel 
             :new(milky, self.building_indices[i].label_price_food, "stash")
             :position(block_size, 0)
             :size(pad * 2, height)
-            :toogle_border()
+            :toggle_border()
             :center_text()
         self.building_indices[i].label_price_potion = milky.panel
             :new(milky, self.building_indices[i])
             :position(block1 + pad * 2 + block_size + pad * 2, 0)
             :size(block_size + pad * 2, height)
-            :toogle_border()
+            :toggle_border()
         self.building_indices[i].label_price_potion.buy = milky.panel 
             :new(milky, self.building_indices[i].label_price_potion, "buy")
             :position(0, 0)
             :size(block_size, math.floor(height / 2))
-            :toogle_border()
+            :toggle_border()
             :center_text()
         self.building_indices[i].label_price_potion.sell = milky.panel 
             :new(milky, self.building_indices[i].label_price_potion, "sell")
             :position(0, math.floor(height / 2))
             :size(block_size, math.floor(height / 2))
-            :toogle_border()
+            :toggle_border()
             :center_text()
         self.building_indices[i].label_price_potion.stash = milky.panel 
             :new(milky, self.building_indices[i].label_price_potion, "stash")
             :position(block_size, 0)
             :size(pad * 2, height)
-            :toogle_border()
+            :toggle_border()
             :center_text()
     end
     
@@ -283,7 +213,7 @@ function UI:set_up_buildings_table()
 end
 
 function toggle_buildings_screen()
-    game_ui.table_of_buildings:toogle_hidden()
+    GAME_UI.table_of_buildings:toggle_hidden()
 end
 
 function UI:set_up_budget_block()
@@ -291,7 +221,7 @@ function UI:set_up_budget_block()
         :new(milky, self.main_ui)
         :position(3, 3)
         :size(192, 54)
-        :toogle_border()
+        :toggle_border()
     self.wealth_label = milky.panel
         :new(milky, self.gold_widget, 'TREASURY')
         :position(5, 6)
@@ -311,7 +241,7 @@ function UI:set_up_invest_block()
         :new(milky, self.main_ui)
         :position(3, 60)
         :size(192, 100)
-        :toogle_border()
+        :toggle_border()
     income_invest_label = milky.panel
         :new(milky, self.invest_widget, 'ROYAL INVESTMENTS')
         :position(4, 5) 
@@ -326,8 +256,8 @@ function UI:set_up_invest_block()
     --     :position(3, 527)
     --     :size(192, 24)
     --     :button(milky, function (self, button) castle.add_hunt_budget() end)
-    --     :toogle_border()
-    --     :toogle_background()
+    --     :toggle_border()
+    --     :toggle_background()
     -- add_hunt_budget_label = milky.panel
     --     :new(milky, add_hunt_budget_button, "ADD HUNT MONEY (100)")
     --     :position(5, 2)
@@ -338,7 +268,7 @@ function UI:set_up_reward_block()
         :new(milky, self.main_ui)
         :position(3, 163)
         :size(192, 70)
-        :toogle_border()
+        :toggle_border()
     rewards_label = milky.panel
         :new(milky, rewards_widget, 'HUNTING LOG')
         :position(4, 5)
@@ -356,7 +286,7 @@ function UI:set_up_tax_block()
         :new(milky, self.main_ui)
         :position(3, 236)
         :size(192, 74)
-        :toogle_border()
+        :toggle_border()
     
     tax_label = milky.panel
         :new(milky, tax_widget, 'TAXES')
@@ -372,16 +302,16 @@ function UI:set_up_tax_block()
         :position(100, 35)
         :size(15, 15)
         :center_text()
-        :toogle_border()
-        :toogle_background()
+        :toggle_border()
+        :toggle_background()
         :button(milky, function(self, button) castle:dec_tax() end)
     local increase_tax_b = milky.panel
         :new(milky, tax_widget, "+")
         :position(170, 35)
         :size(15, 15)
         :center_text()
-        :toogle_border()
-        :toogle_background()
+        :toggle_border()
+        :toggle_background()
         :button(milky, function(self, button) castle:inc_tax() end)
 end
 
@@ -390,7 +320,7 @@ function UI:set_up_hire_block()
         :new(milky, self.main_ui)
         :position(3, 313)
         :size(192, 200)
-        :toogle_border()
+        :toggle_border()
 
     local label = milky.panel
         :new(milky, self.offices_block, "Tax Collectors")
@@ -403,7 +333,7 @@ function UI:set_up_hire_block()
         tax_collectors_list[i] = milky.panel
             :new(milky, self.offices_block, "- Empty")
             :position(7, i * 20 + 5)
-            :toogle_hidden()
+            :toggle_hidden()
         tax_collectors_payment[i] = milky.panel
             :new(milky, tax_collectors_list[i], "0")
             :position(100, 0)
@@ -412,16 +342,16 @@ function UI:set_up_hire_block()
         :new(milky, self.offices_block, "+")
         :position(100, 5)
         :size(14, 14)
-        :toogle_border()
-        :toogle_background()
+        :toggle_border()
+        :toggle_background()
         :center_text()
         :button(milky, function (self, button) castle:open_tax_collector_position() show_office_position(castle.open_tax_collector_positions) end)
     local fire_tax_collector_button = milky.panel
         :new(milky, self.offices_block, "-")
         :position(130, 5)
         :size(14, 14)
-        :toogle_border()
-        :toogle_background()
+        :toggle_border()
+        :toggle_background()
         :center_text()
         :button(milky, function (self, button) castle:close_tax_collector_position() hide_office_position(castle.open_tax_collector_positions + 1) end)
 
@@ -429,8 +359,8 @@ function UI:set_up_hire_block()
     --     :position(3, 500)
     --     :size(192, 24)
     --     :button(milky, function (self, button) castle.hire_hero() end)
-    --     :toogle_border()
-    --     :toogle_background()
+    --     :toggle_border()
+    --     :toggle_background()
     -- hire_button_label = milky.panel:new(milky, hire_button, "HIRE A HERO (100)"):position(5, 2)
 end
 
@@ -464,14 +394,12 @@ function UI:draw()
     love.graphics.setColor(1, 1, 0)
     for _, agent in pairs(agents) do
         local pos = agent.agent:pos()
-
-        self.lines_of_units[_]:load_data(agent.agent, agent.ai.current_instruction.name)
-
         love.graphics.circle('line', pos.x, pos.y, 2)
         love.graphics.print(agent.agent.name, pos.x + 2, pos.y - 15)
         love.graphics.print(tostring(agent.agent:get_hunger()), pos.x + 2, pos.y + 2)
         love.graphics.print(tostring(agent.agent:get_tiredness()), pos.x + 2, pos.y + 15)
     end
+
 
     love.graphics.setColor(1, 1, 0)
     for _, building in pairs(buildings) do
@@ -483,12 +411,12 @@ function UI:draw()
         love.graphics.print("buy   " .. tostring(math.floor(building._av_timer_buy[GOODS.FOOD])), pos.x + 40, pos.y + 10)
         love.graphics.print("sell  " .. tostring(math.floor(building._av_timer_sell[GOODS.FOOD])), pos.x + 40, pos.y + 20)
         love.graphics.print("stash " .. tostring(building:get_stash(GOODS.FOOD)), pos.x + 40, pos.y + 30)
-        game_ui.building_indices[_].label_price_food.buy:update_label(building:get_buy_price(GOODS.FOOD))
-        game_ui.building_indices[_].label_price_food.sell:update_label(building:get_sell_price(GOODS.FOOD))
-        game_ui.building_indices[_].label_price_food.stash:update_label(building:get_stash(GOODS.FOOD))
-        game_ui.building_indices[_].label_price_potion.buy:update_label(building:get_buy_price(GOODS.POTION))
-        game_ui.building_indices[_].label_price_potion.sell:update_label(building:get_sell_price(GOODS.POTION))
-        game_ui.building_indices[_].label_price_potion.stash:update_label(building:get_stash(GOODS.POTION))
+        self.building_indices[_].label_price_food.buy:update_label(building:get_buy_price(GOODS.FOOD))
+        self.building_indices[_].label_price_food.sell:update_label(building:get_sell_price(GOODS.FOOD))
+        self.building_indices[_].label_price_food.stash:update_label(building:get_stash(GOODS.FOOD))
+        self.building_indices[_].label_price_potion.buy:update_label(building:get_buy_price(GOODS.POTION))
+        self.building_indices[_].label_price_potion.sell:update_label(building:get_sell_price(GOODS.POTION))
+        self.building_indices[_].label_price_potion.stash:update_label(building:get_stash(GOODS.POTION))
     end
 
     love.graphics.rectangle('line', castle:get_cell().x * grid_size, castle:get_cell().x * grid_size, grid_size, grid_size)
@@ -513,7 +441,7 @@ function UI:draw()
 
     love.graphics.setColor(1, 1, 0)
     self.main_ui:draw()
-    self.table_of_units:draw()
+    self.table_of_units:draw(agents)
     self.table_of_buildings:draw()
 end
 
@@ -581,14 +509,14 @@ function love.mousepressed(x, y, button, istouch)
     if not PRESSED_ON_MAP then
         milky:onClick(x, y, button)
     end
-    game_ui:press_on_map_ui(x, y)
+    GAME_UI:press_on_map_ui(x, y)
 end
 
 function love.mousereleased(x, y, button, istouch)
     if not PRESSED_ON_MAP then
         milky:onRelease(x, y, button)
     end
-    game_ui:release_on_map_ui(x, y)
+    GAME_UI:release_on_map_ui(x, y)
     PRESSED_ON_MAP = false
 end
 
@@ -596,7 +524,7 @@ function love.mousemoved(x, y, dx, dy, istouch)
     if not PRESSED_ON_MAP then
         milky:onHover(x, y)
     end
-    game_ui:hover_on_map_ui(x, y)
+    GAME_UI:hover_on_map_ui(x, y)
 end
 
 
@@ -626,19 +554,19 @@ end
         :position(100, 5)
         :size(50, 20)
         :button(milky, new_zone_callback)
-        :toogle_border()
+        :toggle_border()
         :setBorderColor({0, 1, 0, 0.7}, {0, 1, 0, 1.0}, {0, 1, 0, 1.0})
         :setBackgroundColor({0, 1, 0, 0.2}, {0, 1, 0, 0.3}, {0, 1, 0, 0.6})
-        :toogle_background()
+        :toggle_background()
 
     delete_zone_button = milky.panel:new(milky, rewards_widget)
         :position(100, 35)
         :size(50, 20)
         :button(milky, delete_zone_callback)
-        :toogle_border()
+        :toggle_border()
         :setBorderColor({1, 0, 0, 0.7}, {1, 0, 0, 1.0}, {1, 0, 0, 1.0})
         :setBackgroundColor({1, 0, 0, 0.2}, {1, 0, 0, 0.3}, {1, 0, 0, 0.6})
-        :toogle_background()
+        :toggle_background()
 
 
 
@@ -663,15 +591,15 @@ function create_invest_row(parent, label, it)
         :position(90, 5)
         :size(15, 15)
         :button(milky, function (self, button) castle:dec_inv(it) end)
-        :toogle_border()
-        :toogle_background()
+        :toggle_border()
+        :toggle_background()
         :center_text()
     local bi = milky.panel:new(milky, body, "+")
         :position(160, 5)
         :size(15, 15)
         :button(milky, function (self, button) castle:inc_inv(it) end)
-        :toogle_border()
-        :toogle_background()
+        :toggle_border()
+        :toggle_background()
         :center_text()
     return body, value
 end

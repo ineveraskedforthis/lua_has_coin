@@ -34,8 +34,8 @@ function milky.panel:new(milky, parent, label, image)
 
 	o.image = image
 	
-	o.background_toogle = false
-	o.border_toogle = false
+	o.background_toggle = false
+	o.border_toggle = false
 
 	o.hover = false
 	o.pressed = false
@@ -125,31 +125,31 @@ function milky.panel:draw()
 		love.graphics.rectangle('line', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
 	end
 	if self.pressed then
-		if self.background_toogle then
+		if self.background_toggle then
 			love.graphics.setColor(self.pressed_background_color)
 			love.graphics.rectangle('fill', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
 		end
-		if self.border_toogle then
+		if self.border_toggle then
 			love.graphics.setColor(self.pressed_border_color)
 			love.graphics.rectangle('line', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
 		end
 		love.graphics.setColor(self.pressed_text_color)
 	elseif self.hovered then
-		if self.background_toogle then
+		if self.background_toggle then
 			love.graphics.setColor(self.hovered_background_color)
 			love.graphics.rectangle('fill', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
 		end
-		if self.border_toogle then
+		if self.border_toggle then
 			love.graphics.setColor(self.hovered_border_color)
 			love.graphics.rectangle('line', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
 		end
 		love.graphics.setColor(self.hovered_text_color)
 	else
-		if self.background_toogle then
+		if self.background_toggle then
 			love.graphics.setColor(self.background_color)
 			love.graphics.rectangle('fill', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
 		end
-		if self.border_toogle then
+		if self.border_toggle then
 			love.graphics.setColor(self.border_color)
 			love.graphics.rectangle('line', self.rect.screen_space_x, self.rect.screen_space_y, self.rect.width, self.rect.height)
 		end
@@ -204,17 +204,17 @@ function milky.panel:setActive(is_active)
 
 	return self
 end
---- toogle border
-function milky.panel:toogle_border()
-	self.border_toogle = not self.border_toogle;
+--- toggle border
+function milky.panel:toggle_border()
+	self.border_toggle = not self.border_toggle;
 	return self
 end
-function milky.panel:toogle_background()
-	self.background_toogle = not self.background_toogle;
+function milky.panel:toggle_background()
+	self.background_toggle = not self.background_toggle;
 	return self
 end
---- toogles modifier "hidden" 
-function milky.panel:toogle_hidden()
+--- toggles modifier "hidden" 
+function milky.panel:toggle_hidden()
 	self.hidden = not self.hidden
 	return self
 end

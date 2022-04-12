@@ -25,9 +25,9 @@ STASH = enum {
     "NONE"
 }
 
-
-local moraes = {'xi', 'lo', 'mi', 'ki', 'a', 'i', 'ku'}
-
+local moraes = {}
+moraes.elo = {'xi', 'lo', 'mi', 'ki', 'a', 'i', 'ku'}
+moraes.rat = {'s', 'shi', "S'", "fu", 'fi'}
 
 
 ---@class Quest
@@ -102,6 +102,7 @@ end
 ---@field occupation_data number
 ---@field stash "food"|nil
 ---@field race "elo"|"rat"
+---@field race_data number
 ---@field had_finished_order boolean
 ---@field has_shop boolean
 ---@field order Order
@@ -115,33 +116,32 @@ end
 Character = {}
 Character.__index = Character
 
----@param max_hp number
----@param wealth number
+---@param template table
 ---@param pos Position
----@param base_attack number
----@param base_defense number
----@param race boolean
 ---@return Character
-function Character:new(max_hp, wealth, pos, base_attack, base_defense, race)
+function Character:new(template, pos)
     local character = {entity_type = "CHARACTER"}
     setmetatable(character, self)
 
+    character.race = template.race
+    character.race_data = 0
+
     local name = ''
     for i = 0, 4 do
-        name = name .. moraes[math.random(#moraes)]
+        name = name .. moraes[character.race][math.random(#moraes[character.race])]
     end
     character.name = name
 
     character.position = pos
 
-    character.hp = max_hp
-    character.max_hp = max_hp
+    character.hp = template.max_hp
+    character.max_hp = template.max_hp
     character.hunger = 0
     character.tiredness = 0
     character.progress = 0
 
     character.stash = nil
-    character.wealth = wealth
+    character.wealth = template.wealth
     character.temp_wealth = 0
     character.skill = {}
     character.skill.gathering = 1
@@ -157,14 +157,14 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, race)
     character.armour = {level=0, dur=100}
     character.potion = {level=0, dur=100}
 
-    character.base_attack = base_attack
-    character.base_defense = base_defense
+    character.base_attack = template.base_attack
+    character.base_defense = template.base_defense
 
     character.target = nil
     character.home = nil
     character.order = OrderIdle
 
-    character.race = race
+    
     character.had_finished_order = true
     character.has_shop = false
 
@@ -219,14 +219,34 @@ end
 
 ---Updates inner state of character: hunger, hp, potions
 function Character:update()
-    if math.random() > 0.99 then
+    if math.random() > 0.98 then
         self:__set_hunger(self.hunger + 1)    
+    end
+
+    if self:is_rat() then
+        if math.random() > 0.98 then
+            self:__set_hunger(self.hunger + 1)    
+        end
     end
 
     if (self.potion.level > 0) and (math.random() > 0.999) then
         self.potion.dur = self.potion.dur - 1
         if (self.potion.dur < 0) or (self.hp < (self.max_hp / 2)) then
             self:__drink_potion()
+        end
+    end
+
+    if self:is_rat() then
+        if self:get_hunger() < 50 then
+            self.race_data = self.race_data + 1
+        end
+        if self:get_hunger() > 150 then
+            local x = nil
+        end
+        if self.race_data >= RAT_BIRTH_SPEED then
+            self.race_data = 0
+            local pos = {x= self:pos().x, y= self:pos().y}
+            CREATE_CHARACTER(TEMPLATE.RAT, pos, self.home)
         end
     end
 end
@@ -743,7 +763,7 @@ function Character:__collect_food(food, property)
     end
 
     self:__change_tiredness(5)
-    self.target.cooldown = 10000
+    self.target.cooldown = FOOD_COOLDOWN
 
     return Event_ActionFinished()
 end

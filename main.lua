@@ -43,8 +43,42 @@ UtilitySources = {}
 UtilitySources.rat = require "modules.instructions._UtilityRat"
 UtilitySources.elo = require "modules.instructions._UtilityElo"
 
+RAT_BIRTH_SPEED = 5000
+FOOD_COOLDOWN = 100000
+
 function love.load()
     love.window.setMode(800, 600)   
+
+    ---@class Agent
+    ---@field agent Character
+    ---@field ai InstructionManager
+
+    ---@type Agent[]
+    agents = {}
+
+    ---@type Building[]
+    buildings = {} 
+
+    --- set up UI
+    GAME_UI = UI:new(false)
+
+    --- templates
+
+    TEMPLATE = {}
+    TEMPLATE.RAT = {
+        max_hp = 50,
+        base_defense = 5,
+        base_attack = 5,
+        wealth = 0,
+        race = 'rat'
+    }    
+    TEMPLATE.ELO = {
+        max_hp = 100,
+        base_defense = 10,
+        base_attack = 10,
+        wealth = 0,
+        race = 'elo'
+    }
 
     -- data structs init
     init_food_array()
@@ -58,58 +92,45 @@ function love.load()
     ALIVE_HEROES = {}
     ALIVE_CHARS = {}
 
-    ---@class Agent
-    ---@field agent Character
-    ---@field ai InstructionManager
-
-    ---@type Agent[]
-    agents = {}
-
-    ---@type Building[]
-    buildings = {}    
+   
     
     -- game data
     zero_cell = Cell:new(30, 30)
     castle = Castle:new(zero_cell:clone(), 100, 500)
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 30, zero_cell:pos(), 10, 10, "elo")))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 20, zero_cell:pos(), 10, 10, "elo")))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 50, zero_cell:pos(), 10, 10, "elo")))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, "elo")))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, "elo")))
 
+    for i = 1, 5 do
+        CREATE_CHARACTER(TEMPLATE.ELO, zero_cell:pos())
+    end
 
-    local rich_character = Character:new(100, 1000, zero_cell:pos(), 10, 10, "elo")
+    local rich_character = Character:new(TEMPLATE.ELO, zero_cell:pos())
     rich_character.traits.business_ambition = true
-    table.insert(agents, #agents + 1, new_agent(rich_character))
+    rich_character:add_wealth(1000)
+    table.insert(agents, #agents + 1, NEW_AGENT(rich_character))
 
-    local poor_ambitious_character = Character:new(100, 0, zero_cell:pos(), 10, 10, "elo")
+    local poor_ambitious_character = Character:new(TEMPLATE.ELO, zero_cell:pos())
     poor_ambitious_character.traits.business_ambition = true
     poor_ambitious_character.traits.long_term_planning = 20
-    table.insert(agents, #agents + 1, new_agent(poor_ambitious_character))
+    table.insert(agents, #agents + 1, NEW_AGENT(poor_ambitious_character))
 
-    local alchemist_1 = Character:new(100, 200, zero_cell:pos(), 10, 10, "elo")
+    local alchemist_1 = Character:new(TEMPLATE.ELO, zero_cell:pos())
     alchemist_1.skill.alchemist = 5
     alchemist_1.traits.long_term_planning = 10
-    table.insert(agents, #agents + 1, new_agent(alchemist_1))
+    table.insert(agents, #agents + 1, NEW_AGENT(alchemist_1))
     
-    local alchemist_2 = Character:new(100, 200, zero_cell:pos(), 10, 10, "elo")
+    local alchemist_2 = Character:new(TEMPLATE.ELO, zero_cell:pos())
     alchemist_2.skill.alchemist = 5
     alchemist_2.traits.long_term_planning = 10
-    table.insert(agents, #agents + 1, new_agent(alchemist_2))
+    table.insert(agents, #agents + 1, NEW_AGENT(alchemist_2))
     
 
     --- rats testing 
     local rats_cell = Cell:new(5, 5)
     ---@type Character
-    rat_king = Character:new(50, 50, rats_cell:pos(), 10, 10, "rat")
+    local rat_king = Character:new(TEMPLATE.RAT, rats_cell:pos())
     local rat_lair = Building:new(Cell:new(5, 5), "home", 100, rat_king)
     rat_king:set_home(rat_lair)
-
-    table.insert(agents, #agents + 1, new_agent(rat_king)) 
+    table.insert(agents, #agents + 1, NEW_AGENT(rat_king)) 
     add_building(rat_lair)
-
-
-    game_ui = UI:new(false)
     
     for i = 1, 100 do
         for j = 1, 100 do
@@ -131,10 +152,19 @@ function new_position(x, y)
 end
 
 
+function CREATE_CHARACTER(template, position, home)
+    local character = Character:new(template, position)
+    character:set_home(home)
+    local agent = NEW_AGENT(character)
+    table.insert(agents, #agents + 1, agent)
+    GAME_UI.table_of_units:add_unit(#agents)
+    return agent
+end
+
 ---comment
 ---@param character Character
 ---@return Agent
-function new_agent(character)
+function NEW_AGENT(character)
     ---@type InstructionManager
     local manager = InstructionManager:new(character)
     return {agent= character, ai= manager}
@@ -142,7 +172,7 @@ end
 
 
 function love.draw()    
-    game_ui:draw()
+    GAME_UI:draw()
 end
 
 
@@ -218,8 +248,8 @@ function love.update(dt)
     end
     
     -- interface update
-    game_ui.wealth_widget:update_label(tostring(castle.wealth))
-    game_ui.hunt_widget:update_label(tostring(castle.hunt_budget))
+    GAME_UI.wealth_widget:update_label(tostring(castle.wealth))
+    GAME_UI.hunt_widget:update_label(tostring(castle.hunt_budget))
     
     hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
     treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')
