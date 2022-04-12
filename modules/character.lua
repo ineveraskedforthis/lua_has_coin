@@ -101,7 +101,7 @@ end
 ---@field position Position
 ---@field occupation_data number
 ---@field stash "food"|nil
----@field is_rat boolean
+---@field race "elo"|"rat"
 ---@field had_finished_order boolean
 ---@field has_shop boolean
 ---@field order Order
@@ -120,9 +120,9 @@ Character.__index = Character
 ---@param pos Position
 ---@param base_attack number
 ---@param base_defense number
----@param is_rat boolean
+---@param race boolean
 ---@return Character
-function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
+function Character:new(max_hp, wealth, pos, base_attack, base_defense, race)
     local character = {entity_type = "CHARACTER"}
     setmetatable(character, self)
 
@@ -164,7 +164,7 @@ function Character:new(max_hp, wealth, pos, base_attack, base_defense, is_rat)
     character.home = nil
     character.order = OrderIdle
 
-    character.rat = is_rat
+    character.race = race
     character.had_finished_order = true
     character.has_shop = false
 
@@ -441,10 +441,7 @@ end
 
 
 function Character:is_rat()
-    if self.is_rat then
-        return true
-    end
-    return false
+    return (self.race == "rat")
 end
 
 

@@ -39,6 +39,9 @@ BuyPotionInstruction = require "modules.instructions.BuyPotion"
 
 require "modules.instructions._Utility"
 
+UtilitySources = {}
+UtilitySources.rat = require "modules.instructions._UtilityRat"
+UtilitySources.elo = require "modules.instructions._UtilityElo"
 
 function love.load()
     love.window.setMode(800, 600)   
@@ -68,28 +71,28 @@ function love.load()
     -- game data
     zero_cell = Cell:new(30, 30)
     castle = Castle:new(zero_cell:clone(), 100, 500)
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 30, zero_cell:pos(), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 20, zero_cell:pos(), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 50, zero_cell:pos(), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
-    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, false)))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 30, zero_cell:pos(), 10, 10, "elo")))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 20, zero_cell:pos(), 10, 10, "elo")))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 50, zero_cell:pos(), 10, 10, "elo")))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, "elo")))
+    table.insert(agents, #agents + 1, new_agent(Character:new(100, 100, zero_cell:pos(), 10, 10, "elo")))
 
 
-    local rich_character = Character:new(100, 1000, zero_cell:pos(), 10, 10, false)
+    local rich_character = Character:new(100, 1000, zero_cell:pos(), 10, 10, "elo")
     rich_character.traits.business_ambition = true
     table.insert(agents, #agents + 1, new_agent(rich_character))
 
-    local poor_ambitious_character = Character:new(100, 0, zero_cell:pos(), 10, 10, false)
+    local poor_ambitious_character = Character:new(100, 0, zero_cell:pos(), 10, 10, "elo")
     poor_ambitious_character.traits.business_ambition = true
     poor_ambitious_character.traits.long_term_planning = 20
     table.insert(agents, #agents + 1, new_agent(poor_ambitious_character))
 
-    local alchemist_1 = Character:new(100, 200, zero_cell:pos(), 10, 10, false)
+    local alchemist_1 = Character:new(100, 200, zero_cell:pos(), 10, 10, "elo")
     alchemist_1.skill.alchemist = 5
     alchemist_1.traits.long_term_planning = 10
     table.insert(agents, #agents + 1, new_agent(alchemist_1))
     
-    local alchemist_2 = Character:new(100, 200, zero_cell:pos(), 10, 10, false)
+    local alchemist_2 = Character:new(100, 200, zero_cell:pos(), 10, 10, "elo")
     alchemist_2.skill.alchemist = 5
     alchemist_2.traits.long_term_planning = 10
     table.insert(agents, #agents + 1, new_agent(alchemist_2))

@@ -146,7 +146,7 @@ function Building:update()
         self._timer_buy[v]      = self._timer_buy[v]    + 1
         self._timer_sell[v]     = self._timer_sell[v]   + 1
         if math.random() < 0.2 / self._av_timer_sell[v] then
-            self._sell_price[v] = math.min(self._sell_price[v] + 1, math.floor(self:get_wealth() / 1.5))
+            self._sell_price[v] = math.max(math.min(self._sell_price[v] + 1, math.floor(self:get_wealth() / 1.5)), 0)
         end
         if math.random() < 0.2 / self._av_timer_buy[v] then
             self._buy_price[v] = math.max(self._buy_price[v] - 1, 1)

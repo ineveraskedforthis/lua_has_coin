@@ -40,7 +40,8 @@ end
 ---Selects new instruction for a character
 ---@param character Character
 function InstructionManager:select_new_instruction(character)
-    local instruction = MostUsefulAction(character)
+    local sources = UtilitySources[character.race]
+    local instruction = MostUsefulAction(character, sources)
     self:set_instruction(character, instruction)
 end
 
