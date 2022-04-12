@@ -392,12 +392,12 @@ function UI:draw()
     end
 
     love.graphics.setColor(1, 1, 0)
-    for _, agent in pairs(agents) do
-        local pos = agent.agent:pos()
+    for _, agent in pairs(OBJ_MANAGER.agents) do
+        local pos = agent.character:pos()
         love.graphics.circle('line', pos.x, pos.y, 2)
-        love.graphics.print(agent.agent.name, pos.x + 2, pos.y - 15)
-        love.graphics.print(tostring(agent.agent:get_hunger()), pos.x + 2, pos.y + 2)
-        love.graphics.print(tostring(agent.agent:get_tiredness()), pos.x + 2, pos.y + 15)
+        love.graphics.print(agent.character.name, pos.x + 2, pos.y - 15)
+        love.graphics.print(tostring(agent.character:get_hunger()), pos.x + 2, pos.y + 2)
+        love.graphics.print(tostring(agent.character:get_tiredness()), pos.x + 2, pos.y + 15)
     end
 
 
@@ -441,7 +441,7 @@ function UI:draw()
 
     love.graphics.setColor(1, 1, 0)
     self.main_ui:draw()
-    self.table_of_units:draw(agents)
+    self.table_of_units:draw(OBJ_MANAGER.agents)
     self.table_of_buildings:draw()
 end
 

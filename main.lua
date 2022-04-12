@@ -1,13 +1,15 @@
 ---@diagnostic disable: trailing-space
 local milky = require "milky"
-local hunter = require "modules.hunter"
 local globals = require "modules.constants"
-local Building = require "modules.building"
-local UI = require "ui"
-local Castle = require "modules.castle"
-Character = require "modules.character"
+Cell = require "modules.game_objects.cell"
 
-local InstructionManager = require "modules.instructions._InstructionManager"
+local Building = require "modules.game_objects.building"
+local UI = require "ui"
+local Castle = require "modules.game_objects.castle"
+
+local Character = require "modules.game_objects.character"
+
+
 
 require "modules.instructions._Events"
 
@@ -43,18 +45,21 @@ UtilitySources = {}
 UtilitySources.rat = require "modules.instructions._UtilityRat"
 UtilitySources.elo = require "modules.instructions._UtilityElo"
 
-RAT_BIRTH_SPEED = 5000
-FOOD_COOLDOWN = 100000
+ObjectsManager = require "modules.managers.ObjectsManager"
+
+RAT_BIRTH_SPEED = 10000
+FOOD_COOLDOWN = 50000
 
 function love.load()
     love.window.setMode(800, 600)   
 
     ---@class Agent
-    ---@field agent Character
+    ---@field character Character
     ---@field ai InstructionManager
 
-    ---@type Agent[]
-    agents = {}
+    ---@class ObjectsManager
+    OBJ_MANAGER = ObjectsManager:new()
+
 
     ---@type Building[]
     buildings = {} 
@@ -70,14 +75,16 @@ function love.load()
         base_defense = 5,
         base_attack = 5,
         wealth = 0,
-        race = 'rat'
+        race = 'rat',
+        gathering = 5
     }    
     TEMPLATE.ELO = {
         max_hp = 100,
         base_defense = 10,
         base_attack = 10,
         wealth = 0,
-        race = 'elo'
+        race = 'elo',
+        gathering = 1
     }
 
     -- data structs init
@@ -99,38 +106,18 @@ function love.load()
     castle = Castle:new(zero_cell:clone(), 100, 500)
 
     for i = 1, 5 do
-        CREATE_CHARACTER(TEMPLATE.ELO, zero_cell:pos())
+        OBJ_MANAGER:new_agent(GAME_UI, TEMPLATE.ELO, zero_cell:pos())
     end
 
-    local rich_character = Character:new(TEMPLATE.ELO, zero_cell:pos())
-    rich_character.traits.business_ambition = true
-    rich_character:add_wealth(1000)
-    table.insert(agents, #agents + 1, NEW_AGENT(rich_character))
-
-    local poor_ambitious_character = Character:new(TEMPLATE.ELO, zero_cell:pos())
-    poor_ambitious_character.traits.business_ambition = true
-    poor_ambitious_character.traits.long_term_planning = 20
-    table.insert(agents, #agents + 1, NEW_AGENT(poor_ambitious_character))
-
-    local alchemist_1 = Character:new(TEMPLATE.ELO, zero_cell:pos())
-    alchemist_1.skill.alchemist = 5
-    alchemist_1.traits.long_term_planning = 10
-    table.insert(agents, #agents + 1, NEW_AGENT(alchemist_1))
-    
-    local alchemist_2 = Character:new(TEMPLATE.ELO, zero_cell:pos())
-    alchemist_2.skill.alchemist = 5
-    alchemist_2.traits.long_term_planning = 10
-    table.insert(agents, #agents + 1, NEW_AGENT(alchemist_2))
-    
 
     --- rats testing 
     local rats_cell = Cell:new(5, 5)
-    ---@type Character
-    local rat_king = Character:new(TEMPLATE.RAT, rats_cell:pos())
-    local rat_lair = Building:new(Cell:new(5, 5), "home", 100, rat_king)
-    rat_king:set_home(rat_lair)
-    table.insert(agents, #agents + 1, NEW_AGENT(rat_king)) 
+    local rat_lair = Building:new(Cell:new(5, 5), "home", 100)
     add_building(rat_lair)
+
+    local rat_origin = OBJ_MANAGER:new_agent(GAME_UI, TEMPLATE.RAT, rats_cell:pos())
+    rat_origin.character:set_home(rat_lair)
+    
     
     for i = 1, 100 do
         for j = 1, 100 do
@@ -152,64 +139,8 @@ function new_position(x, y)
 end
 
 
-function CREATE_CHARACTER(template, position, home)
-    local character = Character:new(template, position)
-    character:set_home(home)
-    local agent = NEW_AGENT(character)
-    table.insert(agents, #agents + 1, agent)
-    GAME_UI.table_of_units:add_unit(#agents)
-    return agent
-end
-
----comment
----@param character Character
----@return Agent
-function NEW_AGENT(character)
-    ---@type InstructionManager
-    local manager = InstructionManager:new(character)
-    return {agent= character, ai= manager}
-end
-
-
 function love.draw()    
     GAME_UI:draw()
-end
-
-
-
----@class Cell
----@field x number
----@field y number
-Cell = {}
-Cell.__index = Cell
----Creates new cell
----@param x number
----@param y number
-function Cell:new(x, y)
-    _ = {x=x, y=y}
-    setmetatable(_, Cell)
-    return _
-end
-function Cell:pos()
-    local grid_size = globals.CONSTANTS.GRID_SIZE
-    return {x = self.x * grid_size + grid_size/2, y = self.y * grid_size + grid_size/2}
-end
-function Cell:clone()
-    _ = {x=self.x, y=self.y}
-    setmetatable(_, Cell)
-    return _
-end
-function Cell:center()
-    local grid_size = globals.CONSTANTS.GRID_SIZE
-    local shift = grid_size / 2
-    return {x = self.x * grid_size + shift, y = self.y * grid_size + shift}
-end
----comment
----@param position Position
----@return Cell
-function Cell:new_from_coordinate(position)
-    local grid_size = globals.CONSTANTS.GRID_SIZE
-    return Cell:new(math.floor(position.x / grid_size), math.floor(position.y / grid_size))
 end
 
 
@@ -233,10 +164,7 @@ function love.update(dt)
             DAY_MOD_100 = 0    
         end       
 
-        for _, agent in pairs(agents) do
-            agent.agent:update()
-            agent.ai:update(agent.agent)
-        end        
+        OBJ_MANAGER:update()
 		
         for _, building in pairs(buildings) do
             building:update()

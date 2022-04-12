@@ -24,8 +24,23 @@ function UnitsList:toggle_display()
 end
 
 function UnitsList:add_unit(index)
-    self.units[index] = UnitLine:new(self.view, self.num_of_units)
+    local line = UnitLine:new(self.view, self.num_of_units)
     self.num_of_units = self.num_of_units + 1
+    self.units[index] = line
+end
+
+function UnitsList:remove_unit(index)
+    if self.units[index] ~= nil then
+        local temp = self.units[index].line_number
+        self.units[index]:destroy()
+        self.units[index] = nil
+        for i, line in pairs(self.units) do
+            if line.line_number > temp then
+                line:shift_line_up()
+            end
+        end
+        self.num_of_units = self.num_of_units - 1
+    end
 end
 
 ---draws table of agents, according to data.
@@ -33,9 +48,10 @@ end
 function UnitsList:draw(collection_of_agents)
     for i, line in pairs(self.units) do
         local agent = collection_of_agents[i]
-        line:load_data(agent.agent, agent.ai.current_instruction.name)
+        if agent ~= nil then
+            line:load_data(agent.character, agent.ai.current_instruction.name)
+        end
     end
-
     self.view:draw()
 end
 

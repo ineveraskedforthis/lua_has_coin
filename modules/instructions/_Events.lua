@@ -56,4 +56,12 @@ function Event_print(event)
 	print("Event " .. event.type)
 end
 
+function Event_NewAgent(template, position, home)
+	return {type="new_agent", template = template, position = position, home=home}
+end
+function Event_Death()
+	return {type="death"}
+end
+
+
 ---@alias Event EventTargeted|EventSimple

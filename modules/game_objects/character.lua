@@ -104,6 +104,7 @@ end
 ---@field race "elo"|"rat"
 ---@field race_data number
 ---@field had_finished_order boolean
+---@field dead boolean
 ---@field has_shop boolean
 ---@field order Order
 ---@field quest Quest|nil
@@ -144,7 +145,7 @@ function Character:new(template, pos)
     character.wealth = template.wealth
     character.temp_wealth = 0
     character.skill = {}
-    character.skill.gathering = 1
+    character.skill.gathering = template.gathering
     character.skill.tool_making = 1
     character.skill.alchemist = 0
     
@@ -163,6 +164,8 @@ function Character:new(template, pos)
     character.target = nil
     character.home = nil
     character.order = OrderIdle
+
+    character.dead = false
 
     
     character.had_finished_order = true
@@ -241,14 +244,16 @@ function Character:update()
             self.race_data = self.race_data + 1
         end
         if self:get_hunger() > 150 then
-            local x = nil
+            self.dead = true
+            return Event_Death()
         end
         if self.race_data >= RAT_BIRTH_SPEED then
             self.race_data = 0
             local pos = {x= self:pos().x, y= self:pos().y}
-            CREATE_CHARACTER(TEMPLATE.RAT, pos, self.home)
+            return Event_NewAgent(TEMPLATE.RAT, pos, self.home)
         end
     end
+
 end
 
 function Character:add_wealth(x)
