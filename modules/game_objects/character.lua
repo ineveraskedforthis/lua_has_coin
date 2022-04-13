@@ -618,11 +618,13 @@ end
 ---comment
 ---@return EventTargeted|nil
 function Character:__check_food()
+    local temp = love.timer.getTime()
     for _, f in pairs(food) do
         if (self:__dist_to(f) < 20) and (f.cooldown == 0) then
             return Event_TargetFound(f)
         end
     end
+    result_order = result_order + love.timer.getTime() - temp
     return nil
 end
 
@@ -645,8 +647,12 @@ end
 
 function Character:__set_random_target_circle()
     local alpha = math.random() * 2 * math.pi
-    local x = self:pos().x + math.cos(alpha) * 40
-    local y = self:pos().y + math.sin(alpha) * 40
+    local range = 40
+    if self:is_rat() then
+        range = 80
+    end
+    local x = self:pos().x + math.cos(alpha) * range
+    local y = self:pos().y + math.sin(alpha) * range
     local dx, dy, norm = 0, 0, 0
     if self.home == nil then
         dx, dy, norm = true_dist(self, castle)

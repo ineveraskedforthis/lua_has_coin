@@ -51,6 +51,7 @@ RAT_BIRTH_SPEED = 10000
 FOOD_COOLDOWN = 50000
 
 function love.load()
+
     love.window.setMode(800, 600)   
 
     ---@class Agent
@@ -119,11 +120,11 @@ function love.load()
     rat_origin.character:set_home(rat_lair)
     
     
-    for i = 1, 100 do
-        for j = 1, 100 do
+    for i = -100, 200 do
+        for j = -100, 200 do
             if (map_build_flag[i] == nil) or (map_build_flag[i][j] == nil) then
                 local dice = math.random()
-                if dice > 0.90 then
+                if dice < 0.13 then
                     new_food(i, j)
                 end
             end
@@ -147,16 +148,27 @@ end
 
 -- game logic loop
 TIME_PASSED = 0
-BASE_TICKS_PER_SECOND = 20
+BASE_TICKS_PER_SECOND = 40
 TICK = 1 / BASE_TICKS_PER_SECOND 
 SPEED = 0
 function UPDATE_GAME_SPEED(newSPEED)
     SPEED = newSPEED
 end
 DAY_MOD_100 = 0
+
+love.frame = 0
+result = 0
+result_order = 0
+
 function love.update(dt)
     TIME_PASSED = TIME_PASSED + dt * SPEED
-    while TIME_PASSED > TICK do
+
+
+
+    while TIME_PASSED > TICK do      
+        start = love.timer.getTime()
+        
+
         TIME_PASSED = TIME_PASSED - TICK
         DAY_MOD_100 = DAY_MOD_100 + 1
         if DAY_MOD_100 == 100 then
@@ -173,15 +185,29 @@ function love.update(dt)
         for _, food_obj in pairs(food) do
             food_obj.cooldown = math.max(0, food_obj.cooldown - 1)
         end
+
+        love.frame = love.frame + 1
+        result = result + love.timer.getTime() - start
+
+            if love.frame > 10000 then
+                love.frame = 0
+                print("---------------------------------------")
+                print("update for 10000 ticks")
+                print(math.floor(result * 100) / 100 .. " seconds update")
+                print(math.floor(result_order * 100) / 100 .. " seconds __check_food")
+                print(OBJ_MANAGER.last_agent .. " last agent index")
+                result = 0
+                result_order = 0
+            end
     end
     
-    -- interface update
-    GAME_UI.wealth_widget:update_label(tostring(castle.wealth))
-    GAME_UI.hunt_widget:update_label(tostring(castle.hunt_budget))
+    -- -- interface update
+    -- GAME_UI.wealth_widget:update_label(tostring(castle.wealth))
+    -- GAME_UI.hunt_widget:update_label(tostring(castle.hunt_budget))
     
-    hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
-    treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')
-    tax_value:update_label(tostring(castle.INCOME_TAX) .. '%')
+    -- hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
+    -- treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')
+    -- tax_value:update_label(tostring(castle.INCOME_TAX) .. '%')
 end
 
 
