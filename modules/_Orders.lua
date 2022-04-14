@@ -140,42 +140,59 @@ local function idle(character)
 end
 
 
+Orders = {}
 
 
-
-OrderMove = Order:new("Move", move_action)
-OrderWander = Order:new("Wander", move_action, nil, true)
-OrderWanderFood = Order:new("Search for food", move_action, "food", true)
-OrderWanderSpace = Order:new("Search for food", move_action, "space", true)
-
-OrderRestHome = Order:new("Rest at home", rest_at_home)
-OrderRestCastle = Order:new("Rest at castle", rest_at_castle)
-OrderRestGround = Order:new("Rest on ground", rest_on_ground)
-
-OrderFindShopBuyFood = Order:new("Find shop to buy", find_shop_buy_food)
-OrderFindShopSellFood = Order:new("Find shop to sell", find_shop_sell_food)
-OrderFindShopBuyPotion = Order:new("Find shop to buy", find_shop_buy_potion)
-OrderFindShopSellPotion = Order:new("Find shop to sell", find_shop_sell_potion)
-
-OrderGatherEat = Order:new("Gather and eat", gather_eat)
-OrderGatherKeep = Order:new("Gather and keep", gather_keep)
-
-OrderSellFood = Order:new("Sell food", sell_food)
-OrderBuyFood = Order:new("Buy food", buy_food_eat)
-OrderSellPotion = Order:new("Sell food", sell_potion)
-OrderBuyPotion = Order:new("Buy food", buy_potion)
-
-OrderApplyForJob = Order:new("Apply for a job", apply_for_job)
-OrderGetPaid = Order:new("Get paid", get_paid)
-
-OrderFindTaxTarget = Order:new("Find tax targer", find_building_to_tax)
-OrderTaxTarget = Order:new("Tax target", tax_target)
-OrderReturnTaxCastle = Order:new("Return tax to castle", return_tax_to_castle)
-
-OrderTakeGoldFromHome = Order:new("Take gold from home", take_gold_from_home)
+Orders.Move = {}
+Orders.Move.Target = Order:new("Move", move_action)
 
 
-OrderMakePotion = Order:new("Making potion", make_potion)
+Orders.Wander = {}
+Orders.Wander.Nothing = Order:new("Wander", move_action, nil, true)
+Orders.Wander.Food = Order:new("Search for food", move_action, "food", true)
+Orders.Wander.Space = Order:new("Search for food", move_action, "space", true)
 
 
-OrderIdle = Order:new("Idle", idle)
+Orders.Rest = {}
+Orders.Rest.Home = Order:new("Rest at home", rest_at_home)
+Orders.Rest.Castle = Order:new("Rest at castle", rest_at_castle)
+Orders.Rest.Ground = Order:new("Rest on ground", rest_on_ground)
+
+
+Orders.Find = {}
+Orders.Find.ShopBuyFood = Order:new("Find shop to buy", find_shop_buy_food)
+Orders.Find.ShopSellFood = Order:new("Find shop to sell", find_shop_sell_food)
+Orders.Find.ShopBuyPotion = Order:new("Find shop to buy", find_shop_buy_potion)
+Orders.Find.ShopSellPotion = Order:new("Find shop to sell", find_shop_sell_potion)
+Orders.Find.TaxTarget = Order:new("Find tax targer", find_building_to_tax)
+
+
+Orders.Gather = {}
+Orders.Gather.Eat = Order:new("Gather and eat", gather_eat)
+Orders.Gather.Keep = Order:new("Gather and keep", gather_keep)
+
+
+Orders.Sell = {}
+Orders.Buy = {}
+Orders.Sell.Food = Order:new("Sell food", sell_food)
+Orders.Buy.Food = Order:new("Buy food", buy_food_eat)
+Orders.Sell.Potion = Order:new("Sell food", sell_potion)
+Orders.Buy.Potion = Order:new("Buy food", buy_potion)
+
+
+Orders.Money = {}
+Orders.Money.TaxTarget = Order:new("Tax target", tax_target)
+Orders.Money.TaxToCastle = Order:new("Return tax to castle", return_tax_to_castle)
+Orders.Money.GetFromHome = Order:new("Take gold from home", take_gold_from_home)
+Orders.Money.GetPayment = Order:new("Get paid", get_paid)
+
+
+Orders.Apply = {}
+Orders.Apply.TaxCollector = Order:new("Apply for a job", apply_for_job)
+
+
+Orders.Make = {}
+Orders.Make.Potion = Order:new("Making potion", make_potion)
+
+
+Orders.Idle = Order:new("Idle", idle)

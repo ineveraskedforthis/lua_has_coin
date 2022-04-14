@@ -1,0 +1,17 @@
+local GoCastleNode = InstructionNode:new(MoveToCastleAction)
+local TakeQuestNode = InstructionNode:new(ClaimRewardAction)
+local LookForRatNode = InstructionNode:new(SearchForRatAction)
+local AttackRatNode = InstructionNode:new(AttackRatAction)
+local BackToCastleNode = InstructionNode:new(MoveToCastleAction)
+local RecieveRewardNode = InstructionNode:new(RecieveRewardAction)
+local EndNode = InstructionNode:new(Empty, true)
+
+GoCastleNode:add_child(TakeQuestNode, ActionFinishedCondition)
+TakeQuestNode:add_child(LookForRatNode, ActionFinishedCondition)
+TakeQuestNode:add_child(EndNode, ActionFinishedCondition)
+LookForRatNode:add_child(AttackRatNode, ActionFinishedCondition)
+AttackRatNode:add_child(BackToCastleNode, ActionFinishedCondition)
+BackToCastleNode:add_child(RecieveRewardNode, ActionFinishedCondition)
+RecieveRewardNode:add_child(EndNode, ActionFinishedCondition)
+
+return AgentInstruction:new(GoCastleNode, "Taking hunt quest")

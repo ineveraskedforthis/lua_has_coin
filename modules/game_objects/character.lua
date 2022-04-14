@@ -163,7 +163,7 @@ function Character:new(template, pos)
 
     character.target = nil
     character.home = nil
-    character.order = OrderIdle
+    character.order = Order.Idle
 
     character.dead = false
 
