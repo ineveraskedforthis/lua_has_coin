@@ -191,13 +191,7 @@ function love.update(dt)
             end
     end
     
-    -- interface update
-    GAME_UI.wealth_widget:update_label(tostring(castle.wealth))
-    GAME_UI.hunt_widget:update_label(tostring(castle.hunt_budget))
     
-    hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
-    treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')
-    tax_value:update_label(tostring(castle.INCOME_TAX) .. '%')
 end
 
 

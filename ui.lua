@@ -375,6 +375,14 @@ end
 
 function UI:draw()
 
+    -- interface update
+    GAME_UI.wealth_widget:update_label(tostring(castle.wealth))
+    GAME_UI.hunt_widget:update_label(tostring(castle.hunt_budget))
+    
+    hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
+    treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')
+    tax_value:update_label(tostring(castle.INCOME_TAX) .. '%')
+
     love.graphics.setColor(1, 1, 0)
     local grid_size = globals.CONSTANTS.GRID_SIZE
 
@@ -444,6 +452,8 @@ function UI:draw()
     self.main_ui:draw()
     self.table_of_units:draw(OBJ_MANAGER.agents)
     self.table_of_buildings:draw()
+
+    
 end
 
 
