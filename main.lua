@@ -119,17 +119,7 @@ function love.load()
     local rat_origin = OBJ_MANAGER:new_agent(GAME_UI, TEMPLATE.RAT, rats_cell:pos())
     rat_origin.character:set_home(rat_lair)
     
-    
-    for i = -100, 200 do
-        for j = -100, 200 do
-            if (map_build_flag[i] == nil) or (map_build_flag[i][j] == nil) then
-                local dice = math.random()
-                if dice < 0.13 then
-                    new_food(i, j)
-                end
-            end
-        end
-    end
+    OBJ_MANAGER:generate_food()
 end
 
 ---comment
@@ -201,13 +191,13 @@ function love.update(dt)
             end
     end
     
-    -- -- interface update
-    -- GAME_UI.wealth_widget:update_label(tostring(castle.wealth))
-    -- GAME_UI.hunt_widget:update_label(tostring(castle.hunt_budget))
+    -- interface update
+    GAME_UI.wealth_widget:update_label(tostring(castle.wealth))
+    GAME_UI.hunt_widget:update_label(tostring(castle.hunt_budget))
     
-    -- hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
-    -- treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')
-    -- tax_value:update_label(tostring(castle.INCOME_TAX) .. '%')
+    hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
+    treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')
+    tax_value:update_label(tostring(castle.INCOME_TAX) .. '%')
 end
 
 
@@ -259,14 +249,6 @@ function get_new_building_location(castle)
     end
 end
 
-
-function new_food(x, y)
-    local cell = Cell:new(x, y)
-    local last_food = #food + 1
-    food[last_food] = Target:new(cell:pos())
-    food[last_food].cell = cell
-    food[last_food].cooldown = 0
-end
 
 
 ---Adds a new building into update loop

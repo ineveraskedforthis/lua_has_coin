@@ -374,7 +374,6 @@ end
 
 
 function UI:draw()
-    -- love.graphics.print(love.report or "Please wait...")
 
     love.graphics.setColor(1, 1, 0)
     local grid_size = globals.CONSTANTS.GRID_SIZE
@@ -383,33 +382,33 @@ function UI:draw()
         tax_collectors_payment[_]:update_label(t)
     end
 
-    -- for _, food_obj in pairs(food) do
-    --     if food_obj.cooldown == 0 then
-    --         love.graphics.setColor(0.8, 0, 0)
-    --     else 
-    --         love.graphics.setColor(0.3, 0, 0)
-    --     end
-    --     local center = food_obj.cell:center()
-    --     love.graphics.circle('line', center.x, center.y, 2)
-    -- end
+    for _, food_obj in pairs(food) do
+        if food_obj.cooldown == 0 then
+            love.graphics.setColor(0.8, 0, 0)
+        else 
+            love.graphics.setColor(0.3, 0, 0)
+        end
+        local center = food_obj.cell:center()
+        love.graphics.circle('line', center.x, center.y, 2)
+    end
 
-    -- love.graphics.setColor(1, 1, 0)
-    -- for _, agent in pairs(OBJ_MANAGER.agents) do
-    --     local pos = agent.character:pos()
-    --     love.graphics.circle('line', pos.x, pos.y, 2)
-    --     love.graphics.print(agent.character.name, pos.x + 2, pos.y - 15)
-    --     love.graphics.print(tostring(agent.character:get_hunger()), pos.x + 2, pos.y + 2)
-    --     love.graphics.print(tostring(agent.character:get_tiredness()), pos.x + 2, pos.y + 15)
-    -- end
+    love.graphics.setColor(1, 1, 0)
+    for _, agent in pairs(OBJ_MANAGER.agents) do
+        local pos = agent.character:pos()
+        love.graphics.circle('line', pos.x, pos.y, 2)
+        love.graphics.print(agent.character.name, pos.x + 2, pos.y - 15)
+        love.graphics.print(tostring(agent.character:get_hunger()), pos.x + 2, pos.y + 2)
+        love.graphics.print(tostring(agent.character:get_tiredness()), pos.x + 2, pos.y + 15)
+    end
 
 
     love.graphics.setColor(1, 1, 0)
     for _, building in pairs(buildings) do
-        -- local tmp = building:cell()
-        -- local pos = building:pos()
-        -- love.graphics.rectangle('line', tmp.x * grid_size, tmp.y * grid_size, grid_size, grid_size)
-        -- love.graphics.print(tostring(building.wealth), pos.x + 2, pos.y + 10)
-        -- love.graphics.print(tostring(building.wealth_before_tax), pos.x + 2, pos.y + 20)
+        local tmp = building:cell()
+        local pos = building:pos()
+        love.graphics.rectangle('line', tmp.x * grid_size, tmp.y * grid_size, grid_size, grid_size)
+        love.graphics.print(tostring(building.wealth), pos.x + 2, pos.y + 10)
+        love.graphics.print(tostring(building.wealth_before_tax), pos.x + 2, pos.y + 20)
         -- love.graphics.print("buy   " .. tostring(math.floor(building._av_timer_buy[GOODS.FOOD])), pos.x + 40, pos.y + 10)
         -- love.graphics.print("sell  " .. tostring(math.floor(building._av_timer_sell[GOODS.FOOD])), pos.x + 40, pos.y + 20)
         -- love.graphics.print("stash " .. tostring(building:get_stash(GOODS.FOOD)), pos.x + 40, pos.y + 30)

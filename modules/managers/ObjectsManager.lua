@@ -3,6 +3,8 @@ local InstructionManager = require "modules.instructions._InstructionManager"
 ---@class ObjectsManager
 ---@field agents Agent[]
 ---@field last_agent number
+---@field chunk_size number
+---@field food_chunk table
 local ObjectsManager = {}
 ObjectsManager.__index = ObjectsManager
 
@@ -10,6 +12,8 @@ function ObjectsManager:new()
     _  = {}
     _.agents = {}
     _.last_agent = 0
+    _.chunk_size = 10
+    _.food_chunk = {}
     setmetatable(_, ObjectsManager)
     return _
 end
@@ -63,6 +67,66 @@ function ObjectsManager:update()
     for k, v in pairs(agents_to_create) do
         self:new_agent(GAME_UI, v.template, v.position, v.home)
     end
+end
+
+function ObjectsManager:generate_food()
+    for i = -100, 200 do
+        for j = -100, 200 do
+            if (map_build_flag[i] == nil) or (map_build_flag[i][j] == nil) then
+                local dice = math.random()
+                if dice < 0.13 then
+                    self:new_food(i, j)
+                end
+            end
+        end
+    end
+end
+
+function ObjectsManager:new_food(x, y)
+    local cell = Cell:new(x, y)
+    local last_food = #food + 1
+    food[last_food] = Target:new(cell:pos())
+    food[last_food].cell = cell
+    food[last_food].cooldown = 0
+
+    local i, j = self:get_chunk_from_cell(cell)
+    if self.food_chunk[i] == nil then
+        self.food_chunk[i] = {}
+    end
+    if self.food_chunk[i][j] == nil then
+        self.food_chunk[i][j] = {}
+    end
+    table.insert(self.food_chunk[i][j], last_food)
+end
+
+function ObjectsManager:get_chunk_from_cell(cell)
+    local i = math.floor(cell.x / self.chunk_size)
+    local j = math.floor(cell.y / self.chunk_size)
+    return i, j
+end
+
+function ObjectsManager:get_chunk_from_position(position)
+    local cell = Cell:new_from_coordinate(position)
+    return self:get_chunk_from_cell(cell)
+end
+
+function ObjectsManager:check_food(target)
+    local i, j = self:get_chunk_from_position(target:pos())
+    for di = -1, 1 do
+        for dj = -1, 1 do
+            local x = i + di
+            local y = j + dj
+            if (self.food_chunk[x] ~= nil) and (self.food_chunk[x][y] ~= nil) then
+                for _, f in pairs(self.food_chunk[x][y]) do
+                    local food_obj = food[f]
+                    if (target:__dist_to(food_obj) < 20) and (food_obj.cooldown == 0) then
+                        return Event_TargetFound(food_obj)
+                    end
+                end 
+            end
+        end
+    end
+    return nil
 end
 
 return ObjectsManager

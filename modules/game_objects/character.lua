@@ -619,13 +619,12 @@ end
 ---@return EventTargeted|nil
 function Character:__check_food()
     local temp = love.timer.getTime()
-    for _, f in pairs(food) do
-        if (self:__dist_to(f) < 20) and (f.cooldown == 0) then
-            return Event_TargetFound(f)
-        end
-    end
+    local responce = nil
+    local tmp = OBJ_MANAGER:check_food(self)
+
     result_order = result_order + love.timer.getTime() - temp
-    return nil
+    
+    return tmp
 end
 
 ---Returns current cell as target in TargetFound event if it's far away enough from other buildings  
