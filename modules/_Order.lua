@@ -1,7 +1,7 @@
 ---@class Order
 ---@field name string
 ---@field action function
----@field notification "food"|"space"|nil
+---@field notification "food"|"space"|"rat"|nil
 ---@field flag_wander boolean
 Order = {}
 Order.__index = Order
@@ -9,7 +9,7 @@ Order.__index = Order
 ---comment
 ---@param name string
 ---@param action function
----@param notification "food"|"space"|nil
+---@param notification "food"|"space"|"rat"|nil
 ---@param flag_wander boolean
 function Order:new(name, action, notification, flag_wander)
     _ = {}
@@ -43,6 +43,13 @@ function Order:execute(character)
         if space ~= nil then
             character:set_target(space.target)
             return space
+        end
+    end
+    if self.notification == "rat" then
+        local rat = character:__check_rat()
+        if rat ~= nil then
+            character:set_target(rat.target)
+            return rat
         end
     end
 

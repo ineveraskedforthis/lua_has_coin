@@ -136,15 +136,14 @@ end
 
 function ApplyToJobAction(character)
     character:set_order(Orders.Apply.TaxCollector)
-end 
-
+end
 
 function ClaimRewardAction(character)
     character:set_order(Orders.Money.ClaimReward)
 end
 
 function SearchForRatAction(character)
-    character:set_order(Orders.Find.Rat)
+    character:set_order(Orders.Wander.Rat)
 end
 
 function AttackRatAction(character)

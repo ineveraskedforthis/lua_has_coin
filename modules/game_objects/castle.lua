@@ -143,10 +143,14 @@ end
 ---Gives a **reward** specified in **contract** to a contract's **character** and removes contract from character
 ---@param contract Contract
 function Castle:give_reward(contract)
+    if contract == nil then
+        return Event_ActionFailed()
+    end
     local character = contract.character
     self.hunt_wealth_reserved = self.hunt_wealth_reserved - contract.reward
     character:add_wealth(contract.reward) 
     character:remove_contract()
+    return Event_ActionFinished()
 end
 
 ---cancels contract and removes it from character

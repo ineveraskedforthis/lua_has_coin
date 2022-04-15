@@ -1,4 +1,5 @@
 ---@class Contract
+---@field id number
 ---@field character Character
 ---@field goal "rat"
 ---@field expires Character

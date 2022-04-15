@@ -103,7 +103,7 @@ function love.load()
    
     
     -- game data
-    zero_cell = Cell:new(30, 30)
+    local zero_cell = Cell:new(30, 30)
     castle = Castle:new(zero_cell:clone(), 100, 500)
 
     for i = 1, 5 do

@@ -606,12 +606,13 @@ function Character:get_optimal_buy_shop(x)
     return self:__optimal_buy_shop(x)
 end
 
----comment
----@return Character|nil
+---checks surroundings for rat  NOT FINISHED
+---  NOT FINISHED YET
+---@return EventTargeted|nil
 function Character:__check_rat()
-    -- for k, v in pairs(rats) do
-    --     if v.is_rat() then
-    --         return v
+    -- for k, v in pairs(OBJ_MANAGER.agents) do
+    --     if v.character.is_rat() then
+    --         return Event_TargetFound(v)
     --     end
     -- end
     return nil
@@ -640,7 +641,7 @@ function Character:__check_space()
             dist = tmp
         end
     end
-    if dist > 100 then
+    if dist > globals.CONSTANTS.GRID_SIZE * 5 then
         return Event_CellFound(self:cell())
     end
     return nil
@@ -746,6 +747,26 @@ function Character:fire(tag)
         self.is_tax_collector = false
         self.job_index = nil
     end
+end
+
+---Claims a contract for character in castle.
+---@param castle Castle
+---@return EventSimple
+function Character:claim_reward(castle)
+    local responce = castle:claim_reward(self)
+    if responce == nil then
+        return Event_ActionFailed()
+    end
+    self.quest = responce
+    return Event_ActionFinished()
+end
+
+function Character:get_reward(castle)
+    return castle:get_reward(self.quest)
+end
+
+function Character:remove_contract()
+    self.quest = nil
 end
 
 ---Collects food and eat it  

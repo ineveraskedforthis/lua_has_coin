@@ -139,12 +139,18 @@ local function idle(character)
     return Event_ActionFinished()
 end
 
+---comment
+---@param character Character
+---@return EventSimple
 local function claim_reward(character)
-    return character:__claim_reward(castle)
+    return character:claim_reward(castle)
 end
 
+---comment
+---@param character Character
+---@return EventSimple
 local function get_reward(character)
-    return character:__get_reward(castle)
+    return character:get_reward(castle)
 end
 
 
@@ -159,7 +165,7 @@ Orders.Wander = {}
 Orders.Wander.Nothing = Order:new("Wander", move_action, nil, true)
 Orders.Wander.Food = Order:new("Search for food", move_action, "food", true)
 Orders.Wander.Space = Order:new("Search for food", move_action, "space", true)
-
+Orders.Wander.Rat = Order:new("Search for rat", move_action, "rat", true)
 
 Orders.Rest = {}
 Orders.Rest.Home = Order:new("Rest at home", rest_at_home)
@@ -193,6 +199,8 @@ Orders.Money.TaxTarget = Order:new("Tax target", tax_target)
 Orders.Money.TaxToCastle = Order:new("Return tax to castle", return_tax_to_castle)
 Orders.Money.GetFromHome = Order:new("Take gold from home", take_gold_from_home)
 Orders.Money.GetPayment = Order:new("Get paid", get_paid)
+Orders.Money.GetReward = Order:new("Get quest reward", get_reward)
+Orders.Money.ClaimReward = Order:new("Claim quest", claim_reward)
 
 
 Orders.Apply = {}
