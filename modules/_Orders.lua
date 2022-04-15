@@ -139,6 +139,14 @@ local function idle(character)
     return Event_ActionFinished()
 end
 
+local function claim_reward(character)
+    return character:__claim_reward(castle)
+end
+
+local function get_reward(character)
+    return character:__get_reward(castle)
+end
+
 
 Orders = {}
 

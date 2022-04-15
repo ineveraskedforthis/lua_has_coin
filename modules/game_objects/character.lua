@@ -163,7 +163,7 @@ function Character:new(template, pos)
 
     character.target = nil
     character.home = nil
-    character.order = Order.Idle
+    character.order = Orders.Idle
 
     character.dead = false
 
@@ -256,6 +256,8 @@ function Character:update()
 
 end
 
+---Adds x wealth to character
+---@param x number
 function Character:add_wealth(x)
     self.wealth = self.wealth + x
 end

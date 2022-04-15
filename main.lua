@@ -8,7 +8,7 @@ local UI = require "ui"
 local Castle = require "modules.game_objects.castle"
 
 local Character = require "modules.game_objects.character"
-
+local Contract = require "modules.game_objects.contract"
 
 
 require "modules.instructions._Events"
@@ -138,13 +138,16 @@ end
 
 -- game logic loop
 TIME_PASSED = 0
-BASE_TICKS_PER_SECOND = 40
+BASE_TICKS_PER_SECOND = 20
 TICK = 1 / BASE_TICKS_PER_SECOND 
 SPEED = 0
 function UPDATE_GAME_SPEED(newSPEED)
     SPEED = newSPEED
 end
 DAY_MOD_100 = 0
+
+TIME = 0
+DATE = 0
 
 love.frame = 0
 result = 0
@@ -157,6 +160,12 @@ function love.update(dt)
 
     while TIME_PASSED > TICK do      
         start = love.timer.getTime()
+
+        TIME = TIME + 1
+        if TIME == 2000 then
+            DATE = DATE + 1
+            TIME = 0
+        end
         
 
         TIME_PASSED = TIME_PASSED - TICK

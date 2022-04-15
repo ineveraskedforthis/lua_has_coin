@@ -39,19 +39,24 @@ end
 ---@class Castle
 ---@field _cell Position
 ---@field progress number
----@field wealth number
 ---@field num_of_visitors number
 ---@field FOOD_PRICE number
 ---@field POTION_PRICE number
 ---@field SLEEP_PRICE number
 ---@field HUNT_REWARD number
+---@field CONTRACT_TIME number
 ---@field budget Budget
+---@field wealth number
+---@field hunt_wealth number
+---@field hunt_wealth_reserved number
 ---@field INCOME_TAX number
 ---@field tax_collectors Character[]
 ---@field open_tax_collector_positions number
 ---@field tax_collection_reward number
 ---@field payment_timer number[]
 ---@field vacant_job boolean
+---@field free_contract_id number
+---@field contracts Contract[]
 Castle = {}
 Castle.__index = Castle
 -- local globals = require('constants')
@@ -76,12 +81,15 @@ function Castle:new(cell, progress, wealth)
         progress = progress,
         wealth = wealth,
         hunt_budget = 0,
-        reserved_hunt_budget = 0,
+        hunt_wealth = 0,
+        hunt_wealth_reserved = 0,
         num_of_visitors = 0,
         FOOD_PRICE = 10,
         POTION_PRICE = 10,
         SLEEP_PRICE = 2,
         HUNT_REWARD = 10,
+        CONTRACT_TIME = 50,
+        free_contract_id = 0,
         budget = Budget:new(),
         INCOME_TAX = 10,
         tax_collectors = {},
@@ -116,6 +124,38 @@ end
 ---@return Position
 function Castle:get_cell()
     return self._cell
+end
+
+---Returns a contract on rat-hunting with current reward/timer
+---@param character Character
+---@return Contract|nil
+function Castle:claim_reward(character)
+    if self.HUNT_REWARD <= self.hunt_wealth then
+        self.hunt_wealth_reserved = self.hunt_wealth_reserved + self.HUNT_REWARD
+        self.hunt_wealth = self.hunt_wealth - self.HUNT_REWARD
+        local contract = Contract:new(self.free_contract_id, character, self.HUNT_REWARD, DATE + self.CONTRACT_TIME)
+        self.contracts[self.free_contract_id] = contract
+        self.free_contract_id = self.free_contract_id + 1
+        return contract
+    end    
+end
+
+---Gives a **reward** specified in **contract** to a contract's **character** and removes contract from character
+---@param contract Contract
+function Castle:give_reward(contract)
+    local character = contract.character
+    self.hunt_wealth_reserved = self.hunt_wealth_reserved - contract.reward
+    character:add_wealth(contract.reward) 
+    character:remove_contract()
+end
+
+---cancels contract and removes it from character
+---@param contract Contract
+function Castle:cancel_contract(contract)
+    self.hunt_wealth_reserved = self.hunt_wealth_reserved - contract.reward
+    self.hunt_wealth = self.hunt_wealth + contract.reward
+    self.contracts[contract.id] = nil
+    contract.character:remove_contract()
 end
 
 ---comment
@@ -265,7 +305,7 @@ end
 function Castle:income(t)
     local tmp = math.floor(self.budget.hunt * t / 100)
     self.wealth = self.wealth + t - tmp
-    self.hunt_budget = self.hunt_budget + tmp
+    self.hunt_wealth = self.hunt_wealth + tmp
 end
 
 
