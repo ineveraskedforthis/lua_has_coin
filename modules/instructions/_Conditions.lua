@@ -55,7 +55,7 @@ end
 ---comment
 ---@type Condition
 function TiredCondition(character, event)
-    if character:get_tiredness() > 90 then
+    if character:get_tiredness() > character:get_hunger() + 10 then
         return true
     end
 end

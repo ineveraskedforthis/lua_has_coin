@@ -46,6 +46,9 @@ function Order:execute(character)
         end
     end
     if self.notification == "rat" then
+        if character.quest == nil then
+            return Event_ActionFailed()
+        end
         local rat = character:__check_rat()
         if rat ~= nil then
             character:set_target(rat.target)

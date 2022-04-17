@@ -153,6 +153,10 @@ local function get_reward(character)
     return character:get_reward(castle)
 end
 
+local function attack_target(character)
+    return character:__attack_target()
+end
+
 
 Orders = {}
 
@@ -205,6 +209,9 @@ Orders.Money.ClaimReward = Order:new("Claim quest", claim_reward)
 
 Orders.Apply = {}
 Orders.Apply.TaxCollector = Order:new("Apply for a job", apply_for_job)
+
+Order.Attack = {}
+Order.Attack.Target = Order:new("Attack", attack_target)
 
 
 Orders.Make = {}

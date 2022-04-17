@@ -146,7 +146,7 @@ function SearchForRatAction(character)
     character:set_order(Orders.Wander.Rat)
 end
 
-function AttackRatAction(character)
+function AttackAction(character)
     character:set_order(Orders.Attack.Target)
 end
 
