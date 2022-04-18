@@ -24,6 +24,14 @@ function TargetFoundCondition(character, event)
     end
     return false
 end
+function TargetDiedCondition(character, event)
+    if event == nil then
+        return false
+    end
+    if event.type == "target_died" then
+        return true
+    end
+end
 ---@type Condition
 function CellFoundCondition(character, event)
     -- print("??")

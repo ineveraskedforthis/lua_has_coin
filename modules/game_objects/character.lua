@@ -55,6 +55,7 @@ end
 ---@field position Position
 ---@field cell Cell
 ---@field cooldown number
+---@field dead boolean|nil
 Target = {position={x=nil, y=nil}, cooldown = 0, cell={x=nil, y=nil}}
 Target.__index = Target
 function Target:pos()
@@ -230,6 +231,11 @@ function Character:update()
         if math.random() > 0.98 then
             self:__set_hunger(self.hunger + 1)    
         end
+    end
+
+    if self.hp < 1 then
+        self.dead = true
+        return Event_Death()
     end
 
     if (self.potion.level > 0) and (math.random() > 0.999) then
@@ -495,6 +501,9 @@ function Character:__attack_char(char)
 end
 
 function Character:__attack_target()
+    if self.target == nil or self.target.dead then
+        return Event_TargetDied()
+    end
     if self:__dist_to_target() > 5 then
         self:__move_to_target()
     else 

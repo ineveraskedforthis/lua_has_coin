@@ -34,6 +34,9 @@ end
 function Event_TargetReached()
 	return {type = "target_reached"}
 end
+function Event_TargetDied()
+	return {type = "target_died"}
+end
 
 function Event_ActionFailed()
 	return {type= "action_failed"}

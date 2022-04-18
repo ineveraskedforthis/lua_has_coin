@@ -44,6 +44,7 @@ CollectFood:add_child(LookForRatNode, ActionFinishedCondition)
 
 
 AttackRatNode:add_child(BackToCastleNode, ActionFinishedCondition)
+AttackRatNode:add_child(LookForRatNode, TargetDiedCondition)
 BackToCastleNode:add_child(RecieveRewardNode, ActionFinishedCondition)
 RecieveRewardNode:add_child(EndNode, ActionFinishedCondition)
 
