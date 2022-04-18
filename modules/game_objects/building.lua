@@ -153,7 +153,7 @@ function Building:update()
             if math.random() < 0.2 / self._av_timer_sell[v] then
                 self._sell_price[v] = math.max(math.min(self._sell_price[v] + 1, math.floor(self:get_wealth() / 1.5)), 0)
             end
-            if math.random() < 0.2 / self._av_timer_buy[v] then
+            if (math.random() < 0.2 / self._av_timer_buy[v]) and (self._stash[v] > 0) then
                 self._buy_price[v] = math.max(self._buy_price[v] - 1, 1)
             end
         end 
