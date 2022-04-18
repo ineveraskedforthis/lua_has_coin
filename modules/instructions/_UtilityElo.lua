@@ -24,8 +24,14 @@ local function utility_open_shop(character)
 	return 0
 end
 
+---comment
+---@param character Character
+---@return number
 local function utility_eat_free(character)
-	return character:get_hunger() * 0.5
+	if character.skill.gathering > 0 then
+		return character:get_hunger() * 0.5
+	end
+	return 0
 end
 
 local function utility_eat_paid(character)

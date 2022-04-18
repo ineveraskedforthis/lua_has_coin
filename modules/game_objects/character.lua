@@ -146,13 +146,13 @@ function Character:new(template, pos)
     character.temp_wealth = 0
     character.skill = {}
     character.skill.gathering = template.gathering
-    character.skill.tool_making = 1
-    character.skill.alchemist = 0
+    character.skill.tool_making = template.tool_making
+    character.skill.alchemist = template.alchemist
     
     
     character.traits = {}
-    character.traits.business_ambition = false
-    character.traits.long_term_planning = 5
+    character.traits.business_ambition = template.business_ambition
+    character.traits.long_term_planning = template.long_term_planning
 
     character.weapon = {level=0, dur=100}
     character.armour = {level=0, dur=100}
@@ -492,6 +492,15 @@ function Character:__attack_char(char)
         return ATTACK_RESPONSE.DAMAGE
     end
     return ATTACK_RESPONSE.NO_DAMAGE
+end
+
+function Character:__attack_target()
+    if self:__dist_to_target() > 5 then
+        self:__move_to_target()
+    else 
+        return self.__attack_char(self.target)
+    end
+    return Event_ActionInProgress()
 end
 
 ---comment

@@ -77,7 +77,11 @@ function love.load()
         base_attack = 5,
         wealth = 0,
         race = 'rat',
-        gathering = 5
+        gathering = 5,
+        alchemist = 0,
+        tool_making = 0,
+        long_term_planning = 0,
+        business_ambition = false
     }    
     TEMPLATE.ELO = {
         max_hp = 100,
@@ -85,7 +89,35 @@ function love.load()
         base_attack = 10,
         wealth = 0,
         race = 'elo',
-        gathering = 1
+        gathering = 1,
+        alchemist = 0,
+        tool_making = 0,
+        long_term_planning = 1,
+        business_ambition = false
+    }
+    TEMPLATE.ELO_MERCHANT = {
+        max_hp = 100,
+        base_defense = 10,
+        base_attack = 10,
+        wealth = 1000,
+        race = 'elo',
+        gathering = 0,
+        alchemist = 0,
+        tool_making = 0,
+        long_term_planning = 10,
+        business_ambition = true    
+    }
+    TEMPLATE.ELO_ALCHEMIST = {
+        max_hp = 100,
+        base_defense = 10,
+        base_attack = 10,
+        wealth = 1000,
+        race = 'elo',
+        gathering = 0,
+        alchemist = 5,
+        tool_making = 0,
+        long_term_planning = 5,
+        business_ambition = false  
     }
 
     -- data structs init
@@ -109,7 +141,9 @@ function love.load()
     for i = 1, 5 do
         OBJ_MANAGER:new_agent(GAME_UI, TEMPLATE.ELO, zero_cell:pos())
     end
-
+    OBJ_MANAGER:new_agent(GAME_UI, TEMPLATE.ELO_MERCHANT, zero_cell:pos())
+    OBJ_MANAGER:new_agent(GAME_UI, TEMPLATE.ELO_MERCHANT, zero_cell:pos())
+    OBJ_MANAGER:new_agent(GAME_UI, TEMPLATE.ELO_ALCHEMIST, zero_cell:pos())
 
     --- rats testing 
     local rats_cell = Cell:new(5, 5)
