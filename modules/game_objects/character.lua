@@ -100,7 +100,7 @@ end
 ---@field potion Item
 ---@field position Position
 ---@field occupation_data number
----@field stash "food"|nil
+---@field stash "food"|nil|"rat"
 ---@field race "elo"|"rat"
 ---@field race_data number
 ---@field had_finished_order boolean
@@ -480,18 +480,18 @@ function Character:__attack_char(char)
     local attack = self.base_attack + self.weapon.level
     local defense = char.base_defense + char.armour.level
     if attack > defense then
-        local tmp = char.__change_hp(defense - attack)
+        local tmp = char:__change_hp(defense - attack)
         if tmp == HP_RESPONSE.DEAD then
             self.wealth = self.wealth + char.wealth
             char.wealth = 0
-            if char.is_rat() then
-                self.stash = STASH.RAT
+            if char:is_rat() then
+                self.stash = "rat"
             end
-            return ATTACK_RESPONSE.KILL
+            return Event_ActionFinished()
         end
-        return ATTACK_RESPONSE.DAMAGE
+        return Event_ActionInProgress()
     end
-    return ATTACK_RESPONSE.NO_DAMAGE
+    return Event_ActionInProgress()
 end
 
 function Character:__attack_target()
@@ -620,12 +620,22 @@ end
 ---  NOT FINISHED YET
 ---@return EventTargeted|nil
 function Character:__check_rat()
-    -- for k, v in pairs(OBJ_MANAGER.agents) do
-    --     if v.character.is_rat() then
-    --         return Event_TargetFound(v)
-    --     end
-    -- end
-    return nil
+    local closest = nil
+    local opt_dist = nil
+    for k, v in pairs(OBJ_MANAGER.agents) do
+        local char = v.character
+        if char:is_rat() then
+            local tmp =  self:__dist_to(char)
+            if ((opt_dist == nil) or (opt_dist > tmp)) then
+                closest = char
+                opt_dist = tmp
+            end
+        end
+    end
+    if closest ~= nil then
+        closest = Event_TargetFound(closest)
+    end
+    return closest
 end
 
 ---comment
@@ -765,16 +775,14 @@ end
 function Character:claim_reward(castle)
     local responce = castle:claim_reward(self)
     if responce == nil then
-        print('quest not claimed')
         return Event_ActionFailed()
     end
-    print('quest claimed')
     self.quest = responce
     return Event_ActionFinished()
 end
 
-function Character:get_reward(castle)
-    return castle:get_reward(self.quest)
+function Character:get_reward()
+    return castle:give_reward(self.quest)
 end
 
 function Character:remove_contract()
