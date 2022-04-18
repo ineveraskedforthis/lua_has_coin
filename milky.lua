@@ -29,7 +29,8 @@ function milky.panel:new(milky, parent, label, image)
 
 	--- setting up label 
 	o.label = label
-	o.label_centered = false 
+	o.label_centered_vertically = false
+	o.label_centered_horisontally = false 
 	o.label_shift = {0, 0}
 
 	o.image = image
@@ -104,11 +105,23 @@ function milky.panel:destroy(milky)
 end
 
 function milky.panel:center_text()
-	self.label_centered = true
+	self.label_centered_vertically = true
+	self.label_centered_horisontally = true
 	self:refresh_rect()
 	return self
 end
 
+function milky.panel:center_text_vertically()
+	self.label_centered_vertically = true
+	self:refresh_rect()
+	return self
+end
+
+function milky.panel:center_text_horisontally()
+	self.label_centered_horisontally = true
+	self:refresh_rect()
+	return self
+end
 
 -- Draws the panel
 function milky.panel:draw()
@@ -267,12 +280,19 @@ function milky.panel:refresh_rect()
 		self.rect.draw_scale_y = self.rect.height / self.image:getHeight()
 	end
 
-	if self.label_centered then
+	local label_shift = {0, 0}
+
+	if self.label_centered_vertically then
 		local font = love.graphics.getFont()
-		local x = math.floor((rect.width - font:getWidth(self.label)) / 2)
-		local y = math.floor((rect.height - font:getHeight()) / 2)
-		self.label_shift = {x, y}
+		label_shift[2] = math.floor((rect.height - font:getHeight()) / 2)
 	end
+
+	if self.label_centered_horisontally then
+		local font = love.graphics.getFont()
+		label_shift[1] = math.floor((rect.width - font:getWidth(self.label)) / 2)
+	end
+	
+	self.label_shift = label_shift
 
 	if self.image then
 		self.sprite_batch:clear()

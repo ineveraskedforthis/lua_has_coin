@@ -1,4 +1,5 @@
 local Units_List_Widget = require "modules.UI.Units_List_Widget"
+local Investment_Widget = require "modules.UI.Investment_Widget"
 ---@class UI
 ---@field camera Position
 ---@field main_ui table
@@ -27,7 +28,12 @@ function UI:new(render_rectangles)
     return _
 end
 
+BLOCK_LABEL_PADDING_LEFT = 5
+
 function UI:set_up()
+    local main_block_width = 198
+    local pad_left = 2
+
     self.map_control_ui = milky.panel
         :new(milky)
         :position(0, 0)
@@ -37,10 +43,10 @@ function UI:set_up()
     self.main_ui = milky.panel
         :new(milky)
         :position(602,0)
-        :size(198, 600)
+        :size(main_block_width, 600)
         :toggle_background()
 
-    local list_button_size = 94
+    local list_button_size = math.floor(main_block_width / 2) - 4
     local list_button_h = 25
 
     self.toggle_character_screen_button = milky.panel
@@ -55,7 +61,7 @@ function UI:set_up()
 
     self.toggle_buildings_screen_button = milky.panel
         :new(milky, self.main_ui)
-        :position(list_button_size + 7, 520)
+        :position(list_button_size + 5, 520)
         :size(list_button_size, list_button_h)
         :toggle_border()
         :update_label("Buildings")
@@ -63,9 +69,10 @@ function UI:set_up()
         :toggle_background()
         :center_text()
 
+    self.investment_widget = Investment_Widget:new(self.main_ui, 3, 60, 192, BLOCK_LABEL_PADDING_LEFT)
+
     self:set_up_budget_block()
     self:set_up_hire_block()
-    self:set_up_invest_block()
     self:set_up_reward_block()
     self:set_up_tax_block()
     self:set_up_speed_control()
@@ -86,7 +93,7 @@ function UI:set_up_speed_control()
     
     local label = milky.panel
         :new(milky, speed_control_frame, "Game speed:")
-        :position(0, 0)
+        :position(BLOCK_LABEL_PADDING_LEFT, 0)
     SPEED_LABEL = milky.panel
         :new(milky, speed_control_frame, "0")
         :position(150, 0)
@@ -216,58 +223,8 @@ function toggle_buildings_screen()
     GAME_UI.table_of_buildings:toggle_hidden()
 end
 
-function UI:set_up_budget_block()
-    self.gold_widget = milky.panel
-        :new(milky, self.main_ui)
-        :position(3, 3)
-        :size(192, 54)
-        :toggle_border()
-    self.wealth_label = milky.panel
-        :new(milky, self.gold_widget, 'TREASURY')
-        :position(5, 2)
-    self.wealth_widget = milky.panel
-        :new(milky, self.gold_widget, "???", nil)
-        :position(150, 2)
-    self.hunt_label = milky.panel
-        :new(milky, self.gold_widget, 'HUNT INVESTED')
-        :position(5, 18)
-    self.hunt_widget = milky.panel
-        :new(milky, self.gold_widget, "???", nil)
-        :position(150, 18)
-    self.hunt_res_label = milky.panel
-        :new(milky, self.gold_widget, 'HUNT RESERVED')
-        :position(5, 34)
-    self.hunt_res_widget = milky.panel
-        :new(milky, self.gold_widget, "???", nil)
-        :position(150, 34)
-end
 
-function UI:set_up_invest_block()
-    self.invest_widget = milky.panel
-        :new(milky, self.main_ui)
-        :position(3, 60)
-        :size(192, 100)
-        :toggle_border()
-    income_invest_label = milky.panel
-        :new(milky, self.invest_widget, 'ROYAL INVESTMENTS')
-        :position(4, 5) 
-    treasury_invest_body, treasury_invest_value = create_invest_row(self.invest_widget, "TREASURY", "treasury")
-    hunt_invest_body, hunt_invest_value = create_invest_row(self.invest_widget, "HUNT", "hunt")
-    treasury_invest_body
-        :position(10, 35)
-    hunt_invest_body
-        :position(10, 55)
-    -- add_hunt_budget_button = milky.panel
-    --     :new(milky, self.main_ui)
-    --     :position(3, 527)
-    --     :size(192, 24)
-    --     :button(milky, function (self, button) castle.add_hunt_budget() end)
-    --     :toggle_border()
-    --     :toggle_background()
-    -- add_hunt_budget_label = milky.panel
-    --     :new(milky, add_hunt_budget_button, "ADD HUNT MONEY (100)")
-    --     :position(5, 2)
-end
+
 
 function UI:set_up_reward_block()
     rewards_widget = milky.panel
@@ -277,7 +234,7 @@ function UI:set_up_reward_block()
         :toggle_border()
     rewards_label = milky.panel
         :new(milky, rewards_widget, 'HUNTING LOG')
-        :position(4, 5)
+        :position(BLOCK_LABEL_PADDING_LEFT, 5)
     rewards_label_rat = milky.panel
         :new(milky, rewards_widget, 'RAT')
         :position(10, 35)
@@ -296,7 +253,7 @@ function UI:set_up_tax_block()
     
     tax_label = milky.panel
         :new(milky, tax_widget, 'TAXES')
-        :position(4, 5)    
+        :position(BLOCK_LABEL_PADDING_LEFT, 5)    
     local tax_label = milky.panel
         :new(milky, tax_widget, 'INCOME TAX')
         :position(10, 35)
@@ -330,7 +287,7 @@ function UI:set_up_hire_block()
 
     local label = milky.panel
         :new(milky, self.offices_block, "Tax Collectors")
-        :position(4, 5)
+        :position(BLOCK_LABEL_PADDING_LEFT, 5)
     
     tax_collectors_list = {}
     tax_collectors_payment = {}
@@ -386,8 +343,9 @@ function UI:draw()
     GAME_UI.hunt_widget:update_label(tostring(castle.hunt_wealth))
     GAME_UI.hunt_res_widget:update_label(tostring(castle.hunt_wealth_reserved))
     
-    hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
-    treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')
+    GAME_UI.investment_widget:update()
+
+
     tax_value:update_label(tostring(castle.INCOME_TAX) .. '%')
 
     love.graphics.setColor(1, 1, 0)
@@ -546,6 +504,31 @@ function love.mousemoved(x, y, dx, dy, istouch)
 end
 
 
+function UI:set_up_budget_block()
+    self.gold_widget = milky.panel
+        :new(milky, self.main_ui)
+        :position(3, 3)
+        :size(192, 54)
+        :toggle_border()
+    self.wealth_label = milky.panel
+        :new(milky, self.gold_widget, 'TREASURY')
+        :position(5, 2)
+    self.wealth_widget = milky.panel
+        :new(milky, self.gold_widget, "???", nil)
+        :position(150, 2)
+    self.hunt_label = milky.panel
+        :new(milky, self.gold_widget, 'HUNT INVESTED')
+        :position(5, 18)
+    self.hunt_widget = milky.panel
+        :new(milky, self.gold_widget, "???", nil)
+        :position(150, 18)
+    self.hunt_res_label = milky.panel
+        :new(milky, self.gold_widget, 'HUNT RESERVED')
+        :position(5, 34)
+    self.hunt_res_widget = milky.panel
+        :new(milky, self.gold_widget, "???", nil)
+        :position(150, 34)
+end
 
 
     function new_zone_callback (self, button)
@@ -586,41 +569,6 @@ end
         :setBackgroundColor({1, 0, 0, 0.2}, {1, 0, 0, 0.3}, {1, 0, 0, 0.6})
         :toggle_background()
 
-
-
-
-
-
-
-
-
-
----comment
----@param parent table
----@param label string
----@param it "hunt"|"treasury"
----@return table
----@return table
-function create_invest_row(parent, label, it)
-    local body = milky.panel:new(milky, parent):size(187, 25):position(0, 0)
-    local label = milky.panel:new(milky, body, label):position(0, 5):size(80, 17)
-    local value = milky.panel:new(milky, body, '???'):position(120, 5):size(35, 17)
-    local bd = milky.panel:new(milky, body, "-")
-        :position(90, 5)
-        :size(15, 15)
-        :button(milky, function (self, button) castle:dec_inv(it) end)
-        :toggle_border()
-        :toggle_background()
-        :center_text()
-    local bi = milky.panel:new(milky, body, "+")
-        :position(160, 5)
-        :size(15, 15)
-        :button(milky, function (self, button) castle:inc_inv(it) end)
-        :toggle_border()
-        :toggle_background()
-        :center_text()
-    return body, value
-end
 
 
 return UI

@@ -507,7 +507,6 @@ function Character:__attack_target()
     if self:__dist_to_target() > 5 then
         self:__move_to_target()
     else 
-        print(self.target)
         return self:__attack_char(self.target)
     end
     return Event_ActionInProgress()

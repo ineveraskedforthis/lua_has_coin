@@ -147,12 +147,14 @@ function love.load()
     OBJ_MANAGER:new_agent(GAME_UI, TEMPLATE.ELO_ALCHEMIST, zero_cell:pos())
 
     --- rats testing 
-    local rats_cell = Cell:new(5, 5)
-    local rat_lair = Building:new(Cell:new(5, 5), "home", 100)
+    local rats_cell = Cell:new(10, 10)
+    local rat_lair = Building:new(Cell:new(10, 10), "home", 100)
     add_building(rat_lair)
 
-    local rat_origin = OBJ_MANAGER:new_agent(GAME_UI, TEMPLATE.RAT, rats_cell:pos())
-    rat_origin.character:set_home(rat_lair)
+    for i = 1, 4 do
+        local rat_origin = OBJ_MANAGER:new_agent(GAME_UI, TEMPLATE.RAT, rats_cell:pos())
+        rat_origin.character:set_home(rat_lair)
+    end    
     
     OBJ_MANAGER:generate_food()
 end
@@ -199,7 +201,7 @@ function love.update(dt)
         TIME = TIME + 1
         if TIME == 2000 then
             DATE = DATE + 1
-            print(DATE)
+            print("DATE", DATE)
             TIME = 0
         end
         
