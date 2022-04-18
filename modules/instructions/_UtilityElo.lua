@@ -80,7 +80,7 @@ local function utility_work_tax(character)
 	return 0
 end
 
-local function utility_zero(character)
+local function utility_0(character)
 	return 0
 end
 
@@ -105,7 +105,7 @@ local function wealth_buy_potion(character)
 	end
 	return shop:get_buy_price(GOODS.POTION)
 end
-local function wealth_none(character)
+local function wealth_0(character)
 	return 0
 end
 
@@ -150,7 +150,15 @@ local function income_get_job(character)
 	end
 	return castle.tax_collection_reward * 10
 end
-local function income_none(character)
+
+local function income_rat_hunt(character)
+	if castle.hunt_wealth > castle.HUNT_REWARD then
+		return castle.HUNT_REWARD
+	end
+	return 0
+end
+
+local function income_0(character)
 	return 0
 end
 
@@ -161,23 +169,25 @@ local function utility_20()
 	return 20
 end
 
-local SleepFree = 	UtilitySource:new(SleepInstruction, 			utility_sleep_free, 	wealth_none, 		income_none, 		utility_zero)
-local SleepPaid = 	UtilitySource:new(SleepPaidInstruction, 		utility_sleep_full, 	wealth_sleep_paid, 	income_none,		utility_50)
-local EatFree =		UtilitySource:new(GatherFoodInstruction,		utility_eat_free,		wealth_none,		income_none, 		utility_zero)
-local EatPaid = 	UtilitySource:new(BuyEatInstruction,			utility_eat_paid, 		wealth_buy_food, 	income_none,		utility_20)
-local SellFood = 	UtilitySource:new(SellFoodInstruction,			utility_zero, 			wealth_none,		income_sell_food, 	utility_zero)
-local GetPaid =		UtilitySource:new(GetPaidInstruction, 			utility_zero, 			wealth_none,		income_get_paid, 	utility_zero)
-local HomeMoney = 	UtilitySource:new(GetMoneyFromShopInstruction,	utility_zero,			wealth_none,		income_from_home, 	utility_zero)
-local CollectTax = 	UtilitySource:new(CollectTaxInstruction, 		utility_work_tax,		wealth_none, 		income_none, 		utility_zero)
-local TakeJob =		UtilitySource:new(GetJobInstruction, 			utility_zero,			wealth_none, 		income_get_job, 	utility_zero)
-local Wander = 		UtilitySource:new(WanderInstruction, 			utility_wander, 		wealth_none, 		income_none, 		utility_zero)
-local OpenShop = 	UtilitySource:new(OpenShopInstruction, 			utility_open_shop, 		wealth_open_shop,	income_none, 		utility_zero)
-local SellPotion = 	UtilitySource:new(SellPotionInstruction, 		utility_zero, 			wealth_none, 		income_sell_potion,	utility_zero)
-local BuyPotion = 	UtilitySource:new(BuyPotionInstruction, 		utility_buy_potion, 	wealth_buy_potion,	income_none,		utility_20)
-local MakePotion = 	UtilitySource:new(MakePotionInstruction, 		utility_make_potion,	wealth_none,		income_none,		utility_zero)
+local SleepFree = 	UtilitySource:new(SleepInstruction, 			utility_sleep_free, 	wealth_0, 			income_0, 			utility_0)
+local SleepPaid = 	UtilitySource:new(SleepPaidInstruction, 		utility_sleep_full, 	wealth_sleep_paid, 	income_0,			utility_50)
+local EatFree =		UtilitySource:new(GatherFoodInstruction,		utility_eat_free,		wealth_0,			income_0, 			utility_0)
+local EatPaid = 	UtilitySource:new(BuyEatInstruction,			utility_eat_paid, 		wealth_buy_food, 	income_0,			utility_20)
+local SellFood = 	UtilitySource:new(SellFoodInstruction,			utility_0, 				wealth_0,			income_sell_food, 	utility_0)
+local GetPaid =		UtilitySource:new(GetPaidInstruction, 			utility_0, 				wealth_0,			income_get_paid, 	utility_0)
+local HomeMoney = 	UtilitySource:new(GetMoneyFromShopInstruction,	utility_0,				wealth_0,			income_from_home, 	utility_0)
+local CollectTax = 	UtilitySource:new(CollectTaxInstruction, 		utility_work_tax,		wealth_0, 			income_0, 			utility_0)
+local TakeJob =		UtilitySource:new(GetJobInstruction, 			utility_0,				wealth_0, 			income_get_job, 	utility_0)
+local Wander = 		UtilitySource:new(WanderInstruction, 			utility_wander, 		wealth_0, 			income_0, 			utility_0)
+local OpenShop = 	UtilitySource:new(OpenShopInstruction, 			utility_open_shop, 		wealth_open_shop,	income_0, 			utility_0)
+local SellPotion = 	UtilitySource:new(SellPotionInstruction, 		utility_0, 				wealth_0, 			income_sell_potion,	utility_0)
+local BuyPotion = 	UtilitySource:new(BuyPotionInstruction, 		utility_buy_potion, 	wealth_buy_potion,	income_0,			utility_20)
+local MakePotion = 	UtilitySource:new(MakePotionInstruction, 		utility_make_potion,	wealth_0,			income_0,			utility_0)
+local HuntRat = 	UtilitySource:new(HuntRatInstruction, 			utility_0,				wealth_0,			income_rat_hunt,	utility_0)
+
 
 local sources = {SleepFree, SleepPaid, EatFree, EatPaid, SellFood, GetPaid, HomeMoney, CollectTax,
-				 TakeJob, Wander, OpenShop, SellPotion, BuyPotion, MakePotion}
+				 TakeJob, Wander, OpenShop, SellPotion, BuyPotion, MakePotion, HuntRat}
 
 
 return sources

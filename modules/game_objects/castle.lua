@@ -88,7 +88,7 @@ function Castle:new(cell, progress, wealth)
         POTION_PRICE = 10,
         SLEEP_PRICE = 2,
         HUNT_REWARD = 10,
-        CONTRACT_TIME = 50,
+        CONTRACT_TIME = 10,
         free_contract_id = 0,
         budget = Budget:new(),
         INCOME_TAX = 10,
@@ -96,7 +96,8 @@ function Castle:new(cell, progress, wealth)
         open_tax_collector_positions = 0,
         tax_collection_reward= 20,
         vacant_job= false,
-        payment_timer= {0, 0, 0, 0, 0, 0, 0, 0, 0}
+        payment_timer= {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        contracts = {}
     }
     setmetatable(_, self)
     return _
@@ -127,13 +128,14 @@ function Castle:get_cell()
 end
 
 ---Returns a contract on rat-hunting with current reward/timer
+---Supposed to be run from character?
 ---@param character Character
 ---@return Contract|nil
 function Castle:claim_reward(character)
     if self.HUNT_REWARD <= self.hunt_wealth then
         self.hunt_wealth_reserved = self.hunt_wealth_reserved + self.HUNT_REWARD
         self.hunt_wealth = self.hunt_wealth - self.HUNT_REWARD
-        local contract = Contract:new(self.free_contract_id, character, self.HUNT_REWARD, DATE + self.CONTRACT_TIME)
+        local contract = Contract:new(self.free_contract_id, character, 'rat', self.HUNT_REWARD, DATE + self.CONTRACT_TIME)
         self.contracts[self.free_contract_id] = contract
         self.free_contract_id = self.free_contract_id + 1
         return contract
@@ -178,10 +180,10 @@ end
 -- actions of a king
 ---hires a new hero (NOT TESTED)
 function Castle:hire_hero()
-    if self.wealth >= 100 then
-        -- self.wealth = self.wealth - 100
-        -- new_hero(100)
-    end
+    -- if self.wealth >= 100 then
+    --     -- self.wealth = self.wealth - 100
+    --     -- new_hero(100)
+    -- end
 end
 
 ---if character is employed here then pay tax_collection_reward to him
@@ -276,11 +278,23 @@ function Castle:add_hunt_budget()
     end
 end
 
+---Updates state of castle
 function Castle:update()
     for _, i in pairs(self.tax_collectors) do
         if self.payment_timer[_] < 100 then
             self.payment_timer[_] = self.payment_timer[_] + 1
         end
+    end
+
+    local expired_contracts = {}
+    for _, i in pairs(self.contracts) do
+
+        if i.expires_at < DATE then
+            table.insert(expired_contracts, i)
+        end
+    end
+    for _, i in pairs(expired_contracts) do
+        self:cancel_contract(i)
     end
 end
 

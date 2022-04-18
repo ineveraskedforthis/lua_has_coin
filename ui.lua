@@ -224,16 +224,22 @@ function UI:set_up_budget_block()
         :toggle_border()
     self.wealth_label = milky.panel
         :new(milky, self.gold_widget, 'TREASURY')
-        :position(5, 6)
+        :position(5, 2)
     self.wealth_widget = milky.panel
         :new(milky, self.gold_widget, "???", nil)
-        :position(150, 6)
+        :position(150, 2)
     self.hunt_label = milky.panel
         :new(milky, self.gold_widget, 'HUNT INVESTED')
-        :position(5, 26)
+        :position(5, 18)
     self.hunt_widget = milky.panel
         :new(milky, self.gold_widget, "???", nil)
-        :position(150, 26)
+        :position(150, 18)
+    self.hunt_res_label = milky.panel
+        :new(milky, self.gold_widget, 'HUNT RESERVED')
+        :position(5, 34)
+    self.hunt_res_widget = milky.panel
+        :new(milky, self.gold_widget, "???", nil)
+        :position(150, 34)
 end
 
 function UI:set_up_invest_block()
@@ -377,7 +383,8 @@ function UI:draw()
 
     -- interface update
     GAME_UI.wealth_widget:update_label(tostring(castle.wealth))
-    GAME_UI.hunt_widget:update_label(tostring(castle.hunt_budget))
+    GAME_UI.hunt_widget:update_label(tostring(castle.hunt_wealth))
+    GAME_UI.hunt_res_widget:update_label(tostring(castle.hunt_wealth_reserved))
     
     hunt_invest_value:update_label(tostring(castle.budget.hunt) .. '%')
     treasury_invest_value:update_label(tostring(castle.budget.treasury) .. '%')

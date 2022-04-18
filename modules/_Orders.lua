@@ -36,7 +36,6 @@ end
 
 local function find_shop_sell_potion(character)
     local closest = character:__optimal_sell_shop(GOODS.POTION)
-    -- print(closest)
     if closest == nil then
         return Event_ActionFailed()
     end
@@ -210,8 +209,8 @@ Orders.Money.ClaimReward = Order:new("Claim quest", claim_reward)
 Orders.Apply = {}
 Orders.Apply.TaxCollector = Order:new("Apply for a job", apply_for_job)
 
-Order.Attack = {}
-Order.Attack.Target = Order:new("Attack", attack_target)
+Orders.Attack = {}
+Orders.Attack.Target = Order:new("Attack", attack_target)
 
 
 Orders.Make = {}

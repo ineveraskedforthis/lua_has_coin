@@ -41,7 +41,7 @@ function InstructionNode:process_event(event)
 
 end
 
----adds new child to node
+---adds new child to node  
 ---children are checked in order of adding
 ---@param node InstructionNode
 ---@param condition fun(character:Character):boolean

@@ -498,7 +498,8 @@ function Character:__attack_target()
     if self:__dist_to_target() > 5 then
         self:__move_to_target()
     else 
-        return self.__attack_char(self.target)
+        print(self.target)
+        return self:__attack_char(self.target)
     end
     return Event_ActionInProgress()
 end
@@ -764,8 +765,10 @@ end
 function Character:claim_reward(castle)
     local responce = castle:claim_reward(self)
     if responce == nil then
+        print('quest not claimed')
         return Event_ActionFailed()
     end
+    print('quest claimed')
     self.quest = responce
     return Event_ActionFinished()
 end

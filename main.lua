@@ -38,6 +38,7 @@ GetMoneyFromShopInstruction = require "modules.instructions.GetMoneyFromShop"
 SellPotionInstruction = require "modules.instructions.MakePotionForSell"
 MakePotionInstruction = require "modules.instructions.MakePotion"
 BuyPotionInstruction = require "modules.instructions.BuyPotion"
+HuntRatInstruction = require "modules.instructions.HuntRat"
 
 require "modules.instructions._Utility"
 
@@ -198,6 +199,7 @@ function love.update(dt)
         TIME = TIME + 1
         if TIME == 2000 then
             DATE = DATE + 1
+            print(DATE)
             TIME = 0
         end
         
