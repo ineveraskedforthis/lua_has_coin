@@ -152,7 +152,7 @@ local function income_get_job(character)
 end
 
 local function income_rat_hunt(character)
-	if castle.hunt_wealth > castle.HUNT_REWARD then
+	if (castle.hunt_wealth > castle.HUNT_REWARD) and (character.skill.gathering > 0) then
 		return castle.HUNT_REWARD
 	end
 	return 0

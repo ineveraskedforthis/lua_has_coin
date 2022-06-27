@@ -586,7 +586,7 @@ function Character:__optimal_sell_shop(x)
     for k, v in pairs(buildings) do
         -- if v.class == shop_type then
             local tmp = v:get_sell_price(x) - self:__dist_to(v)/1000
-            if ((tmp_target == nil) or (tmp_value < tmp)) and (v:is_shop()) then
+            if ((tmp_target == nil) or (tmp_value < tmp)) and (v:is_shop() and v:get_wealth() >= v:get_sell_price(x)) then
                 tmp_target = v
                 tmp_value = tmp
             end
@@ -630,11 +630,12 @@ end
 function Character:__check_rat()
     local closest = nil
     local opt_dist = nil
+    local detection_range = 400
     for k, v in pairs(OBJ_MANAGER.agents) do
         local char = v.character
         if char:is_rat() then
             local tmp =  self:__dist_to(char)
-            if ((opt_dist == nil) or (opt_dist > tmp)) then
+            if ((opt_dist == nil) or (opt_dist > tmp)) and (tmp < detection_range) then
                 closest = char
                 opt_dist = tmp
             end

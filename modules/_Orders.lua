@@ -1,3 +1,6 @@
+---comment
+---@param character Character
+---@return EventSimple
 local function move_action(character) 
     local tmp = character:__move_to_target()
     if tmp == MOVE_RESPONSE.TARGET_REACHED then
