@@ -797,7 +797,7 @@ function Character:remove_contract()
     self.quest = nil
 end
 
----Collects food and eat it  
+---Collects food and eat/keeps it  
 ---Effect:  
 ---        restores 10 hp  
 ---        sets hunger to 0  

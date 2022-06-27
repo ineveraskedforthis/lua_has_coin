@@ -138,8 +138,14 @@ function Castle:claim_reward(character)
         local contract = Contract:new(self.free_contract_id, character, 'rat', self.HUNT_REWARD, DATE + self.CONTRACT_TIME)
         self.contracts[self.free_contract_id] = contract
         self.free_contract_id = self.free_contract_id + 1
+
+        print('claim contract')
+        print('contract ', contract.id)
+        print('hunt wealth', self.hunt_wealth)
+        print('reserved', self.hunt_wealth_reserved)
+
         return contract
-    end    
+    end
 end
 
 ---Gives a **reward** specified in **contract** to a contract's **character** and removes contract from character
@@ -150,9 +156,16 @@ function Castle:give_reward(contract)
     end
     local character = contract.character
     if character.stash == contract.goal then
+        contract.finished = true
         self.hunt_wealth_reserved = self.hunt_wealth_reserved - contract.reward
         character:add_wealth(contract.reward)
         character:remove_contract()
+        
+        print('give reward')
+        print('contract ', contract.id)
+        print('hunt wealth', self.hunt_wealth)
+        print('reserved', self.hunt_wealth_reserved)
+
         return Event_ActionFinished()
     end
     return Event_ActionFailed()
@@ -161,10 +174,20 @@ end
 ---cancels contract and removes it from character
 ---@param contract Contract
 function Castle:cancel_contract(contract)
+    if contract.finished then
+        return
+    end
+
     self.hunt_wealth_reserved = self.hunt_wealth_reserved - contract.reward
     self.hunt_wealth = self.hunt_wealth + contract.reward
     self.contracts[contract.id] = nil
     contract.character:remove_contract()
+    contract.finished = true
+
+    print('cancel_contract')
+    print('contract ', contract.id)
+    print('hunt wealth', self.hunt_wealth)
+    print('reserved', self.hunt_wealth_reserved)
 end
 
 ---comment
