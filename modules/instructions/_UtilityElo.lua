@@ -114,7 +114,7 @@ end
 ---@return number
 local function income_sell_food(character)
 	local shop = character:get_optimal_sell_shop(GOODS.FOOD)
-	if shop == nil then
+	if (shop == nil) or (character.skill.gathering < 1) then
 		return 0
 	end
 	return shop:get_sell_price(GOODS.FOOD)
